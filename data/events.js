@@ -14,7 +14,7 @@ G.TEACHERS = [
   { id: 'taoist', n: '떠돌이 도사', from: ['farmer', 'scholar', 'doctor'], g: ['삼류', '일류'], k: ['심법', '검', '보신'], cost: '약초 캐기', p: 3, note: '양생공·토납법' },
   { id: 'ronin', n: '떠돌이 낭인', from: ['inn', 'gang', 'troupe', 'escort'], g: ['이류', '일류'], k: ['검', '도'], cost: '원수 대신 갚기 한 번', p: 3, note: '실전 검술. 원수도 따라온다' },
   { id: 'fallen', n: '몰락한 세가의 후예', from: ['scholar', 'merchant', 'inn'], g: ['이류', '상승'], k: ['검', '심법'], cost: '가문 복수 맹세', p: 1, note: '가전무공의 잔편' },
-  { id: 'hermit', n: '은거기인', from: ['*'], g: ['일류', '절세'], k: ['*'], cost: '시험 통과(심성·오성 판정)', p: 0.5, note: '기연. 산중 오두막·객잔 구석·나룻배 사공의 모습' },
+  { id: 'hermit', n: '은거기인', from: ['*'], g: ['일류', '절세'], k: ['*'], cost: '시험 통과(성품·이해 판정)', p: 0.5, note: '기연. 산중 오두막·객잔 구석·나룻배 사공의 모습' },
   { id: 'demonspy', n: '숨어 사는 마교도', from: ['*'], g: ['이류', '상승'], k: ['심법', '수', '장'], cost: '성향 −20, 마공', p: 0.8, note: '빠르지만 주화입마와 정파의 추적' },
   { id: 'assassin', n: '살문의 연락책', from: ['orphan', 'gang', 'assassin'], g: ['이류', '상승'], k: ['검', '암기', '보신'], cost: '청부 다섯 건', p: 1, note: '빠져나오기 어렵다' },
   { id: 'doctor', n: '괴팍한 의원', from: ['doctor', 'farmer', 'orphan'], g: ['삼류', '일류'], k: ['지', '수'], cost: '약 시험대가 됨', p: 2, note: '점혈과 침술. 신의일 수도' },

@@ -34,7 +34,7 @@ G.HERBS = [
   { id: 'xuelian', ages: [[100, '백년설련', '중품', 10], [1000, '천년설련', '상품', 30]], pur: 85, yy: '음', side: { cure: '중품 독' }, src: '천산·곤륜' },
   { id: 'zhuguo', ages: [[300, '주과', '상품', 30]], pur: 80, yy: '양', wx: '화', src: '독충이 지키는 절벽(삼백 년에 한 번)' },
   { id: 'lingzhi', ages: [[100, '백년영지', '하품', 5], [1000, '천년영지', '중품', 20]], pur: 75, wx: '목', side: { heal: '회복 +15' }, src: '동굴' },
-  { id: 'kongqing', ages: [[0, '공청석유', '극품', 120]], pur: 100, yy: '중화', refine: 1.5, side: { cure: '주화입마·단전 파괴', opening: '임독양맥 타통 판정(심성 DC 60)' }, src: '사람 손이 닿지 않은 동굴(한 방울)' },
+  { id: 'kongqing', ages: [[0, '공청석유', '극품', 120]], pur: 100, yy: '중화', refine: 1.5, side: { cure: '주화입마·단전 파괴', opening: '임독양맥 타통 판정(정신력 DC 60)' }, src: '사람 손이 닿지 않은 동굴(한 방울)' },
   { id: 'bingjing', ages: [[0, '빙정', '상품', 30]], pur: 90, yy: '음', wx: '수', side: { clearClash: '양 무공 상극' }, src: '북해·설산 얼음 속' },
   { id: 'huojing', ages: [[0, '화정', '상품', 30]], pur: 90, yy: '양', wx: '화', side: { clearClash: '음 무공 상극' }, src: '화산 분화구' },
 ];
@@ -60,7 +60,7 @@ G.BEASTS = [
 // ---------- 독 (무기로 쓰는 것). grade: 하·중·상·극 → 상태 0.9/0.75/0.6/0.5, 해독 DC 50/65/80/100(d100) ----------
 G.POISONS = [
   { id: 'sangong', n: '산공독', grade: '중', effect: '내공 봉인(이번 싸움과 그해)', src: '흑점·사파' },
-  { id: 'mihun', n: '미혼약', grade: '하', effect: '정신을 흐림(심성 판정)', src: '하오문·흑점' },
+  { id: 'mihun', n: '미혼약', grade: '하', effect: '정신을 흐림(정신력 판정)', src: '하오문·흑점' },
   { id: 'huagu', n: '화골산', grade: '상', effect: '뼈까지 녹임(강골 상한 −40)', src: '흑점·당가' },
   { id: 'heding', n: '학정홍', grade: '상', effect: '한 방울로 죽음(생존 판정 DC 80)', src: '궁중·흑점' },
   { id: 'wuxing', n: '무형지독', grade: '극', effect: '보이지 않는 독. 간파 −25', src: '사천당가 비전' },
