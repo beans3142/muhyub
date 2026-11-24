@@ -225,11 +225,11 @@ G.ANCHORS = [
   { id: 'opium', k: '정사', src: '정사', y: 1840, at: 'guangzhou', t: '영국 함대의 대포가 광주를 때렸다. 강호의 시대가 저문다.', out: [{ id: 'x', w: 1 }] },
 
   // ================= 반복 닻 (시기 없음, 조건이 맞으면 언제든) =================
-  { id: 'sapa_unify', k: '일통', src: '창작', y: 'any', rep: { cd: 60, p: 20, from: 1100 }, at: 'nanjing', cond: [{ share: 'top:사', gte: 0.35 }], t: '사파 하나가 강남의 흑도를 모두 굴복시켰다.',
+  { id: 'sapa_unify', k: '일통', src: '창작', y: 'any', rep: { cd: 60, p: 20, from: 1100 }, at: 'nanjing', cond: [{ share: 'top:사', gte: 0.06 }], t: '사파 하나가 강남의 흑도를 모두 굴복시켰다.',
     out: [{ id: 'x', t: '사파일통이 선포되었다.', w: 1, fx: [{ f: 'top:사', fame: 40, coh: 20 }], flags: { 'sapa.unify': '예' }, route: '사파일통' }] },
-  { id: 'right_unify', k: '일통', src: '창작', y: 'any', rep: { cd: 100, p: 10, from: 1100 }, at: 'kaifeng', cond: [{ share: 'top:정', gte: 0.5 }], t: '정파 하나가 강호 절반을 손에 넣었다.',
+  { id: 'right_unify', k: '일통', src: '창작', y: 'any', rep: { cd: 100, p: 10, from: 1100 }, at: 'kaifeng', cond: [{ share: 'top:정', gte: 0.15 }], t: '정파 하나가 중원 곳곳을 손에 넣었다.',
     out: [{ id: 'x', t: '무림일통이 선포되었다.', w: 1, fx: [{ f: 'top:정', fame: 60 }], route: '무림일통' }] },
-  { id: 'demon_unify', k: '일통', src: '창작', y: 'any', rep: { cd: 100, p: 10, from: 1100 }, at: 'tianshan', cond: [{ share: 'top:마', gte: 0.5 }], t: '마도가 강호 절반을 손에 넣었다.',
+  { id: 'demon_unify', k: '일통', src: '창작', y: 'any', rep: { cd: 100, p: 10, from: 1100 }, at: 'tianshan', cond: [{ share: 'top:마', gte: 0.07 }], t: '마도가 중원 곳곳을 손에 넣었다.',
     out: [{ id: 'x', t: '마도천하가 선포되었다.', w: 1, fx: [{ f: 'top:마', fame: 60 }], route: '마도천하' }] },
   { id: 'court_control', k: '통제', src: '창작', y: 'any', rep: { cd: 50, p: 15, from: 960 }, at: 'beijing', cond: [{ has: 'top:관' }, { pow: ['top:관', 'top:정'], gte: 0.8 }], t: '조정이 강호를 손보겠다고 나섰다.',
     out: [

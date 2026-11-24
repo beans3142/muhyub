@@ -27,7 +27,7 @@
 | 5 | 생업과 신분 | 무공 밖의 삶(농·상·숙수·의·장인·학·관·황실·기예) | `docs/p5-careers.md` | 생업 사다리 |
 | 6 | 인연과 명성 | 사람과의 관계, 사제·혼인·원수·자손, 명성·악명·세력 평판 | `docs/p6-bonds.md` | NPC 스키마 |
 | 7 | 사건과 운명 | 사건을 어떻게 조합해 일률적이지 않은 이야기를 만드나 | `docs/p7-events.md` | 사건 문법·사건표 |
-| 8 | 세계와 지리 | 세력 시뮬레이션과 지역, 지명 | `docs/p8-world.md` | `data/places.js` 확장 |
+| 8 | 세계와 지리 | 세력 시뮬레이션과 지역, 지명 | `docs/p8-world.md`, `docs/p8-geography.md` | `data/places.js` 확장 |
 | 9 | 엔딩·업적·해금·밸런스 | 한 생을 어떻게 평가하고 확률을 어떻게 맞추나 | `docs/p9-endings.md` | 헤드리스 시뮬레이터 |
 | 10 | 엔진과 화면 | 위 설계를 실제로 돌리는 엔진과 UI | `docs/p10-engine-ui.md` | `engine.js`, `index.html` |
 
@@ -119,7 +119,7 @@
 | `docs/p7-events.md`, `data/eventbook.js`, `tools/p7_sim.js` | 사건 틀 100·반전 79·사슬 12, 다양성 검산 | 7단계. 옛 `data/events.js`의 TEACHERS·EVENTS·LEGEND·EPITHET는 그대로 쓴다 |
 | `data/names.js` | 지역·신분별 성명 | 단계 8에서 보강 |
 | `data/items.js` | 영단 17·천재지보 11·영물 13·독 6·기보 12, 약기·정순도·속성 포함 | 3단계 기준으로 다시 씀(완료). 획득 사건은 7단계 |
-| `data/places.js` | 지명 78곳 | 단계 8에서 200곳 안팎으로 |
+| `data/places.js`, `data/regions.js` | 지명 208곳, 지역 24곳. `tools/gen_places.js`가 생성 | 단계 8 지리 초안(`docs/p8-geography.md`) |
 | `data/events.js` | 스승·큰 사건·별호 생성 규칙 | 단계 6·7에서 재작성 |
 | `world.js` | 시대·연표·옛 특성·지명·이름 | 세력·사다리는 data/factions.js로 옮김. 나머지는 각 단계에서 옮김 |
 

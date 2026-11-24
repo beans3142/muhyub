@@ -1,6 +1,6 @@
 // 시드마다 세계가 얼마나 달라지는지 본다(정본 강제 없이). 실행: node tools/world_variety.js [판 수]
 global.window = global;
-for (const f of ['data/factions.js', 'data/places.js', 'data/names.js', 'data/anchors.js', 'engine/world.js']) require('../' + f);
+for (const f of ['data/factions.js', 'data/places.js', 'data/regions.js', 'data/names.js', 'data/anchors.js', 'engine/world.js']) require('../' + f);
 const WS = global.WORLDSIM, N = +process.argv[2] || 200;
 const KEY = ['heroes_meet', 'zhangsanfeng', 'guangming', 'zhengmo1', 'tianmo', 'zhengmo2', 'blood_calamity1', 'blood_calamity2', 'jiutian_coup', 'anti_qing'];
 const out = {}, routes = {}, alive1500 = {}, count1500 = [], topMa = {};

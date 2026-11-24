@@ -4,9 +4,9 @@
 // 게임은 시작점 연도까지 같은 seed·canon 옵션으로 세계를 다시 돌려 같은 상태를 얻는다(스냅숏은 저장하지 않는다).
 const fs = require('fs'), path = require('path');
 global.window = global;
-for (const f of ['data/factions.js', 'data/places.js', 'data/names.js', 'data/anchors.js', 'engine/world.js']) require(path.join(__dirname, '..', f));
+for (const f of ['data/factions.js', 'data/places.js', 'data/regions.js', 'data/names.js', 'data/anchors.js', 'engine/world.js']) require(path.join(__dirname, '..', f));
 const WS = global.WORLDSIM;
-const CANON_SEED = 20261124, VERSION = 1;
+const CANON_SEED = 20261124, VERSION = 2;
 // lore.md 4장에서 이름을 정한 개파조사
 const FOUNDERS = { shaolin: '발타', wudang: '장삼봉', huashan: '청허자', gaibang: '연무백', qingcheng: '송학도인', zhongnan: '운허진인', emei: '정연 사태', diancang: '단목휘', kunlun: '백운자', kongtong: '철벽진인', bailian: '모자원', quanzhen: '왕중양' };
 const CHAPTERS = [

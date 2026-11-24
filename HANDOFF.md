@@ -34,6 +34,7 @@
 | 8 보조 보강 | `docs/p8-lineage.md` 4장 | 작품 세계관 문서 약 45개 추가 수집(`sources/namu/`, 목록 `sources/list10.txt`, 발췌 `sources/extract/p8_patterns.txt`). 흐름 장치 13개(앞 시대 인물이 후대 조사, 선봉 몰락·재건, 대전 뒤 사파 성장, 봉문, 흑막, 사교 후신, 주기적 혈겁, 무덤 쟁탈, 새외 동맹, 3대 세력+숨은 하나, 황실의 강호 통제, 무림맹 2단계 기원, 세계 갈래 이름)를 규칙으로 정리 |
 | 8 닻 데이터 | `data/anchors.js`, `tools/check_anchors.js` | 닻 90개(정사 35·계통 26·메인 11·연합 4·흑막 4·유산 4·일통 3·혈겁 2·통제 1, 반복 10), 검사 오류 없음. `data/factions.js` 5곳 수정(백업 `sources/backup/factions_before_anchors.js`): 일월신교→광명성교(1368~1380), 천마신교 1490~1510, 녹림 17년·태행산, 명교 694, 사도련 1405~1415. 무공 생성기(gen_arts 등)는 다시 돌리지 않음 |
 | 8 정본 생성 | `engine/world.js`, `tools/gen_canon.js`, `tools/world_variety.js`, `data/canon.js`, `data/starts.js` | 세력 시뮬레이션+닻 처리 엔진(DOM 없음, seed 재현 확인, 한 판 0.5초). 정본 seed 20261124로 닻 115 발동, 시작점 491개. 200시드 분포는 p8-world 7-1. 시작점 상태는 저장 안 하고 정본 seed로 다시 돌림. 지역(지명) 단위 영역은 아직 숫자 하나(land) |
+| 8 지리 | `docs/p8-geography.md`, `tools/gen_places.js`, `data/places.js`, `data/regions.js` | 초안. 지역 24(중원 16·새외 8: 인구·물가·생업 배율·특산·재해), 지명 208(산 45·물 22·관문 12·성 60·진 36·섬 1·새외 24·특수 8, 영역 값 합 311), 종류별 자리(7단계 `at`). 세력 영역을 지명 묶음으로(근거지 예약·공동 근거지·탈환·전쟁 40%·평시 확장 상한 4×위상), 지역 재해, 군소 문파. 정본 버전 2(메인 닻은 정본에서 조건 없이 발동). 통일 닻 문턱을 새 척도로(정 0.15·마 0.07·사 0.06). 세력 근거지 11곳 이동 |
 | 스탯 지도 | `docs/stats.md` | 자질(숨김) → 바탕 상한 → 스탯 18 → 갈래 6 → 쓰는 곳의 층 구조, 서로 주고받는 관계, 쓰이는 곳. 2026-11-24 결정(자질 숨김, 심성 분리, 생업은 스탯으로) 반영 |
 | 5 생업·신분 | `docs/p5-careers.md`, `tools/p5_sim.js` | 초안 완료(윤문함). 생업 16개 + 세력 사다리 생업 6개, 숙련 상한은 스탯 바탕값, 과거 7단, 신분 5, 재산 냥. 검산: 여섯 단 생업 4단 0.2~0.8%. 데이터 완료: `data/careers.js`(`tools/gen_careers.js`가 문서 표를 읽어 생성), 출신 675종에 생업 키 16종·신분(`status`) |
 | 6 인연·명성 | `docs/p6-bonds-fame.md`, `tools/p6_sim.js` | 초안(윤문함). 한 해 일정(경지별 칸 4~10, 할 일 15종, 칸 효과 표, 운은 숨은 기연으로 사건 결), 명성·악명 = 이름을 아는 사람 수(천하 500만 명, 단계 5, 경지별 끝, 소문 퍼짐), 인연 관계 13종·숨은 호감·가면과 배신·사제·혼인·원한 대물림·인맥 보정, 별호, 성향↔성품, 세력 평판. 검산: 일류 이하는 지역 이름에서 멈춤, 현경 천하 37% |
@@ -87,7 +88,7 @@ p3 9장으로 반영했다. 역할 배합, 계보 승계, 상성 짝, 문파의 
 | `data/traits.js` | 특성 (`node tools/gen_traits.js`, p2 문서 파싱) |
 | `data/origins.js` | 출신 672종, 세력 출신 21.4% (`node tools/gen_origins.js`) |
 | `data/items.js` | 영약 17, 약초 11, 영물 13, 독 6, 보물 12 |
-| `data/places.js`, `data/events.js`, `data/names.js` | 지명 78, 스승·사건 틀·별호, 이름 (8·7단계에서 확장 예정) |
+| `data/places.js`, `data/regions.js`, `data/events.js`, `data/names.js` | 지명 208·지역 24(`tools/gen_places.js`가 생성), 스승·사건 틀·별호, 이름 |
 | `tools/p1_check3.js`, `tools/p2_sim.js`, `tools/p3_check.js` | 승률 검산(개정 3), 경지 분포 시뮬레이션(d100), 무공 교체·역할 배합·고유 효과 검산. `tools/p1_check2.js`는 개정 2 검산 |
 | `world.js` | 예전 데이터. 시대·연표·옛 특성·테마 등이 남아 있고 단계별로 흡수 중 |
 | `index.html` | 1차 프로토타입(예전 엔진). 10단계에서 교체 |
