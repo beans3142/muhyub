@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>강호 천만 분의 일 · 주사위로 사는 무림 일생</title>
+<title>강호 천만 분의 일 · 단 한 번의 무림 일생</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;900&display=swap" rel="stylesheet">
 <style>
@@ -37,7 +37,7 @@
   .card{background:var(--paper2);border:1px solid var(--line);padding:16px}
   .name{font-size:26px;font-weight:900}
   .alias{color:var(--red);font-weight:600}
-  .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+  .stats{display:grid;grid-template-columns:1fr;gap:4px;margin:10px 0}
   .stat{background:var(--paper);border:1px solid var(--line);padding:4px 8px;font-size:14px}
   .stat b{float:right}
   .row{font-size:14px;margin:3px 0}
@@ -46,13 +46,16 @@
   .bar i{position:absolute;top:-4px;width:4px;height:16px;background:var(--ink)}
   .ctrl{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center}
   .ctrl .on{background:var(--ink);color:var(--paper)}
-  .tray{display:flex;align-items:center;gap:14px;min-height:74px;border:1px dashed var(--line);padding:8px 14px;background:rgba(255,255,255,.25)}
-  .die{width:56px;height:56px;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;background:var(--paper);border-radius:10px;box-shadow:3px 3px 0 var(--line)}
-  .die.rolling{animation:shake .12s infinite}
-  .die.crit{background:var(--gold);color:#fff}
-  .die.fumble{background:var(--ink);color:var(--red2)}
-  @keyframes shake{0%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}100%{transform:rotate(-8deg)}}
-  .traytext{font-size:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 10px}
+  .chip{font-size:12.5px;padding:1px 7px;border:1px solid var(--line);background:var(--paper);cursor:help}
+  .chip.bad{border-color:var(--red2);color:var(--red)}
+  .chip.mark{border-style:dashed;color:var(--ink2)}
+  .chip.t하품{font-weight:600}
+  .chip.t중품{border-color:var(--jade);color:var(--jade);font-weight:600}
+  .chip.t상품{background:var(--jade);color:var(--paper);border-color:var(--jade)}
+  .chip.t극품{background:var(--gold);color:#fff;border-color:var(--gold);font-weight:700}
+  .chip.t천품{background:var(--red);color:#fff;border-color:var(--red);font-weight:900}
+  .fate{min-height:22px;font-size:14px;color:var(--ink2)}
   .log{height:430px;overflow-y:auto;border:1px solid var(--line);background:rgba(255,255,255,.35);padding:10px 14px;margin-top:10px;font-size:15px}
   .log .age{font-weight:900;color:var(--red);margin-top:10px}
   .log p{margin:2px 0}
@@ -83,13 +86,13 @@
 <!-- ===== INTRO ===== -->
 <section id="intro">
   <span class="seal">江湖千萬分之一</span>
-  <h1>강호 천만 분의 일<small>주사위로 사는 단 한 번의 무림 일생</small></h1>
-  <p class="lead">강호에서는 오늘도 아이가 태어난다. 대부분은 논밭에서 나고 논밭에서 죽는다. 무공을 배우는 자는 열에 하나, 이름을 남기는 자는 만에 하나. 어디서 누구의 자식으로 태어날지, 타고난 근골이 어떨지는 주사위가 정한다. 당신은 갈림길에서 고르기만 할 수 있다.</p>
-  <p class="muted">판정은 TRPG 방식이다. 능력치는 3d6, 행동 판정은 d20 + 보정 ≥ 난이도(DC), 출생과 생존은 d100. 20은 대성공, 1은 대실패.</p>
+  <h1>강호 천만 분의 일<small>단 한 번의 무림 일생</small></h1>
+  <p class="lead">강호에서는 오늘도 아이가 태어난다. 대부분은 논밭에서 나고 논밭에서 죽는다. 무공을 배우는 자는 열에 하나, 이름을 남기는 자는 만에 하나. 어디서 누구의 자식으로 태어날지, 무엇을 타고날지는 하늘이 정한다. 당신은 갈림길에서 고르기만 할 수 있다.</p>
+  <p class="muted">운명은 보이지 않는 곳에서 굴러가고, 결과만 남는다. 타고난 자질은 숫자로 보이지 않는다. 특성은 태어날 때 소소한 것 몇 개와, 드물게 큰 것이 붙는다.</p>
   <p><button class="btn" id="startBtn">태어나기</button>
      <label class="muted" style="margin-left:12px"><input type="checkbox" id="autoStart"> 갈림길도 운명에 맡기기</label></p>
 
-  <h2>출생표 (d100)</h2>
+  <h2>출생표</h2>
   <table id="originTable"></table>
 
   <h2>추모관 <span class="muted">· 이 브라우저에서 끝까지 산 삶</span></h2>
@@ -112,6 +115,8 @@
       <div class="row"><span>재산</span><b id="pWealth"></b></div>
       <div class="row"><span>가족</span><b id="pFamily"></b></div>
       <div class="stats" id="pStats"></div>
+      <div class="muted">타고난 것</div>
+      <div class="chips" id="pTraits"></div>
       <div class="muted">사(邪) ← 성향 → 정(正)</div>
       <div class="bar"><i id="pAlign"></i></div>
       <div class="ctrl">
@@ -123,10 +128,7 @@
       <label class="muted" style="display:block;margin-top:8px"><input type="checkbox" id="autoChk"> 갈림길도 운명에 맡기기</label>
     </aside>
     <main>
-      <div class="tray">
-        <div class="die" id="die">·</div>
-        <div class="traytext" id="trayText">주사위가 기다린다.</div>
-      </div>
+      <div class="fate" id="trayText"></div>
       <div id="choiceBox" class="choice hidden"></div>
       <div class="log" id="log"></div>
     </main>
@@ -147,8 +149,9 @@
 </section>
 
 </div>
+<script src="data/traits.js"></script>
 <script>
-// ---------- dice ----------
+// ---------- 굴림(화면에 보이지 않는다) ----------
 const d = n => 1 + Math.floor(Math.random() * n);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const mod = v => Math.floor((v - 10) / 2);
@@ -185,6 +188,80 @@ const QUIET = {
 };
 const stage = a => a < 6 ? 0 : a < 16 ? 1 : a < 36 ? 2 : a < 56 ? 3 : 4;
 
+// ---------- 자질 표지 (docs/p2-traits-realms.md 2-7) ----------
+// 시제품은 자질을 3d6(3~18)로 두고, 설계 척도(3d6 × 5)로 바꿔 표지를 고른다. 기연은 표지가 없다.
+const MARKS = {
+  근골: ['허약한 골격', '근골이 약함', '근골이 좋음', '타고난 근골'],
+  오성: ['깨우침이 더딤', '이해가 더딘 편', '이해가 빠른 편', '깨우침이 빠름'],
+  심성: ['마음이 쉽게 흔들림', '마음이 여림', '심지가 있음', '마음이 굳음'],
+};
+function markOf(k, v) {
+  const m = MARKS[k]; if (!m) return null; const x = v * 5;
+  return x >= 75 ? m[3] : x >= 65 ? m[2] : x >= 40 ? null : x >= 30 ? m[1] : m[0];
+}
+
+// ---------- 특성 (data/traits.js, 2단계 개정 4) ----------
+// 소소한 특성은 2d3개를 가중치로, 큰 특성은 각각 천만 분율로 굴린다. 맞서는 짝(TRAIT_OPPOSITES)은 함께 붙지 않는다.
+// 시제품 판정에 연결하는 효과: stat(자질 ÷5), check(판정 ÷5, 아래 표의 판정에만), train·enlight(수련 판정), life(수명), death(절맥), align(성향), luck(운).
+// 나머지 효과(생업·인연·사건·무공 배율 등)는 10단계 엔진에서 쓰고, 여기서는 설명만 보인다.
+const OPP = new Map();
+for (const [a, b] of (window.TRAIT_OPPOSITES || [])) { (OPP.get(a) || OPP.set(a, new Set()).get(a)).add(b); (OPP.get(b) || OPP.set(b, new Set()).get(b)).add(a); }
+const clash = (list, t) => list.some(x => (OPP.get(x.n) && OPP.get(x.n).has(t.n)) || (x.group && x.group === t.group && x.n !== t.n && x.unique));
+function rollTraits() {
+  const out = [];
+  for (const t of (window.TRAITS || [])) if (Math.random() * 1e7 < t.p && !clash(out, t)) out.push(t);
+  const pool = (window.TRAITS_MINOR || []).slice();
+  let n = d(3) + d(3), guard = 0;
+  while (n > 0 && pool.length && guard++ < 200) {
+    let r = Math.random() * pool.reduce((a, t) => a + (t.w || 10), 0), i = 0;
+    for (; i < pool.length; i++) if ((r -= pool[i].w || 10) <= 0) break;
+    const t = pool.splice(Math.min(i, pool.length - 1), 1)[0];
+    if (!clash(out, t)) { out.push(t); n--; }
+  }
+  return out;
+}
+const fxAll = key => S.traits.map(t => (t.fx || {})[key]).filter(v => v != null);
+const mulOf = key => fxAll(key).reduce((m, v) => m * (typeof v === 'object' && v.mul ? v.mul : 1), 1);
+// 판정 이름 → 특성 check 키
+const CHECK_KEYS = {
+  '입문 시험': ['스승 호감', '도가 입문'],
+  '은자의 가르침을 알아듣는가': ['스승 호감', '비급 해독', '훔쳐 배우기'],
+  '굶주림을 버티는가': ['굶주림', '참기', '생존'],
+  '역병을 이기는가': ['병'],
+  '사경을 헤맨다': ['병', '정신력', '생존'],
+  '산적과 싸운다': ['싸움', '위협'],
+  '달아난다': ['도주', '이동·추적'],
+  '기연': ['기연', '영약 발견'],
+  '독충에 물렸다': ['독 저항', '상한 음식·독'],
+  '비무': ['비무', '대회·첫 생사결', '대회·비무', '비무 첫 합', '지켜보는 눈이 많은'],
+  '전장에서 쓰러졌다': ['생존', '정신력'],
+  '유혹을 뿌리친다': ['설득당하지 않음', '정신력', '성품'],
+  '분을 삭인다': ['참기', '참기·계략'],
+  '객잔 싸움': ['싸움', '취기'],
+  '표행 호위': ['싸움', '기습 간파'],
+  '셈과 흥정': ['흥정', '속임수 간파'],
+  '자객을 막는다': ['암습 간파', '기습 간파', '독 감별'],
+  '주화입마를 다스린다': ['공포증·심마', '정신력'],
+};
+function traitBonus(label) {
+  const keys = CHECK_KEYS[label] || (/전투$/.test(label) ? ['싸움', '생존'] : []);
+  let b = 0; for (const c of fxAll('check')) for (const k of keys) if (typeof c[k] === 'number') b += c[k];
+  return Math.round(b / 5);
+}
+function applyBirthTraits() {
+  for (const st of fxAll('stat')) for (const [k, v] of Object.entries(st)) if (k in S.st) S.st[k] = Math.max(3, S.st[k] + Math.round(v / 5));
+  for (const a of fxAll('align')) S.align += a * 10;
+  S.lifeAdj = fxAll('life').reduce((a, v) => a + v, 0);
+  S.deathWin = fxAll('death')[0] || null;
+  S.reroll = fxAll('luck').reduce((a, v) => a + (v.reroll || 0), 0);
+  S.unlucky = fxAll('luck').some(v => v.crit);
+  // 수련: 배율 1.0당 판정 보정 +5 (×2 → +5, ×0.5 → −3)
+  S.trainAdj = Math.round((mulOf('train') * mulOf('enlight') - 1) * 5);
+}
+const MINOR_IDS = new Set((window.TRAITS_MINOR || []).map(t => t.id)), isMinor = t => MINOR_IDS.has(t.id);
+const clean = e => String(e || '').replace(/`/g, '');
+const chip = t => `<span class="chip t${t.tier}${t.good === 0 ? ' bad' : ''}" title="${t.tier} · ${clean(t.e).replace(/"/g, '&quot;')}">${t.n}</span>`;
+
 // ---------- state ----------
 let S, speed = 1, paused = false, auto = false;
 const $ = id => document.getElementById(id);
@@ -203,38 +280,26 @@ function render() {
   $('pFame').textContent = S.fame;
   $('pWealth').textContent = ['찢어지게 가난', '가난', '그럭저럭', '넉넉', '부유', '거부'][Math.max(0, Math.min(5, S.wealth))];
   $('pFamily').textContent = (S.spouse ? '배우자 ' + S.spouse : '미혼') + (S.kids ? ` · 자식 ${S.kids}` : '');
-  $('pStats').innerHTML = Object.entries(S.st).map(([k, v]) => `<div class="stat">${k}<b>${v} (${sgn(mod(v))})</b></div>`).join('');
+  $('pStats').innerHTML = Object.keys(MARKS).map(k => `<div class="stat">${k}<b>${markOf(k, S.st[k]) || '보통'}</b></div>`).join('');
+  $('pTraits').innerHTML = S.traits.map(chip).join('') || '<span class="muted">없음</span>';
   $('pAlign').style.left = `calc(${(S.align + 100) / 2}% - 2px)`;
 }
 
-// ---------- dice tray ----------
-async function animDie(sides, final) {
-  const die = $('die'); die.className = 'die rolling';
-  for (let i = 0; i < 7; i++) { die.textContent = d(sides); await sleep(Math.max(25, 70 / speed)); }
-  die.className = 'die' + (sides === 20 && final === 20 ? ' crit' : sides === 20 && final === 1 ? ' fumble' : '');
-  die.textContent = final;
-}
-// d20 + 보정 ≥ DC
+// ---------- 판정 (굴림은 보이지 않고 결과만 남는다) ----------
+// d20 + 자질 보정 + 보정 + 특성 보정 ≥ 난이도. 20은 대성공, 1(불운이면 1~2)은 대실패. 운 좋은 특성은 한 생에 한 번 실패를 다시 굴린다.
 async function check(label, stat, dc, extra = 0) {
-  const n = d(20), m = (stat ? mod(S.st[stat]) : 0) + extra, total = n + m;
-  const ok = n === 20 || (n !== 1 && total >= dc);
-  $('trayText').innerHTML = `<b>${label}</b><br>d20 ${stat ? '+ ' + stat : ''} ${extra ? '+ 보정' : ''} vs DC ${dc}`;
-  await animDie(20, n);
-  const tag = n === 20 ? ' 대성공!' : n === 1 ? ' 대실패!' : ok ? ' 성공' : ' 실패';
-  const txt = `🎲 ${label}: d20(${n}) ${sgn(m)} = ${total} / DC ${dc} → <span class="${ok ? 'ok' : 'ng'}">${tag}</span>`;
+  const m = (stat ? mod(S.st[stat]) : 0) + extra + traitBonus(label);
+  const roll = () => { const n = d(20); return { n, total: n + m, ok: n === 20 || (n > (S.unlucky ? 2 : 1) && n + m >= dc), crit: n === 20, fumble: n <= (S.unlucky ? 2 : 1) }; };
+  let r = roll();
+  if (!r.ok && S.reroll > 0) { S.reroll--; r = roll(); if (r.ok) log('운이 따랐다.', 'r'); }
+  const tag = r.crit ? '대성공' : r.fumble ? '대실패' : r.ok ? '성공' : '실패';
+  const txt = `${label} — <span class="${r.ok ? 'ok' : 'ng'}">${tag}</span>`;
   $('trayText').innerHTML = txt; log(txt, 'r');
   await wait(450);
-  return { n, total, ok, crit: n === 20, fumble: n === 1 };
+  return r;
 }
-// d100 ≤ 확률 이면 "발동"
-async function pct(label, chance) {
-  const n = d(100);
-  $('trayText').innerHTML = `<b>${label}</b><br>d100 ≤ ${chance} 이면 발동`;
-  await animDie(100, n);
-  const hit = n <= chance, txt = `🎲 ${label}: d100(${n}) ${hit ? '≤' : '>'} ${chance} → <span class="${hit ? 'ng' : 'ok'}">${hit ? '발동' : '넘김'}</span>`;
-  $('trayText').innerHTML = txt; log(txt, 'r'); await wait(350);
-  return hit;
-}
+// 보이지 않는 확률 굴림
+async function pct(label, chance) { return d(100) <= chance; }
 function choose(q, opts) {
   return new Promise(res => {
     const box = $('choiceBox'); box.classList.remove('hidden');
@@ -270,7 +335,7 @@ const EVENTS = [
     const sect = S.originIdx >= 8 ? (S.baseSect === '세가' ? S.family : S.baseSect === '천마신교' ? '천마신교' : randomRightSect()) : randomRightSect();
     log(`${sect}에서 제자를 뽑는다는 방이 붙었다.`);
     if (!(await pct('기회가 닿는가', S.realmChance))) { log('먼 이야기였다. 가 볼 형편이 못 되었다.'); return; }
-    const c = await choose(`${sect} 입문 시험이 열린다.`, [['시험에 도전한다', '근골 DC 13'], ['집안일을 돕는다', '']]);
+    const c = await choose(`${sect} 입문 시험이 열린다.`, [['시험에 도전한다', ''], ['집안일을 돕는다', '']]);
     if (c === 1) { log('꿈을 접었다.'); return; }
     const r = await check('입문 시험', '근골', 13);
     if (r.ok) joinSect(sect, r.crit ? 3 : 2); else log('시험에서 떨어졌다. 산문은 다시 열리지 않았다.');
@@ -278,7 +343,7 @@ const EVENTS = [
   // 떠돌이 은자
   [8, 30, s => !s.teacher ? 1.2 : 0, async () => {
     log('누더기를 걸친 노인이 손목을 잡아 보더니 혀를 찼다. "뼈는 쓸 만하구나."');
-    const c = await choose('노인이 따라오라 한다.', [['따라간다', '오성 DC 12'], ['미친 노인이라 여기고 지나친다', '']]);
+    const c = await choose('노인이 따라오라 한다.', [['따라간다', ''], ['미친 노인이라 여기고 지나친다', '']]);
     if (c === 1) return;
     const r = await check('은자의 가르침을 알아듣는가', '오성', 12);
     if (r.ok) { joinSect('이름 없는 은자의 제자', r.crit ? 4 : 2); }
@@ -289,7 +354,7 @@ const EVENTS = [
     log('흉년이 들었다. 마을에 굶는 집이 늘었다.');
     const r = await check('굶주림을 버티는가', '근골', 10, S.wealth);
     if (r.fumble && (S.age < 8 || S.age > 60)) { die_('흉년의 굶주림'); return; }
-    if (!r.ok) { S.st['근골'] = Math.max(3, S.st['근골'] - 1); log('몸이 상했다. 근골 -1'); }
+    if (!r.ok) { S.st['근골'] = Math.max(3, S.st['근골'] - 1); log('굶주림에 몸이 상했다.'); }
   }],
   // 역병
   [0, 99, s => .6, async () => {
@@ -303,7 +368,7 @@ const EVENTS = [
   [12, 70, s => 1, async () => {
     log('고갯길에서 산적 떼를 만났다.');
     if (S.realm >= 3) { log(`${REALMS[S.realm]}의 고수 앞에서 산적들은 상대가 되지 않았다.`); gainFame(3); S.align += 3; return; }
-    const c = await choose('산적이 칼을 겨눈다.', [['맞서 싸운다', `근골 DC 14, 경지 +${S.realm * 2}`], ['달아난다', '오성 DC 11'], ['가진 것을 내준다', '재산 -1']]);
+    const c = await choose('산적이 칼을 겨눈다.', [['맞서 싸운다', ''], ['달아난다', ''], ['가진 것을 내준다', '재산 -1']]);
     if (c === 2) { S.wealth--; log('빈손으로 고개를 넘었다.'); return; }
     const r = c === 0 ? await check('산적과 싸운다', '근골', 14, S.realm * 2) : await check('달아난다', '오성', 11);
     if (r.ok) { if (c === 0) { log('산적을 물리쳤다.'); gainFame(4); } else log('숲으로 몸을 던져 달아났다.'); return; }
@@ -314,7 +379,7 @@ const EVENTS = [
   [10, 65, s => s.caveSeen ? 0 : .7 + mod(s.st['기연']) * .2, async () => {
     S.caveSeen = true;
     log('절벽 아래로 떨어진 뒤, 덩굴에 가려진 동굴 입구를 발견했다.');
-    const c = await choose('동굴 안에서 찬 기운이 흘러나온다.', [['들어간다', '기연 DC 14'], ['지나친다', '']]);
+    const c = await choose('동굴 안에서 찬 기운이 흘러나온다.', [['들어간다', ''], ['지나친다', '']]);
     if (c === 1) { log('발길을 돌렸다. 평생 그 동굴이 마음에 걸렸다.'); return; }
     const r = await check('기연', '기연', 14);
     if (r.crit) { log('옛 고수의 유해 곁에 비급과 영약이 있었다!', 'big'); S.neigong += 60; S.prog += 4; S.teacher = Math.max(S.teacher, 4); if (!S.sect) S.sect = '고인의 전인'; S.events.push(`${S.age}세에 절벽 아래 동굴에서 기연을 얻었다`); return; }
@@ -329,7 +394,7 @@ const EVENTS = [
   // 비무대회
   [16, 45, s => s.realm >= 1 ? 1.2 : 0, async () => {
     log('무림맹 주최 비무대회가 열린다.');
-    const c = await choose('참가하는가?', [['참가한다', `d20 + 근골 + 경지×2 vs DC 18`], ['구경만 한다', '']]);
+    const c = await choose('참가하는가?', [['참가한다', ''], ['구경만 한다', '']]);
     if (c === 1) return;
     const r = await check('비무', '근골', 18, S.realm * 2);
     if (r.crit || r.total >= 24) { log('비무대회에서 우승했다! 강호에 이름이 퍼졌다.', 'big'); gainFame(25); S.events.push(`${S.age}세에 비무대회에서 우승했다`); }
@@ -352,7 +417,7 @@ const EVENTS = [
     log('정파와 사파가 맞붙었다. <b>정사대전</b>이다.', 'big');
     if (S.realm < 1 && !S.sect) { log('마을 위로 피난민이 지나갔다. 먼 곳의 싸움이었다.'); return; }
     const side = S.align < -15 ? '사파' : '정파';
-    const c = await choose(`${side} 쪽에서 소집령이 왔다.`, [['참전한다', '근골+경지×2 판정 3회'], ['은거한다', '명성 -5']]);
+    const c = await choose(`${side} 쪽에서 소집령이 왔다.`, [['참전한다', '세 번 싸운다'], ['은거한다', '명성 -5']]);
     if (c === 1) { gainFame(-5); log('산속에 숨어 전쟁이 끝나기를 기다렸다.'); return; }
     let win = 0;
     for (let i = 1; i <= 3; i++) {
@@ -365,7 +430,7 @@ const EVENTS = [
   // 마두의 유혹
   [15, 50, s => s.teacher && s.align > -40 ? .7 : 0, async () => {
     log('검은 옷의 사내가 다가왔다. "정파의 느린 무공으로 언제 위에 서겠나. 내 것을 배워라."');
-    const c = await choose('마공을 받아들이는가?', [['받아들인다', '수련 +3, 성향 -35'], ['거절한다', '심성 DC 12']]);
+    const c = await choose('마공을 받아들이는가?', [['받아들인다', '수련이 빨라지고 사도로 기운다'], ['거절한다', '']]);
     if (c === 0) { S.prog += 3; S.align -= 35; S.sect = S.sect === '천마신교' ? S.sect : '사도련'; S.teacher = Math.max(S.teacher, 3); S.events.push(`${S.age}세에 마공을 받아들였다`); log('몸속에 차갑고 끈적한 기운이 돌기 시작했다.'); return; }
     const r = await check('유혹을 뿌리친다', '심성', 12);
     if (r.ok) { S.align += 10; log('사내는 웃으며 사라졌다.'); }
@@ -374,7 +439,7 @@ const EVENTS = [
   // 객잔 시비
   [14, 70, s => 1, async () => {
     log('객잔에서 술 취한 무인이 시비를 걸었다.');
-    const c = await choose('어떻게 하는가?', [['참는다', '심성 DC 11'], ['맞받아친다', `근골 DC 13 +경지×2`]]);
+    const c = await choose('어떻게 하는가?', [['참는다', ''], ['맞받아친다', '']]);
     if (c === 0) { const r = await check('분을 삭인다', '심성', 11); if (r.ok) { S.align += 3; log('술값을 내고 나왔다.'); } else { log('결국 주먹이 나갔고, 흠씬 맞았다.'); } return; }
     const r = await check('객잔 싸움', '근골', 13, S.realm * 2);
     if (r.ok) { gainFame(3); log('상대를 탁자째 날려 버렸다.'); } else if (r.fumble && S.realm < 2) { die_('객잔 싸움에서 입은 상처'); } else log('얻어맞고 쫓겨났다.');
@@ -409,7 +474,7 @@ async function training() {
   S.neigong += 1 + Math.floor(S.teacher / 2);
   if (S.age % 2 && S.realm < 4) return; // 낮은 경지는 2년에 한 번 판정
   const dc = 8 + S.realm * 2;
-  const r = await check(`수련 (다음 경지: ${REALMS[S.realm + 1]})`, '오성', dc, S.teacher + Math.floor(S.neigong / 40));
+  const r = await check(`수련 (다음 경지: ${REALMS[S.realm + 1]})`, '오성', dc, S.teacher + Math.floor(S.neigong / 40) + S.trainAdj);
   if (r.ok) S.prog += r.crit ? 3 : 1;
   if (r.fumble && S.realm >= 3) {
     log('운기 도중 기혈이 뒤집혔다. <b>주화입마</b>다!', 'big');
@@ -430,7 +495,9 @@ async function mortality() {
     if (await pct('어린 목숨', chance)) die_(pick(['홍역', '설사병', '열병', '겨울 추위']));
     return;
   }
-  const span = 50 + mod(S.st['근골']) * 3 + S.realm * 9 + Math.min(S.wealth, 3) * 2;
+  // 절맥: 그 나이 구간에서 해마다 4% 확률로 맥이 터진다. 절정 이상이면 내공으로 버틴다
+  if (S.deathWin && S.age >= S.deathWin[0] && S.age <= S.deathWin[1] && S.realm < 4 && Math.random() < 0.04) { die_('타고난 절맥이 터져'); return; }
+  const span = 50 + mod(S.st['근골']) * 3 + S.realm * 9 + Math.min(S.wealth, 3) * 2 + (S.lifeAdj || 0);
   if (S.age >= span - 10) {
     const dc = 4 + (S.age - (span - 10)) * 1.2 | 0;
     const r = await check('천명(天命)', '근골', dc, Math.floor(S.neigong / 60));
@@ -467,31 +534,20 @@ async function birth() {
   const sex = Math.random() < .5 ? 'M' : 'F';
   const o = d(100); const oi = ORIGINS.findIndex(x => o <= x[0]); const og = ORIGINS[oi];
   S = { sex, age: 0, alive: true, origin: og[1], originIdx: oi, baseSect: og[5], wealth: og[2], realmChance: og[3], align: og[4],
-    st: { 근골: 10, 오성: 10, 기연: 10, 심성: 10 }, realm: 0, prog: 0, teacher: 0, neigong: 0, fame: 0, sect: null, kids: 0, spouse: null, events: [], alias: null };
+    st: { 근골: 10, 오성: 10, 기연: 10, 심성: 10 }, traits: [], trainAdj: 0, realm: 0, prog: 0, teacher: 0, neigong: 0, fame: 0, sect: null, kids: 0, spouse: null, events: [], alias: null };
   let sur = pick(SURNAMES);
   if (og[5] === '세가') { S.family = pick(FAMILIES); sur = { 남궁세가: '남궁', 모용세가: '모용', 제갈세가: '제갈', 하북팽가: '팽', 사천당가: '당' }[S.family]; S.origin = S.family + ' 방계'; }
   S.name = sur + (sex === 'M' ? pick(GIVEN_M) : pick(GIVEN_F));
+  // 자질은 3d6씩 굴리고 숫자는 보이지 않는다. 특성의 자질 가감을 더한 뒤 양 끝이면 표지가 붙는다
+  for (const k of Object.keys(S.st)) S.st[k] = d(6) + d(6) + d(6);
+  S.traits = rollTraits();
+  applyBirthTraits();
   render();
-  log(`출생표를 굴린다.`);
-  await animDie(100, o);
-  log(`🎲 출생: d100(${o}) → <b>${S.origin}</b> · ${og[6]}`, 'r');
-  // 3d6 × 4 를 굴린 뒤, 어느 능력치에 둘지 고른다
-  const vals = [];
-  for (let i = 0; i < 4; i++) {
-    const a = d(6), b = d(6), c = d(6);
-    $('trayText').innerHTML = `<b>타고난 자질 ${i + 1}</b> 3d6`;
-    await animDie(6, a); await animDie(6, b); await animDie(6, c);
-    vals.push(a + b + c); log(`🎲 자질 ${i + 1}: 3d6(${a}+${b}+${c}) = ${a + b + c}`, 'r');
-  }
-  vals.sort((x, y) => y - x);
-  const left = Object.keys(S.st);
-  for (let j = 0; j < vals.length; j++) {
-    const v = vals[j];
-    if (left.length === 1) { S.st[left[0]] = v; log(`${left[0]}에 ${v}이(가) 남았다.`); break; }
-    const i = await choose(`자질 <b>${v}</b> (보정 ${sgn(mod(v))})을(를) 어디에 둘까? 남은 값: ${vals.slice(j + 1).join(', ')}`,
-      left.map(k => [k, STAT_DESC[k]]));
-    S.st[left[i]] = v; left.splice(i, 1); render();
-  }
+  log(`<b>${S.origin}</b> · ${og[6]}`, 'r');
+  const marks = Object.keys(MARKS).map(k => markOf(k, S.st[k])).filter(Boolean);
+  const big = S.traits.filter(t => !isMinor(t));
+  if (big.length) log(`타고난 것: ${big.map(chip).join(' ')}`, 'big');
+  log(`${marks.length ? marks.join(', ') + '. ' : ''}${S.traits.filter(t => isMinor(t)).map(t => t.n).join(', ')}.`);
   S.realmChance = Math.min(100, S.realmChance + mod(S.st['근골']) * 3 + mod(S.st['기연']) * 3);
   log(`${S.origin}에서 ${sex === 'M' ? '사내아이' : '계집아이'} ${S.name}이(가) 태어났다.`, 'big');
   // 태생 소속
@@ -510,6 +566,8 @@ function bio() {
   s.push(`${S.origin}에서 ${S.sex === 'M' ? '사내아이' : '계집아이'}로 태어났다.`);
   if (S.sect) s.push(`${S.sect}에서 무공을 익혔다.`); else s.push(`무공을 배울 기회는 끝내 오지 않았다. ${S.job ? S.job + '(으)로 살았다.' : ''}`);
   if (S.peak > 0) s.push(`최고 경지는 ${REALMS[S.peak]}였다.` + (S.peak > S.realm ? ` 주화입마로 ${REALMS[S.realm]}까지 떨어졌다.` : ''));
+  const bigT = S.traits.filter(t => !isMinor(t));
+  if (bigT.length) s.push(`${bigT.map(t => t.n).join(', ')}을(를) 타고났다.`);
   if (S.alias) s.push(`강호는 그를 「${S.alias}」(이)라 불렀다.`);
   s.push(...S.events.slice(0, 5).map(e => e + '.'));
   if (S.spouse) s.push(`${S.spouse}와(과) 혼인해 ${S.kids ? '자식 ' + S.kids + '명을 두었다' : '자식 없이 살았다'}.`); else s.push('평생 홀로 살았다.');
@@ -530,7 +588,7 @@ const loadMem = () => JSON.parse(localStorage.getItem(MEM) || '[]');
 function renderMem() {
   const m = loadMem();
   $('memorial').innerHTML = m.slice().reverse().slice(0, 30).map(x =>
-    `<div><b>${x.name}</b>${x.alias ? ` 「${x.alias}」` : ''}<br><span class="muted">${x.origin} · ${x.realm} · 향년 ${x.age}세</span><br>${x.cause}${x.epitaph ? `<br><i>“${x.epitaph.replace(/</g, '&lt;')}”</i>` : ''}</div>`).join('') || '<p class="muted">아직 아무도 없다.</p>';
+    `<div><b>${x.name}</b>${x.alias ? ` 「${x.alias}」` : ''}<br><span class="muted">${x.origin} · ${x.realm} · 향년 ${x.age}세${x.traits && x.traits.length ? ' · ' + x.traits.join(', ') : ''}</span><br>${x.cause}${x.epitaph ? `<br><i>“${x.epitaph.replace(/</g, '&lt;')}”</i>` : ''}</div>`).join('') || '<p class="muted">아직 아무도 없다.</p>';
   if (m.length) {
     const cnt = {}; m.forEach(x => cnt[x.realm] = (cnt[x.realm] || 0) + 1);
     const avg = (m.reduce((a, x) => a + x.age, 0) / m.length).toFixed(1);
@@ -539,7 +597,7 @@ function renderMem() {
 }
 $('saveBtn').onclick = () => {
   const m = loadMem();
-  m.push({ name: S.name, alias: S.alias, origin: S.origin, realm: REALMS[S.realm], age: S.age, cause: S.cause, epitaph: $('eEpitaph').value.trim() });
+  m.push({ name: S.name, alias: S.alias, origin: S.origin, realm: REALMS[S.realm], age: S.age, cause: S.cause, traits: S.traits.filter(t => !isMinor(t)).map(t => t.n), epitaph: $('eEpitaph').value.trim() });
   localStorage.setItem(MEM, JSON.stringify(m)); $('saveBtn').disabled = true; $('saveBtn').textContent = '모셨다';
 };
 
@@ -559,7 +617,7 @@ $('againBtn').onclick = () => { $('endScreen').classList.add('hidden'); $('intro
 $('pauseBtn').onclick = () => { paused = !paused; $('pauseBtn').textContent = paused ? '이어 살기' : '일시정지'; };
 $('autoChk').onchange = e => auto = e.target.checked;
 document.querySelectorAll('.spd').forEach(b => b.onclick = () => { speed = +b.dataset.s; document.querySelectorAll('.spd').forEach(x => x.classList.toggle('on', x === b)); });
-$('originTable').innerHTML = '<tr><th>d100</th><th>출신</th><th>무공 입문 기회</th></tr>' + ORIGINS.map((o, i) => `<tr><td>${(i ? ORIGINS[i - 1][0] + 1 : 1)}–${o[0]}</td><td>${o[1]}</td><td>${o[5] || i === 6 ? '태생부터' : o[3] + '%'}</td></tr>`).join('');
+$('originTable').innerHTML = '<tr><th>비율</th><th>출신</th><th>무공 입문 기회</th></tr>' + ORIGINS.map((o, i) => `<tr><td>${o[0] - (i ? ORIGINS[i - 1][0] : 0)}%</td><td>${o[1]}</td><td>${o[5] || i === 6 ? '태생부터' : o[3] + '%'}</td></tr>`).join('');
 renderMem();
 </script>
 </body>
