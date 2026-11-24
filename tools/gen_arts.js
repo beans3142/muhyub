@@ -121,7 +121,7 @@ const FACINFO = {};
 for (const f of globalThis.FACTIONS) {
   FACINFO[f.id] = f;
   const st = f.style;
-  FAC[f.id] = { n: st.n, attr: st.attr, prestige: st.prestige, roots: st.roots, kinds: normKinds(st.kinds), fixed: st.fixed };
+  FAC[f.id] = { n: st.n, attr: st.attr, prestige: st.prestige, roots: st.roots, kinds: normKinds(st.kinds), fixed: st.fixed, mr: st.mr || [] };
 }
 // 무소속(산공·전설 유산) 설정
 FAC.free = { n: 900, attr: null, prestige: 2, roots: [], kinds: normKinds({ 검: 6, 도: 4, 권: 4, 장: 4, 지: 2, 수: 2, 각: 2, 창: 2, 봉: 1, 편: 1, 암기: 2, 보신: 3, 심법: 5, 잡기: 1 }), fixed: [['삼재검법', '검', '삼류'], ['삼재공', '심법', '삼류'], ['오행신공', '심법', '일류'], ['양생공', '심법', '삼류'], ['동자공', '심법', '이류'], ['벽공장', '장', '이류'], ['탄지신통', '지', '상승'], ['허공답보', '보신', '절세'], ['이형환위', '보신', '상승'], ['궁신탄영', '보신', '일류'], ['나려타곤', '보신', '삼류'], ['천근추', '잡기', '이류'], ['전음입밀', '잡기', '일류'], ['천리지청술', '잡기', '일류'], ['분근착골', '수', '이류'], ['주안술', '잡기', '일류'], ['양가창법', '창', '일류'], ['악가창법', '창', '상승'], ['팔극권', '권', '이류'], ['형의권', '권', '이류'], ['팔괘장', '장', '이류'], ['응조권', '권', '이류'], ['금나수', '수', '삼류'], ['호신강기', '잡기', '상승'], ['검기점혈', '지', '상승']] };
@@ -140,6 +140,16 @@ const AFFINITY = {
   음: { 빙: 4, 한: 4, 설: 4, 월: 3 }, 양: { 화: 4, 염: 4, 열: 4, 양: 3 }, 독: { 독: 5, 오독: 3, 사: 3 },
   마: { 혈: 4, 마: 3, 탈혼: 3, 섭: 2, 흡: 2 }, 불: { 금강: 4, 불괴: 3, 정: 2, 강: 2 }, 도가: { 태극: 4, 양의: 3, 유: 3, 운: 3, 정: 2 }, 중립: {},
 };
+// 문파의 결 (p3 9-3): 맞는 스탯과 기우는 음절
+const MURI = {
+  '변·환': { stat: ['유연', '반응'], syl: ['환', '영', '몽'] }, 쾌: { stat: ['순발', '정교'], syl: ['쾌', '속', '질', '섬'] },
+  '유·원': { stat: ['유연', '수읽기'], syl: ['유', '운', '태극', '양의'] }, '강·중': { stat: ['근력', '강골'], syl: ['강', '철', '석', '중', '금강'] },
+  패: { stat: ['근력', '발경'], syl: ['패', '중', '파'] }, 연타: { stat: ['체력', '지속'], syl: ['연', '환'] },
+  첨: { stat: ['정교', '수읽기'], syl: ['정', '명', '섬', '일'] }, 암기: { stat: ['반응', '정교'], syl: ['섬', '비'] },
+  독: { stat: ['학식', '정교'], syl: ['독', '사', '오독'] }, 경공: { stat: ['지속', '순발'], syl: ['풍', '비'] },
+  내상: { stat: ['발경', '근질'], syl: ['파', '단', '탄'] }, '폭·위압': { stat: ['발경', '순발'], syl: ['열', '파', '멸', '천'] },
+};
+const MURI_RULE = { grow: 1.2, fitHi: 130, fitLo: 80, trainHi: 1.2, trainLo: 0.85, markCap: 20, markBond: 10 };
 const GRADE_W = { 1: [55, 30, 13, 2, 0], 2: [45, 32, 18, 4.5, 0.5], 3: [40, 32, 20, 7, 1] };
 // 세력별 절세 상한(고정 무공 포함). 절세는 세상에 몇십 개뿐이다
 const TOP_CAP = { 1: 0, 2: 1, 3: 2 };   // 절세 상한: 큰 문파만
@@ -232,8 +242,9 @@ function finalize(o, acc, gi, fac) {
 }
 function add(r) { if (seen.has(r.n)) return false; seen.add(r.n); out.push(r); return true; }
 
-function pickSyllables(gi, attr, n, righteous) {
-  const aff = AFFINITY[attr || '중립'] || {};
+function pickSyllables(gi, attr, n, righteous, mr) {
+  const aff = Object.assign({}, AFFINITY[attr || '중립'] || {});
+  for (const m of mr || []) for (const x of (MURI[m] || { syl: [] }).syl) aff[x] = (aff[x] || 1) * 3;   // 문파의 결로 기운다
   const pool = {};
   for (const [s, e] of SYLMAP) if (e.min <= gi) pool[s] = (aff[s] || 1) * (e.min === gi ? 1.5 : 1) * (s.length > 1 ? 0.6 : 1) * (righteous && (e.sp === '독' || e.sp === '혈' || e.tag === '마공') ? 0.1 : 1);
   const res = [];
@@ -258,7 +269,7 @@ function genOne(fac, cfg) {
   const kind = wpick(cfg.kinds);
   const k = KIND[kind];
   const nSyl = rnd() < (gi >= 3 ? 0.55 : 0.35) ? 2 : 1;
-  const sylls = pickSyllables(gi, cfg.attr, nSyl, ['정'].includes(ALIGN(fac)) && cfg.attr !== '독');
+  const sylls = pickSyllables(gi, cfg.attr, nSyl, ['정'].includes(ALIGN(fac)) && cfg.attr !== '독', cfg.mr);
   const root = cfg.roots && cfg.roots.length && rnd() < 0.45 ? pick(cfg.roots) : (rnd() < 0.3 ? pick(FILLER) : '');
   const imgs = rnd() < 0.22 ? [pick(Object.keys(IMG))] : [];
   let suf = pick(k.suf);
@@ -274,6 +285,7 @@ function genOne(fac, cfg) {
   if (mv) o.mvNote = 1;
   const r = finalize(o, acc, gi, fac);
   if (mv) { r.slow = 0.9; r.peak = 1.2; }
+  if (root && cfg.roots && cfg.roots.includes(root)) r._root = root;
   return r;
 }
 
@@ -340,6 +352,64 @@ for (const o of FIXED_LIST) {
   }
 }
 
+// ---------- 역할 (p3 9-1) ----------
+const ROLE_OF = k => k === '심법' ? '심법' : ['보법', '신법', '경공'].includes(k) ? '경신' : k === '외공' ? '방어' : k === '잡술' ? '잡' : '공격';
+const ROLE = { 심법: [0.6, 1.2], 경신: [0.85, 1.1], 방어: [0.9, 1.08], 견식: { per: 0.02, max: 0.1, mixMax: 0.2, mixEnl: 3 }, swapMin: 0.9 };
+for (const r of out) {
+  r.role = ROLE_OF(r.k);
+  if (r.role === '공격' && r.fx && r.fx.some(x => x === '호신' || x === '반탄')) r.def = 1;   // 방어 역할도 채운다
+}
+// ---------- 계보 (p3 9-2): 같은 세력·같은 역할(공격은 같은 종류)에서 등급이 바로 위인 것이 다음 무공 ----------
+const LINEAGE = { carry: 0.4, speed: 1.5, need: '극성' };
+const linkKey = r => r.f + '|' + (r.role === '공격' ? r.k : r.role);
+const link = (a, b) => { a.nx = a.nx || []; if (!a.nx.includes(b.n)) a.nx.push(b.n); b.pre = b.pre || []; if (!b.pre.includes(a.n)) b.pre.push(a.n); };
+function chain(list, maxNext) {
+  const by = {};
+  for (const r of list) (by[linkKey(r)] = by[linkKey(r)] || []).push(r);
+  for (const arr of Object.values(by)) {
+    for (const a of arr) {
+      const gi = GRADES.indexOf(a.g);
+      const higher = arr.filter(b => GRADES.indexOf(b.g) > gi);
+      if (!higher.length) continue;
+      const g2 = Math.min(...higher.map(b => GRADES.indexOf(b.g)));
+      for (const b of higher.filter(b => GRADES.indexOf(b.g) === g2).slice(0, maxNext)) link(a, b);
+    }
+  }
+}
+chain(out.filter(r => r.o === 'fixed' && r.f !== 'free'), 3);
+const byRoot = {};
+for (const r of out) if (r._root) (byRoot[r.f + '|' + r._root] = byRoot[r.f + '|' + r._root] || []).push(r);
+for (const arr of Object.values(byRoot)) chain(arr, 2);
+const byName = new Map(out.map(r => [r.n, r]));
+for (const [a, b] of [['철포삼', '금강불괴신공'], ['금종조', '철포삼']]) if (byName.has(a) && byName.has(b)) link(byName.get(a), byName.get(b));
+for (const r of out) delete r._root;
+// ---------- 신공과 절학의 고유 효과 (p3 9-4). at: 열리는 성(심법은 층) ----------
+const UNIQUE = {
+  역근경: { at: 10, k: { statPerLayer: { 근골: 1, max: 12 }, cure: ['병약', '절맥', '주화입마 후유증'], deviate: 0.5, req: '학식 바탕값 100 또는 신심' } },
+  금강불괴신공: { at: 10, k: { grant: '금강불괴', injury: -1, cap: { 강골: 40 }, noFlexLoss: 1, roles: ['심법', '방어'] } },
+  태극신공: { at: 10, k: { noClash: 1, longCost: 0.6, foeStanceGain: 0.5 } },
+  태극혜검: { at: 10, k: { stealStance: ['사생결단', '동귀어진'], vsMy: { 패: 1.15, 강: 1.15 } } },
+  자하신공: { at: 10, k: { ng: 1.2, vsNotYang: 1.05 } },
+  이십사수매화검법: { at: 10, k: { multiE: 0.15, fxMul: { 환영: 2 } } },
+  타구봉법: { at: 10, k: { ngFloor: 1, train: 0.6, teach: '개방 방주' } },
+  창궁무애검법: { at: 10, k: { firstStrike: 1.2, fx: ['위압'] } },
+  오호단문도: { at: 10, k: { perRound: 1.03, perRoundMax: 1.15, breakWeapon: 0.2 } },
+  만천화우: { at: 10, k: { multiFoe: 0.8, poisonSure: 1 } },
+  천마신공: { at: 10, k: { vsTag: { 마공: 1.25 }, noDemonCheck: 1 } },
+  천마군림보: { at: 10, k: { roles: ['경신'], noStanceFoe: '경지 같거나 낮음' } },
+  빙백신공: { at: 10, k: { fxSwap: { 둔화: '동결' }, freeze: 0.7, vsYy: { 양: 1.1 } } },
+  운룡대팔식: { at: 10, k: { flee: 30, vsKind: { 암기: 1.1, 창: 1.1, 봉: 1.1 }, travel: 20 } },
+  밀종대수인: { at: 10, k: { ngAgain: 0.5 } },
+  혈영대법: { at: 10, k: { winQi: 5, winQiPur: 50, align: -2 } },
+  사일검법: { at: 10, k: { vsHigherFirst: 1.25, slopeVsHigher: 0.85 } },
+  칠상권: { at: 10, k: { foeInner: 1, selfInnerDc: 50 } },
+  백보신권: { at: 10, k: { noRangePenalty: 1, vsKind: { 암기: 1.1 } } },
+};
+for (const [n, u] of Object.entries(UNIQUE)) { const r = byName.get(n); if (!r) { console.log('고유 효과 대상 없음', n); continue; } r.uq = u; if (u.k.roles) r.roles = u.k.roles; }
+// 상성 짝 (p3 9-2): 같은 세력의 절세 이상 심법 + 절세 이상 초식 ×1.1, 장르에서 알려진 짝 ×1.15
+const SYN = { generic: 1.1, named: 1.15, pairs: [['자하신공', '이십사수매화검법'], ['태극신공', '태극혜검'], ['천마신공', '천마군림보'], ['빙백신공', '빙백신장'], ['역근경', '금강불괴신공']] };
+for (const [a, b] of SYN.pairs) for (const [x, y] of [[a, b], [b, a]]) { const r = byName.get(x); if (r && byName.has(y)) (r.syn = r.syn || []).push({ w: y, mul: SYN.named }); }
+
 // ---------- 대표 무공 (세력당 15개 이상) ----------
 const QUOTA = [3, 4, 4, 3, 1, 0];
 const SIG = {};
@@ -364,12 +434,13 @@ for (const fac of Object.keys(FAC)) {
 const NL = String.fromCharCode(10);
 const counts = {}; for (const o of out) counts[o.g] = (counts[o.g] || 0) + 1;
 const MASTERY = { 성: { 10: [[1, 2, '입문'], [3, 5, '소성'], [6, 8, '중성'], [9, 9, '극성'], [10, 10, '대성']], 12: [[1, 3, '입문'], [4, 6, '소성'], [7, 9, '중성'], [10, 11, '극성'], [12, 12, '대성']] }, 층: '심법은 N층, 마지막 층이 대성', 공력: { 신중: 7, 평상: 10, 사생결단: 12, 동귀어진: 12, 회광반조: 12 } };
-const RULES = { MASTERY, GRADES, GM, TECH, NG, COST, KIND: Object.fromEntries(Object.entries(KIND).map(([k, v]) => [k, { grow: v.grow, w: v.w }])), SYL: SYL.map(e => Object.assign({}, e)), IMG };
+const RULES = { MASTERY, GRADES, GM, TECH, NG, COST, ROLE, LINEAGE, SYN: { generic: SYN.generic, named: SYN.named }, MURI, MURI_RULE, KIND: Object.fromEntries(Object.entries(KIND).map(([k, v]) => [k, { grow: v.grow, w: v.w }])), SYL: SYL.map(e => Object.assign({}, e)), IMG };
 const head = [
   '// 무공 데이터 (자동 생성: node tools/gen_arts.js, 규칙: docs/p3-arts.md). 손으로 고치지 말고 생성기를 고친다.',
   '// n 이름, k 종류, g 등급(삼류·이류·일류·상승·절세·신공), f 세력 id(free=무소속), tg 꼬리표(마공·사공·독문·가전·비전), yy 음양, wx 오행, sp 특수 속성,',
   '// my 묘리, eff 갈래 배율(주무공일 때), fx 특수효과, gr 수련 때 오르는 스탯, cost 내공 소모, ng·pur 심법 축기 기준·정순도,',
-  '// tech 기술 등급배율, req 요구, mv 초식 수(slow 성취 속도, peak 대성 도약), max 최대 성(10 또는 12), layers 심법 층 수,',
+  '// tech 무학 등급 위력(p1 5-2), role 역할(공격·심법·경신·방어·잡, p3 9-1), def 1이면 방어 역할도 채움, roles 여러 역할, pre/nx 계보의 앞·다음 무공(p3 9-2),',
+  '// uq 고유 효과(at 열리는 성·층, k 엔진 키, p3 9-4), syn 상성 짝(w 짝 무공, mul), req 요구, mv 초식 수(slow 성취 속도, peak 대성 도약), max 최대 성(10 또는 12), layers 심법 층 수,',
   '// st 신공 고유 단계(layer 구간), jin 1이면 그 세력의 진산절학, o fixed(장르 공통 이름)/gen/var(갈래, base 원본)',
   `// 총 ${out.length}종. 등급별 ${JSON.stringify(counts)}`,
 ];
