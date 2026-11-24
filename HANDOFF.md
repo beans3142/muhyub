@@ -35,7 +35,7 @@
 | 8 닻 데이터 | `data/anchors.js`, `tools/check_anchors.js` | 닻 90개(정사 35·계통 26·메인 11·연합 4·흑막 4·유산 4·일통 3·혈겁 2·통제 1, 반복 10), 검사 오류 없음. `data/factions.js` 5곳 수정(백업 `sources/backup/factions_before_anchors.js`): 일월신교→광명성교(1368~1380), 천마신교 1490~1510, 녹림 17년·태행산, 명교 694, 사도련 1405~1415. 무공 생성기(gen_arts 등)는 다시 돌리지 않음 |
 | 8 정본 생성 | `engine/world.js`, `tools/gen_canon.js`, `tools/world_variety.js`, `data/canon.js`, `data/starts.js` | 세력 시뮬레이션+닻 처리 엔진(DOM 없음, seed 재현 확인, 한 판 0.5초). 정본 seed 20261124로 닻 115 발동, 시작점 491개. 200시드 분포는 p8-world 7-1. 시작점 상태는 저장 안 하고 정본 seed로 다시 돌림. 지역(지명) 단위 영역은 아직 숫자 하나(land) |
 | 스탯 지도 | `docs/stats.md` | 자질(숨김) → 바탕 상한 → 스탯 18 → 갈래 6 → 쓰는 곳의 층 구조, 서로 주고받는 관계, 쓰이는 곳. 2026-11-24 결정(자질 숨김, 심성 분리, 생업은 스탯으로) 반영 |
-| 5 생업·신분 | `docs/p5-careers.md`, `tools/p5_sim.js` | 초안 완료(윤문함). 생업 16개 + 세력 사다리 생업 6개, 숙련 상한은 스탯 바탕값, 과거 7단, 신분 5, 재산 냥. 검산: 여섯 단 생업 4단 0.2~0.8%. `data/careers.js`와 출신 생업 키 9개 추가는 남음 |
+| 5 생업·신분 | `docs/p5-careers.md`, `tools/p5_sim.js` | 초안 완료(윤문함). 생업 16개 + 세력 사다리 생업 6개, 숙련 상한은 스탯 바탕값, 과거 7단, 신분 5, 재산 냥. 검산: 여섯 단 생업 4단 0.2~0.8%. 데이터 완료: `data/careers.js`(`tools/gen_careers.js`가 문서 표를 읽어 생성), 출신 675종에 생업 키 16종·신분(`status`) |
 | 6~7, 9~10 | 없음 | 미착수 |
 
 조사 자료: `docs/research-community.md`(DC 무협갤 등 커뮤니티 조사).
@@ -72,7 +72,7 @@ p3 9장으로 반영했다. 역할 배합, 계보 승계, 상성 짝, 문파의 
 
 ### 5-3. 다음 할 일
 
-5단계 마무리: `data/careers.js`(p5 10장), `tools/gen_origins.js`에 출신 생업 키 9개(craft, thief, military, eunuch, fisher, hunter, herb, troupe, geomancer). 그다음 6단계(인연·명성·악명). 마음 갈래 성장 속도·성품 감소 폭과 성품↔성향 관계는 6단계에서 맞춘다. 8단계 정본 생성 작업(`engine/`, `data/anchors.js` 등)은 다른 세션이 만든 채 커밋되지 않았다. 지명 단위 영역 작업 여부는 사용자 결정 대기.
+다음은 6단계(인연·명성·악명). 마음 갈래 성장 속도·성품 감소 폭과 성품↔성향 관계는 6단계에서 맞춘다. 8단계 정본 생성 작업(`engine/`, `data/anchors.js` 등)은 다른 세션이 만든 채 커밋되지 않았다. 지명 단위 영역 작업 여부는 사용자 결정 대기.
 
 ## 6. 파일 지도
 
