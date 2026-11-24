@@ -1,6 +1,10 @@
 # 인수인계 — 강호 천만 분의 일
 
-갱신 2026-11-24(척도 확대 반영). 폴더 `D:\univ\muhyub`. git 저장소 아님(커밋 없음, 백업은 직접).
+갱신 2026-11-24(척도 확대 반영). 폴더 `D:\univ\muhyub`. git 저장소 https://github.com/beans3142/muhyub (브랜치 `main` 하나).
+
+**배포.** `main`에 커밋하고 push하면 끝이다. 빌드 단계도, 브랜치 전략도 없다(사용자 결정: `main`에 바로 올린다). GitHub Pages가 `main` 루트를 그대로 내보내고(https://beans3142.github.io/muhyub/), daehoon.games의 Vercel 프로젝트가 `/muhyub` 경로를 이 Pages로 넘겨준다(https://daehoon.games/muhyub). 두 주소는 같은 파일을 보여 주며 push 뒤 보통 1~2분 안에 바뀐다. 확인은 `curl -sI https://daehoon.games/muhyub`의 `ETag`가 `curl -sI https://beans3142.github.io/muhyub/`와 같은지 본다. daehoon.games 루트는 다른 앱(Vercel)이라 건드리지 않는다.
+
+저장소에 들어간 파일은 모두 공개된다(`docs/`, `tools/`, `HANDOFF.md`도 `/muhyub/…` 경로로 열린다). 나무위키 원문(`sources/namu/`, `sources/extract/`)과 `_workspace/`는 `.gitignore`로 뺐다. 여러 세션이 이 폴더를 같이 쓰므로 커밋 전에 `git status`로 남의 미완성 작업이 섞이지 않았는지 본다.
 
 ## 1. 무엇을 만드는가
 
@@ -28,6 +32,8 @@
 | 8 세계(시간축) | `docs/p8-world.md` | 초안, 사용자 검토 대기. 윤문 안 함. 문명식 구조: 정사 고정 + 메인 서사 12장·닻(깃발로만 연결, 갈래 ≤3, 대체 닻) + 정본 세계에서 뽑은 시작점 약 500(추정) + 시드 흐름 |
 | 8 보조(계통) | `docs/p8-lineage.md` | 초안. 아홉 계통(마도·검·협객자객·녹림수로·도가·불가·묵가기관·관부·새외)의 춘추전국→1840 흐름. 마교 전신은 광명성교(데이터의 "일월신교" 대체), 천마신교 개교 1500 무렵으로 이동 제안. "오악검파"는 김용 설정이라 "검문 회맹"으로 |
 | 8 보조 보강 | `docs/p8-lineage.md` 4장 | 작품 세계관 문서 약 45개 추가 수집(`sources/namu/`, 목록 `sources/list10.txt`, 발췌 `sources/extract/p8_patterns.txt`). 흐름 장치 13개(앞 시대 인물이 후대 조사, 선봉 몰락·재건, 대전 뒤 사파 성장, 봉문, 흑막, 사교 후신, 주기적 혈겁, 무덤 쟁탈, 새외 동맹, 3대 세력+숨은 하나, 황실의 강호 통제, 무림맹 2단계 기원, 세계 갈래 이름)를 규칙으로 정리 |
+| 8 닻 데이터 | `data/anchors.js`, `tools/check_anchors.js` | 닻 90개(정사 35·계통 26·메인 11·연합 4·흑막 4·유산 4·일통 3·혈겁 2·통제 1, 반복 10), 검사 오류 없음. `data/factions.js` 5곳 수정(백업 `sources/backup/factions_before_anchors.js`): 일월신교→광명성교(1368~1380), 천마신교 1490~1510, 녹림 17년·태행산, 명교 694, 사도련 1405~1415. 무공 생성기(gen_arts 등)는 다시 돌리지 않음 |
+| 8 정본 생성 | `engine/world.js`, `tools/gen_canon.js`, `tools/world_variety.js`, `data/canon.js`, `data/starts.js` | 세력 시뮬레이션+닻 처리 엔진(DOM 없음, seed 재현 확인, 한 판 0.5초). 정본 seed 20261124로 닻 115 발동, 시작점 491개. 200시드 분포는 p8-world 7-1. 시작점 상태는 저장 안 하고 정본 seed로 다시 돌림. 지역(지명) 단위 영역은 아직 숫자 하나(land) |
 | 5~7, 9~10 | 없음 | 미착수 |
 
 조사 자료: `docs/research-community.md`(DC 무협갤 등 커뮤니티 조사).
