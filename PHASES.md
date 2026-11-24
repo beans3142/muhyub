@@ -116,6 +116,7 @@
 | `docs/stats.md` | 스탯 지도(자질 숨김, 스탯 18·갈래 6, 주고받는 관계, 쓰이는 곳) | 1·2단계 개정 4와 함께 씀 |
 | `tools/p5_sim.js` | 생업 사다리 검산(생업 16개, 숙련 상한은 스탯 바탕값) | 5단계 문서 9장 |
 | `docs/p6-bonds-fame.md`, `tools/p6_sim.js` | 인연·명성·악명·평판·한 해 일정, 명성 검산 | 6단계 |
+| `docs/p7-events.md`, `data/eventbook.js`, `tools/p7_sim.js` | 사건 틀 100·반전 79·사슬 12, 다양성 검산 | 7단계. 옛 `data/events.js`의 TEACHERS·EVENTS·LEGEND·EPITHET는 그대로 쓴다 |
 | `data/names.js` | 지역·신분별 성명 | 단계 8에서 보강 |
 | `data/items.js` | 영단 17·천재지보 11·영물 13·독 6·기보 12, 약기·정순도·속성 포함 | 3단계 기준으로 다시 씀(완료). 획득 사건은 7단계 |
 | `data/places.js` | 지명 78곳 | 단계 8에서 200곳 안팎으로 |
