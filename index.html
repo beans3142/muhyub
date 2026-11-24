@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강호 천만 분의 일 · 주사위로 사는 무림 일생</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3ead8; --paper2:#e9dcc1; --ink:#1f1a14; --ink2:#5a4e3f; --line:#cbb994;
+    --red:#a3261b; --red2:#c8473a; --jade:#2f6b57; --gold:#9a7418;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Serif KR",serif;line-height:1.65;
+    background-image:radial-gradient(circle at 20% 10%,rgba(160,130,80,.08),transparent 40%),radial-gradient(circle at 80% 90%,rgba(160,130,80,.10),transparent 45%);}
+  .wrap{max-width:1040px;margin:0 auto;padding:28px 18px 60px}
+  h1{font-weight:900;font-size:clamp(34px,6vw,58px);margin:0;letter-spacing:.04em}
+  h1 small{display:block;font-size:15px;font-weight:400;color:var(--ink2);letter-spacing:.3em;margin-top:4px}
+  h2{font-size:20px;margin:28px 0 10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .seal{display:inline-block;border:2px solid var(--red);color:var(--red);padding:2px 8px;font-weight:900;transform:rotate(-4deg);font-size:13px;letter-spacing:.1em}
+  .lead{font-size:17px;max-width:680px;color:var(--ink2)}
+  button{font-family:inherit;cursor:pointer}
+  .btn{background:var(--ink);color:var(--paper);border:0;padding:12px 26px;font-size:17px;font-weight:600;letter-spacing:.1em}
+  .btn:hover{background:var(--red)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+  .btn.ghost:hover{background:var(--ink);color:var(--paper)}
+  .btn.sm{padding:5px 12px;font-size:13px}
+  .hidden{display:none!important}
+  table{border-collapse:collapse;font-size:14px}
+  td,th{padding:3px 10px;border-bottom:1px dotted var(--line);text-align:left}
+  .muted{color:var(--ink2);font-size:13px}
+
+  /* life screen */
+  .life{display:grid;grid-template-columns:280px 1fr;gap:20px;margin-top:18px}
+  @media(max-width:760px){.life{grid-template-columns:1fr}}
+  .card{background:var(--paper2);border:1px solid var(--line);padding:16px}
+  .name{font-size:26px;font-weight:900}
+  .alias{color:var(--red);font-weight:600}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+  .stat{background:var(--paper);border:1px solid var(--line);padding:4px 8px;font-size:14px}
+  .stat b{float:right}
+  .row{font-size:14px;margin:3px 0}
+  .row span{color:var(--ink2);display:inline-block;width:58px}
+  .bar{height:8px;background:linear-gradient(90deg,#3a2a4a,#ccc 50%,#2f6b57);position:relative;margin:4px 0 8px}
+  .bar i{position:absolute;top:-4px;width:4px;height:16px;background:var(--ink)}
+  .ctrl{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  .ctrl .on{background:var(--ink);color:var(--paper)}
+  .tray{display:flex;align-items:center;gap:14px;min-height:74px;border:1px dashed var(--line);padding:8px 14px;background:rgba(255,255,255,.25)}
+  .die{width:56px;height:56px;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;background:var(--paper);border-radius:10px;box-shadow:3px 3px 0 var(--line)}
+  .die.rolling{animation:shake .12s infinite}
+  .die.crit{background:var(--gold);color:#fff}
+  .die.fumble{background:var(--ink);color:var(--red2)}
+  @keyframes shake{0%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}100%{transform:rotate(-8deg)}}
+  .traytext{font-size:14px}
+  .log{height:430px;overflow-y:auto;border:1px solid var(--line);background:rgba(255,255,255,.35);padding:10px 14px;margin-top:10px;font-size:15px}
+  .log .age{font-weight:900;color:var(--red);margin-top:10px}
+  .log p{margin:2px 0}
+  .log .r{font-size:13px;color:var(--ink2);background:var(--paper2);padding:1px 6px;display:table;margin:2px 0}
+  .log .ok{color:var(--jade);font-weight:700}
+  .log .ng{color:var(--red);font-weight:700}
+  .log .big{font-weight:900;font-size:16px}
+  .choice{border:2px solid var(--ink);background:var(--paper);padding:12px 14px;margin-top:10px}
+  .choice p{margin:0 0 8px;font-weight:600}
+  .choice button{display:block;width:100%;text-align:left;margin:6px 0;padding:8px 12px;background:var(--paper2);border:1px solid var(--line);font-size:15px}
+  .choice button:hover{background:var(--ink);color:var(--paper)}
+  .choice button em{font-style:normal;font-size:12.5px;color:var(--red);margin-left:6px}
+  .choice button:hover em{color:#f6b4ab}
+
+  /* end */
+  .tomb{max-width:640px;margin:20px auto;border:3px double var(--ink);padding:26px 28px;background:var(--paper2);text-align:center}
+  .tomb .name{font-size:32px}
+  .tomb .bio{text-align:left;font-size:15.5px;margin:16px 0}
+  .tomb textarea{width:100%;font-family:inherit;font-size:15px;padding:8px;border:1px solid var(--line);background:var(--paper)}
+  .memorial{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .memorial div{border:1px solid var(--line);padding:10px;background:var(--paper2);font-size:14px}
+  .memorial b{font-size:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ===== INTRO ===== -->
+<section id="intro">
+  <span class="seal">江湖千萬分之一</span>
+  <h1>강호 천만 분의 일<small>주사위로 사는 단 한 번의 무림 일생</small></h1>
+  <p class="lead">강호에서는 오늘도 아이가 태어난다. 대부분은 논밭에서 나고 논밭에서 죽는다. 무공을 배우는 자는 열에 하나, 이름을 남기는 자는 만에 하나. 어디서 누구의 자식으로 태어날지, 타고난 근골이 어떨지는 주사위가 정한다. 당신은 갈림길에서 고르기만 할 수 있다.</p>
+  <p class="muted">판정은 TRPG 방식이다. 능력치는 3d6, 행동 판정은 d20 + 보정 ≥ 난이도(DC), 출생과 생존은 d100. 20은 대성공, 1은 대실패.</p>
+  <p><button class="btn" id="startBtn">태어나기</button>
+     <label class="muted" style="margin-left:12px"><input type="checkbox" id="autoStart"> 갈림길도 운명에 맡기기</label></p>
+
+  <h2>출생표 (d100)</h2>
+  <table id="originTable"></table>
+
+  <h2>추모관 <span class="muted">· 이 브라우저에서 끝까지 산 삶</span></h2>
+  <div id="memStats" class="muted"></div>
+  <div class="memorial" id="memorial"></div>
+</section>
+
+<!-- ===== LIFE ===== -->
+<section id="lifeScreen" class="hidden">
+  <div class="life">
+    <aside class="card">
+      <div class="name" id="pName"></div>
+      <div class="alias" id="pAlias"></div>
+      <div class="row"><span>나이</span><b id="pAge"></b></div>
+      <div class="row"><span>출신</span><b id="pOrigin"></b></div>
+      <div class="row"><span>소속</span><b id="pSect"></b></div>
+      <div class="row"><span>경지</span><b id="pRealm"></b></div>
+      <div class="row"><span>내공</span><b id="pNeigong"></b></div>
+      <div class="row"><span>명성</span><b id="pFame"></b></div>
+      <div class="row"><span>재산</span><b id="pWealth"></b></div>
+      <div class="row"><span>가족</span><b id="pFamily"></b></div>
+      <div class="stats" id="pStats"></div>
+      <div class="muted">사(邪) ← 성향 → 정(正)</div>
+      <div class="bar"><i id="pAlign"></i></div>
+      <div class="ctrl">
+        <button class="btn sm ghost" id="pauseBtn">일시정지</button>
+        <button class="btn sm ghost spd on" data-s="1">1배</button>
+        <button class="btn sm ghost spd" data-s="2">2배</button>
+        <button class="btn sm ghost spd" data-s="5">5배</button>
+      </div>
+      <label class="muted" style="display:block;margin-top:8px"><input type="checkbox" id="autoChk"> 갈림길도 운명에 맡기기</label>
+    </aside>
+    <main>
+      <div class="tray">
+        <div class="die" id="die">·</div>
+        <div class="traytext" id="trayText">주사위가 기다린다.</div>
+      </div>
+      <div id="choiceBox" class="choice hidden"></div>
+      <div class="log" id="log"></div>
+    </main>
+  </div>
+</section>
+
+<!-- ===== END ===== -->
+<section id="endScreen" class="hidden">
+  <div class="tomb">
+    <span class="seal">之墓</span>
+    <div class="name" id="eName"></div>
+    <div class="muted" id="eSub"></div>
+    <div class="bio" id="eBio"></div>
+    <textarea id="eEpitaph" rows="2" maxlength="120" placeholder="이 삶에 남길 한마디 (비워 둬도 된다)"></textarea>
+    <p><button class="btn" id="saveBtn">추모관에 모시기</button>
+       <button class="btn ghost" id="againBtn">다시 태어나기</button></p>
+  </div>
+</section>
+
+</div>
+<script>
+// ---------- dice ----------
+const d = n => 1 + Math.floor(Math.random() * n);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const mod = v => Math.floor((v - 10) / 2);
+const sgn = n => (n >= 0 ? '+' : '') + n;
+
+// ---------- data ----------
+const STAT_DESC = { 근골: '몸·전투·수명', 오성: '깨달음·수련·지략', 기연: '행운·기연·인연', 심성: '의지·유혹·주화입마 저항' };
+const REALMS = ['범인', '삼류', '이류', '일류', '절정', '초절정', '화경', '현경', '생사경'];
+const ORIGINS = [
+  // [d100 상한, 이름, 재산, 입문확률(%), 성향, 기본소속, 설명]
+  [50, '빈농의 집',        0, 4,   0, null,       '논밭에서 나고 논밭에서 죽는 집안'],
+  [62, '장터 상인의 집',   2, 6,   0, null,       '셈은 빨라도 칼은 모르는 집안'],
+  [70, '객잔 주인의 집',   2, 8,   0, null,       '강호인이 드나드는 객잔'],
+  [76, '표국의 집',        2, 25,  5, '표국',     '표사들이 창봉을 휘두르는 마당'],
+  [81, '관부 하급 관리의 집', 3, 6, 5, null,      '관인의 녹을 먹는 집안'],
+  [86, '동네 무관의 집',   1, 40,  5, '무관',     '삼류 무술을 가르치는 도장'],
+  [90, '사찰 앞의 버려진 아이', 0, 60, 10, null,  '강보에 싸여 산문 앞에 놓였다'],
+  [94, '흑도 방회의 집',   2, 50, -25, '흑도 방회', '뒷골목을 쥔 패거리'],
+  [97, '무림세가 방계',    3, 85,  10, '세가',     '이름 있는 가문의 곁가지'],
+  [99, '명문정파 장로의 집', 4, 100, 20, '정파',   '구파일방 장로의 핏줄'],
+  [100,'천마신교 교주의 혈통', 5, 100, -40, '천마신교', '천산 아래 마교의 핏줄'],
+];
+const SECTS_RIGHT = ['소림사', '무당파', '화산파', '아미파', '곤륜파', '점창파', '청성파', '종남파', '개방'];
+const FAMILIES = ['남궁세가', '모용세가', '제갈세가', '하북팽가', '사천당가'];
+const SURNAMES = ['이', '왕', '장', '유', '진', '양', '조', '황', '주', '오', '서', '손', '마', '호', '곽', '하', '고', '임', '정', '백', '위', '사마'];
+const GIVEN_M = ['무진', '청운', '일비', '태호', '소룡', '백천', '진악', '운학', '경천', '자강', '평', '철', '대웅', '문수', '현', '도원'];
+const GIVEN_F = ['소소', '월향', '설화', '연', '청아', '옥란', '미령', '수련', '향', '초운', '영영', '은비', '서린', '홍매'];
+const QUIET = {
+  0: ['어미 품에서 겨울을 났다.', '마당에서 닭을 쫓았다.', '처음으로 제 이름을 불렀다.'],
+  1: ['물을 길어 날랐다.', '동네 아이들과 막대기로 칼싸움을 했다.', '장터에서 설서인의 무림 이야기를 들었다.', '서당 담 너머로 글을 엿들었다.'],
+  2: ['별일 없는 한 해였다.', '비가 알맞게 왔다.', '객잔에서 무림맹 소문을 들었다.', '먼 마을까지 다녀왔다.', '일에 쫓겨 한 해가 갔다.'],
+  3: ['집안 살림이 조금 나아졌다.', '오래된 벗을 다시 만났다.', '별일 없는 한 해였다.', '허리가 예전 같지 않다.'],
+  4: ['볕 좋은 날 툇마루에 앉아 있었다.', '젊은 날 이야기를 자주 했다.', '눈이 침침해졌다.'],
+};
+const stage = a => a < 6 ? 0 : a < 16 ? 1 : a < 36 ? 2 : a < 56 ? 3 : 4;
+
+// ---------- state ----------
+let S, speed = 1, paused = false, auto = false;
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function wait(ms) { let t = 0; while (t < ms) { await sleep(40); if (!paused) t += 40 * speed; } }
+
+function log(html, cls = '') { const p = document.createElement('p'); p.className = cls; p.innerHTML = html; $('log').appendChild(p); $('log').scrollTop = 1e9; }
+function render() {
+  $('pName').textContent = S.name + (S.sex === 'M' ? ' (남)' : ' (여)');
+  $('pAlias').textContent = S.alias ? '「' + S.alias + '」' : '';
+  $('pAge').textContent = S.age + '세';
+  $('pOrigin').textContent = S.origin;
+  $('pSect').textContent = S.sect || '없음';
+  $('pRealm').textContent = REALMS[S.realm] + (S.teacher ? ` (${S.prog}/${S.realm + 2})` : '');
+  $('pNeigong').textContent = S.neigong >= 60 ? (S.neigong / 60).toFixed(1) + '갑자' : S.neigong + '년';
+  $('pFame').textContent = S.fame;
+  $('pWealth').textContent = ['찢어지게 가난', '가난', '그럭저럭', '넉넉', '부유', '거부'][Math.max(0, Math.min(5, S.wealth))];
+  $('pFamily').textContent = (S.spouse ? '배우자 ' + S.spouse : '미혼') + (S.kids ? ` · 자식 ${S.kids}` : '');
+  $('pStats').innerHTML = Object.entries(S.st).map(([k, v]) => `<div class="stat">${k}<b>${v} (${sgn(mod(v))})</b></div>`).join('');
+  $('pAlign').style.left = `calc(${(S.align + 100) / 2}% - 2px)`;
+}
+
+// ---------- dice tray ----------
+async function animDie(sides, final) {
+  const die = $('die'); die.className = 'die rolling';
+  for (let i = 0; i < 7; i++) { die.textContent = d(sides); await sleep(Math.max(25, 70 / speed)); }
+  die.className = 'die' + (sides === 20 && final === 20 ? ' crit' : sides === 20 && final === 1 ? ' fumble' : '');
+  die.textContent = final;
+}
+// d20 + 보정 ≥ DC
+async function check(label, stat, dc, extra = 0) {
+  const n = d(20), m = (stat ? mod(S.st[stat]) : 0) + extra, total = n + m;
+  const ok = n === 20 || (n !== 1 && total >= dc);
+  $('trayText').innerHTML = `<b>${label}</b><br>d20 ${stat ? '+ ' + stat : ''} ${extra ? '+ 보정' : ''} vs DC ${dc}`;
+  await animDie(20, n);
+  const tag = n === 20 ? ' 대성공!' : n === 1 ? ' 대실패!' : ok ? ' 성공' : ' 실패';
+  const txt = `🎲 ${label}: d20(${n}) ${sgn(m)} = ${total} / DC ${dc} → <span class="${ok ? 'ok' : 'ng'}">${tag}</span>`;
+  $('trayText').innerHTML = txt; log(txt, 'r');
+  await wait(450);
+  return { n, total, ok, crit: n === 20, fumble: n === 1 };
+}
+// d100 ≤ 확률 이면 "발동"
+async function pct(label, chance) {
+  const n = d(100);
+  $('trayText').innerHTML = `<b>${label}</b><br>d100 ≤ ${chance} 이면 발동`;
+  await animDie(100, n);
+  const hit = n <= chance, txt = `🎲 ${label}: d100(${n}) ${hit ? '≤' : '>'} ${chance} → <span class="${hit ? 'ng' : 'ok'}">${hit ? '발동' : '넘김'}</span>`;
+  $('trayText').innerHTML = txt; log(txt, 'r'); await wait(350);
+  return hit;
+}
+function choose(q, opts) {
+  return new Promise(res => {
+    const box = $('choiceBox'); box.classList.remove('hidden');
+    box.innerHTML = `<p>${q}</p>` + opts.map((o, i) => `<button data-i="${i}">${o[0]}${o[1] ? `<em>${o[1]}</em>` : ''}</button>`).join('');
+    const done = i => { box.classList.add('hidden'); log(`▸ ${opts[i][0]}`, 'big'); res(i); };
+    box.querySelectorAll('button').forEach(b => b.onclick = () => done(+b.dataset.i));
+    if (auto) setTimeout(() => !box.classList.contains('hidden') && done(d(opts.length) - 1), 1200 / speed);
+  });
+}
+
+// ---------- life helpers ----------
+function die_(cause) { S.alive = false; S.cause = cause; }
+function joinSect(name, quality) {
+  S.sect = name; S.teacher = Math.max(S.teacher, quality);
+  S.events.push(`${S.age}세에 ${name}에 들었다`);
+  log(`<b>${name}</b>의 문하에 들었다.`, 'big');
+}
+function gainFame(n) {
+  S.fame += n;
+  if (!S.alias && S.fame >= 30) {
+    const a = pick(['검', '도', '권', '창', '장']), b = pick(['청풍', '혈', '백룡', '무영', '추혼', '광', '일섬', '철']);
+    S.alias = S.align < -20 ? pick(['혈수', '귀면', '독랑', '야차']) + a : b + a;
+    log(`강호인들이 그를 <b>「${S.alias}」</b>(이)라 부르기 시작했다.`, 'big');
+  }
+}
+function randomRightSect() { return S.sex === 'F' && Math.random() < .4 ? '아미파' : pick(SECTS_RIGHT.filter(s => s !== '아미파' || S.sex === 'F')); }
+
+// ---------- events ----------
+// 각 이벤트: [최소나이, 최대나이, 가중치(S)→number, async run]
+const EVENTS = [
+  // 문파 입문 기회
+  [7, 16, s => !s.teacher && s.realmChance > 0 ? 3 : 0, async () => {
+    const sect = S.originIdx >= 8 ? (S.baseSect === '세가' ? S.family : S.baseSect === '천마신교' ? '천마신교' : randomRightSect()) : randomRightSect();
+    log(`${sect}에서 제자를 뽑는다는 방이 붙었다.`);
+    if (!(await pct('기회가 닿는가', S.realmChance))) { log('먼 이야기였다. 가 볼 형편이 못 되었다.'); return; }
+    const c = await choose(`${sect} 입문 시험이 열린다.`, [['시험에 도전한다', '근골 DC 13'], ['집안일을 돕는다', '']]);
+    if (c === 1) { log('꿈을 접었다.'); return; }
+    const r = await check('입문 시험', '근골', 13);
+    if (r.ok) joinSect(sect, r.crit ? 3 : 2); else log('시험에서 떨어졌다. 산문은 다시 열리지 않았다.');
+  }],
+  // 떠돌이 은자
+  [8, 30, s => !s.teacher ? 1.2 : 0, async () => {
+    log('누더기를 걸친 노인이 손목을 잡아 보더니 혀를 찼다. "뼈는 쓸 만하구나."');
+    const c = await choose('노인이 따라오라 한다.', [['따라간다', '오성 DC 12'], ['미친 노인이라 여기고 지나친다', '']]);
+    if (c === 1) return;
+    const r = await check('은자의 가르침을 알아듣는가', '오성', 12);
+    if (r.ok) { joinSect('이름 없는 은자의 제자', r.crit ? 4 : 2); }
+    else log('사흘을 따라다녔지만 아무것도 알아듣지 못했다. 노인은 사라졌다.');
+  }],
+  // 흉년
+  [0, 99, s => s.wealth <= 1 ? 1.5 : .3, async () => {
+    log('흉년이 들었다. 마을에 굶는 집이 늘었다.');
+    const r = await check('굶주림을 버티는가', '근골', 10, S.wealth);
+    if (r.fumble && (S.age < 8 || S.age > 60)) { die_('흉년의 굶주림'); return; }
+    if (!r.ok) { S.st['근골'] = Math.max(3, S.st['근골'] - 1); log('몸이 상했다. 근골 -1'); }
+  }],
+  // 역병
+  [0, 99, s => .6, async () => {
+    log('역병이 돌았다.');
+    const r = await check('역병을 이기는가', '근골', 11, Math.floor(S.realm / 2));
+    if (r.ok) { log('열이 내렸다.'); return; }
+    const r2 = await check('사경을 헤맨다', '심성', 9);
+    if (!r2.ok) die_('역병'); else log('간신히 살아났다.');
+  }],
+  // 산적
+  [12, 70, s => 1, async () => {
+    log('고갯길에서 산적 떼를 만났다.');
+    if (S.realm >= 3) { log(`${REALMS[S.realm]}의 고수 앞에서 산적들은 상대가 되지 않았다.`); gainFame(3); S.align += 3; return; }
+    const c = await choose('산적이 칼을 겨눈다.', [['맞서 싸운다', `근골 DC 14, 경지 +${S.realm * 2}`], ['달아난다', '오성 DC 11'], ['가진 것을 내준다', '재산 -1']]);
+    if (c === 2) { S.wealth--; log('빈손으로 고개를 넘었다.'); return; }
+    const r = c === 0 ? await check('산적과 싸운다', '근골', 14, S.realm * 2) : await check('달아난다', '오성', 11);
+    if (r.ok) { if (c === 0) { log('산적을 물리쳤다.'); gainFame(4); } else log('숲으로 몸을 던져 달아났다.'); return; }
+    if (r.fumble) { die_('산적의 칼'); return; }
+    log('크게 다쳤다. 재물도 빼앗겼다.'); S.wealth--; S.st['근골'] = Math.max(3, S.st['근골'] - 1);
+  }],
+  // 기연 동굴
+  [10, 65, s => s.caveSeen ? 0 : .7 + mod(s.st['기연']) * .2, async () => {
+    S.caveSeen = true;
+    log('절벽 아래로 떨어진 뒤, 덩굴에 가려진 동굴 입구를 발견했다.');
+    const c = await choose('동굴 안에서 찬 기운이 흘러나온다.', [['들어간다', '기연 DC 14'], ['지나친다', '']]);
+    if (c === 1) { log('발길을 돌렸다. 평생 그 동굴이 마음에 걸렸다.'); return; }
+    const r = await check('기연', '기연', 14);
+    if (r.crit) { log('옛 고수의 유해 곁에 비급과 영약이 있었다!', 'big'); S.neigong += 60; S.prog += 4; S.teacher = Math.max(S.teacher, 4); if (!S.sect) S.sect = '고인의 전인'; S.events.push(`${S.age}세에 절벽 아래 동굴에서 기연을 얻었다`); return; }
+    if (r.ok) {
+      if (Math.random() < .5) { log('석벽에 새겨진 무공 구결을 외웠다.'); S.prog += 2; S.teacher = Math.max(S.teacher, 2); if (!S.sect) S.sect = '독학'; }
+      else { log('기이한 붉은 열매를 먹었다. 내공 +30년'); S.neigong += 30; }
+      S.events.push(`${S.age}세에 동굴에서 기연을 얻었다`); return;
+    }
+    if (r.fumble) { const r2 = await check('독충에 물렸다', '근골', 12); if (!r2.ok) { die_('동굴의 독충'); return; } }
+    log('사흘을 헤매다 겨우 빠져나왔다.');
+  }],
+  // 비무대회
+  [16, 45, s => s.realm >= 1 ? 1.2 : 0, async () => {
+    log('무림맹 주최 비무대회가 열린다.');
+    const c = await choose('참가하는가?', [['참가한다', `d20 + 근골 + 경지×2 vs DC 18`], ['구경만 한다', '']]);
+    if (c === 1) return;
+    const r = await check('비무', '근골', 18, S.realm * 2);
+    if (r.crit || r.total >= 24) { log('비무대회에서 우승했다! 강호에 이름이 퍼졌다.', 'big'); gainFame(25); S.events.push(`${S.age}세에 비무대회에서 우승했다`); }
+    else if (r.ok) { log('본선에 올랐다.'); gainFame(8); }
+    else if (r.fumble) { log('상대의 손에 경맥을 다쳤다. 수련이 한동안 막혔다.'); S.prog = Math.max(0, S.prog - 2); }
+    else log('초반에 떨어졌다.');
+  }],
+  // 혼인
+  [17, 38, s => !s.spouse ? 2 : 0, async () => {
+    const nm = pick(SURNAMES) + (S.sex === 'M' ? pick(GIVEN_F) : pick(GIVEN_M));
+    log(`중매쟁이가 ${nm}와(과)의 혼담을 가져왔다.`);
+    const c = await choose('혼인하는가?', [['혼인한다', ''], ['홀로 길을 간다', '']]);
+    if (c === 0) { S.spouse = nm; S.marriedAt = S.age; log(`${nm}와(과) 혼인했다.`); } else log('혼담을 물렸다.');
+  }],
+  // 자식
+  [19, 45, s => s.spouse ? 1.8 : 0, async () => { S.kids++; log(`자식이 태어났다. (${S.kids}째)`); }],
+  // 정사대전
+  [16, 70, s => !s.warDone ? .5 : 0, async () => {
+    S.warDone = true;
+    log('정파와 사파가 맞붙었다. <b>정사대전</b>이다.', 'big');
+    if (S.realm < 1 && !S.sect) { log('마을 위로 피난민이 지나갔다. 먼 곳의 싸움이었다.'); return; }
+    const side = S.align < -15 ? '사파' : '정파';
+    const c = await choose(`${side} 쪽에서 소집령이 왔다.`, [['참전한다', '근골+경지×2 판정 3회'], ['은거한다', '명성 -5']]);
+    if (c === 1) { gainFame(-5); log('산속에 숨어 전쟁이 끝나기를 기다렸다.'); return; }
+    let win = 0;
+    for (let i = 1; i <= 3; i++) {
+      const r = await check(`${i}번째 전투`, '근골', 15, S.realm * 2);
+      if (r.ok) win++; if (r.fumble) { die_('정사대전'); return; }
+    }
+    if (win === 0) { const r = await check('전장에서 쓰러졌다', '심성', 12); if (!r.ok) { die_('정사대전'); return; } log('시체 더미 속에서 살아 나왔다.'); }
+    else { log(`${win}번의 싸움에서 이겼다.`); gainFame(win * 10); S.events.push(`${S.age}세에 정사대전에 ${side}로 참전했다`); }
+  }],
+  // 마두의 유혹
+  [15, 50, s => s.teacher && s.align > -40 ? .7 : 0, async () => {
+    log('검은 옷의 사내가 다가왔다. "정파의 느린 무공으로 언제 위에 서겠나. 내 것을 배워라."');
+    const c = await choose('마공을 받아들이는가?', [['받아들인다', '수련 +3, 성향 -35'], ['거절한다', '심성 DC 12']]);
+    if (c === 0) { S.prog += 3; S.align -= 35; S.sect = S.sect === '천마신교' ? S.sect : '사도련'; S.teacher = Math.max(S.teacher, 3); S.events.push(`${S.age}세에 마공을 받아들였다`); log('몸속에 차갑고 끈적한 기운이 돌기 시작했다.'); return; }
+    const r = await check('유혹을 뿌리친다', '심성', 12);
+    if (r.ok) { S.align += 10; log('사내는 웃으며 사라졌다.'); }
+    else { log('뿌리쳤지만 그 말이 머리를 떠나지 않았다.'); S.align -= 5; }
+  }],
+  // 객잔 시비
+  [14, 70, s => 1, async () => {
+    log('객잔에서 술 취한 무인이 시비를 걸었다.');
+    const c = await choose('어떻게 하는가?', [['참는다', '심성 DC 11'], ['맞받아친다', `근골 DC 13 +경지×2`]]);
+    if (c === 0) { const r = await check('분을 삭인다', '심성', 11); if (r.ok) { S.align += 3; log('술값을 내고 나왔다.'); } else { log('결국 주먹이 나갔고, 흠씬 맞았다.'); } return; }
+    const r = await check('객잔 싸움', '근골', 13, S.realm * 2);
+    if (r.ok) { gainFame(3); log('상대를 탁자째 날려 버렸다.'); } else if (r.fumble && S.realm < 2) { die_('객잔 싸움에서 입은 상처'); } else log('얻어맞고 쫓겨났다.');
+  }],
+  // 표행/장사
+  [16, 55, s => 1, async () => {
+    if (S.realm >= 1 || S.baseSect === '표국') {
+      log('표국에서 호위를 맡아 달라는 청이 왔다.');
+      const r = await check('표행 호위', '근골', 12, S.realm);
+      if (r.ok) { S.wealth++; log('무사히 물건을 넘기고 삯을 받았다.'); } else log('표물을 잃고 빈손으로 돌아왔다.');
+    } else {
+      log('장사를 해 볼 기회가 생겼다.');
+      const r = await check('셈과 흥정', '오성', 12);
+      if (r.ok) { S.wealth++; log('제법 이문을 남겼다.'); } else if (r.fumble) { S.wealth--; log('사기를 당했다.'); } else log('본전치기였다.');
+    }
+  }],
+  // 부모의 죽음
+  [20, 55, s => !s.parentsGone ? .8 : 0, async () => { S.parentsGone = true; log('부모님이 세상을 떠났다. 상복을 입고 한 해를 보냈다.'); }],
+  // 제자
+  [40, 90, s => s.realm >= 4 && !s.disciple ? 1 : 0, async () => { S.disciple = true; log('눈빛이 맑은 아이 하나를 제자로 받았다.'); gainFame(5); S.events.push(`${S.age}세에 제자를 받았다`); }],
+  // 원한
+  [18, 60, s => s.fame >= 20 ? .6 : 0, async () => {
+    log('이름이 알려지자 원한을 품은 자가 자객을 보냈다.');
+    const r = await check('자객을 막는다', '오성', 13, S.realm * 2);
+    if (r.ok) log('어둠 속의 칼끝을 피했다.'); else if (r.fumble || S.realm < 3) die_('자객의 암습'); else log('어깨에 독침을 맞았지만 내공으로 밀어냈다.');
+  }],
+];
+
+// ---------- yearly ----------
+async function training() {
+  if (!S.teacher || S.age < 6 || S.realm >= 8 || S.age > 75) return;
+  S.neigong += 1 + Math.floor(S.teacher / 2);
+  if (S.age % 2 && S.realm < 4) return; // 낮은 경지는 2년에 한 번 판정
+  const dc = 8 + S.realm * 2;
+  const r = await check(`수련 (다음 경지: ${REALMS[S.realm + 1]})`, '오성', dc, S.teacher + Math.floor(S.neigong / 40));
+  if (r.ok) S.prog += r.crit ? 3 : 1;
+  if (r.fumble && S.realm >= 3) {
+    log('운기 도중 기혈이 뒤집혔다. <b>주화입마</b>다!', 'big');
+    const r2 = await check('주화입마를 다스린다', '심성', 13);
+    if (!r2.ok) { if (Math.random() < .5) { die_('주화입마'); return; } S.realm = Math.max(1, S.realm - 2); S.prog = 0; log(`경지가 ${REALMS[S.realm]}(으)로 떨어졌다.`); return; }
+    log('간신히 기혈을 바로잡았다.');
+  }
+  if (S.prog >= S.realm + 2) {
+    S.prog = 0; S.realm++;
+    log(`<b>${REALMS[S.realm]}</b>의 경지에 올랐다!`, 'big');
+    S.peak = Math.max(S.peak || 0, S.realm);
+    if (S.realm >= 4) { gainFame(S.realm * 3); S.events.push(`${S.age}세에 ${REALMS[S.realm]}에 올랐다`); }
+  }
+}
+async function mortality() {
+  if (S.age < 6) {
+    const chance = S.wealth <= 0 ? 5 : S.wealth <= 2 ? 3 : 1;
+    if (await pct('어린 목숨', chance)) die_(pick(['홍역', '설사병', '열병', '겨울 추위']));
+    return;
+  }
+  const span = 50 + mod(S.st['근골']) * 3 + S.realm * 9 + Math.min(S.wealth, 3) * 2;
+  if (S.age >= span - 10) {
+    const dc = 4 + (S.age - (span - 10)) * 1.2 | 0;
+    const r = await check('천명(天命)', '근골', dc, Math.floor(S.neigong / 60));
+    if (!r.ok) die_(S.realm >= 6 ? '좌화(坐化) — 앉은 채로 숨을 거두었다' : pick(['노환', '노환', '중풍', '해수병', '심장병']));
+  }
+}
+
+async function year() {
+  render();
+  const st = stage(S.age);
+  log(`${S.age}세`, 'age');
+  await mortality(); if (!S.alive) return;
+  await training(); if (!S.alive) return;
+  // 이벤트
+  if (S.age >= 6 && Math.random() < .45) {
+    const pool = EVENTS.filter(e => S.age >= e[0] && S.age <= e[1]).map(e => [e[2](S), e]).filter(x => x[0] > 0);
+    const tot = pool.reduce((a, x) => a + x[0], 0);
+    if (tot > 0) { let r = Math.random() * tot; for (const [w, e] of pool) { if ((r -= w) <= 0) { await e[3](); break; } } }
+  } else if (Math.random() < .5) log(pick(QUIET[st]));
+  if (S.age === 18 && !S.teacher) {
+    S.job = { '빈농의 집': '농부', '장터 상인의 집': '상인', '객잔 주인의 집': '객잔 점소이', '관부 하급 관리의 집': '관부 아전' }[S.origin] || pick(['농부', '뱃사공', '대장장이', '짐꾼']);
+    log(`무공과는 연이 닿지 않았다. ${S.job}(으)로 살아가게 되었다.`);
+  }
+  S.align = Math.max(-100, Math.min(100, S.align));
+  S.wealth = Math.max(0, Math.min(5, S.wealth));
+  render();
+  await wait(900);
+  S.age++;
+}
+
+// ---------- birth ----------
+async function birth() {
+  $('log').innerHTML = '';
+  const sex = Math.random() < .5 ? 'M' : 'F';
+  const o = d(100); const oi = ORIGINS.findIndex(x => o <= x[0]); const og = ORIGINS[oi];
+  S = { sex, age: 0, alive: true, origin: og[1], originIdx: oi, baseSect: og[5], wealth: og[2], realmChance: og[3], align: og[4],
+    st: { 근골: 10, 오성: 10, 기연: 10, 심성: 10 }, realm: 0, prog: 0, teacher: 0, neigong: 0, fame: 0, sect: null, kids: 0, spouse: null, events: [], alias: null };
+  let sur = pick(SURNAMES);
+  if (og[5] === '세가') { S.family = pick(FAMILIES); sur = { 남궁세가: '남궁', 모용세가: '모용', 제갈세가: '제갈', 하북팽가: '팽', 사천당가: '당' }[S.family]; S.origin = S.family + ' 방계'; }
+  S.name = sur + (sex === 'M' ? pick(GIVEN_M) : pick(GIVEN_F));
+  render();
+  log(`출생표를 굴린다.`);
+  await animDie(100, o);
+  log(`🎲 출생: d100(${o}) → <b>${S.origin}</b> · ${og[6]}`, 'r');
+  // 3d6 × 4 를 굴린 뒤, 어느 능력치에 둘지 고른다
+  const vals = [];
+  for (let i = 0; i < 4; i++) {
+    const a = d(6), b = d(6), c = d(6);
+    $('trayText').innerHTML = `<b>타고난 자질 ${i + 1}</b> 3d6`;
+    await animDie(6, a); await animDie(6, b); await animDie(6, c);
+    vals.push(a + b + c); log(`🎲 자질 ${i + 1}: 3d6(${a}+${b}+${c}) = ${a + b + c}`, 'r');
+  }
+  vals.sort((x, y) => y - x);
+  const left = Object.keys(S.st);
+  for (let j = 0; j < vals.length; j++) {
+    const v = vals[j];
+    if (left.length === 1) { S.st[left[0]] = v; log(`${left[0]}에 ${v}이(가) 남았다.`); break; }
+    const i = await choose(`자질 <b>${v}</b> (보정 ${sgn(mod(v))})을(를) 어디에 둘까? 남은 값: ${vals.slice(j + 1).join(', ')}`,
+      left.map(k => [k, STAT_DESC[k]]));
+    S.st[left[i]] = v; left.splice(i, 1); render();
+  }
+  S.realmChance = Math.min(100, S.realmChance + mod(S.st['근골']) * 3 + mod(S.st['기연']) * 3);
+  log(`${S.origin}에서 ${sex === 'M' ? '사내아이' : '계집아이'} ${S.name}이(가) 태어났다.`, 'big');
+  // 태생 소속
+  if (og[5] === '정파' ) { S.sect = randomRightSect(); S.teacher = 3; }
+  if (og[5] === '천마신교') { S.sect = '천마신교'; S.teacher = 4; }
+  if (og[5] === '세가') { S.sect = S.family; S.teacher = 3; }
+  if (og[5] === '무관' || og[5] === '표국') { S.sect = og[5] === '무관' ? '동네 무관' : '가문 표국'; S.teacher = 1; }
+  if (og[5] === '흑도 방회') { S.sect = '흑도 방회'; S.teacher = 1; }
+  if (oi === 6) { S.sect = '소림사'; S.teacher = 2; log('산문 앞에 버려진 아이를 승려들이 거두었다.'); }
+  render(); await wait(800);
+}
+
+// ---------- ending ----------
+function bio() {
+  const s = [];
+  s.push(`${S.origin}에서 ${S.sex === 'M' ? '사내아이' : '계집아이'}로 태어났다.`);
+  if (S.sect) s.push(`${S.sect}에서 무공을 익혔다.`); else s.push(`무공을 배울 기회는 끝내 오지 않았다. ${S.job ? S.job + '(으)로 살았다.' : ''}`);
+  if (S.peak > 0) s.push(`최고 경지는 ${REALMS[S.peak]}였다.` + (S.peak > S.realm ? ` 주화입마로 ${REALMS[S.realm]}까지 떨어졌다.` : ''));
+  if (S.alias) s.push(`강호는 그를 「${S.alias}」(이)라 불렀다.`);
+  s.push(...S.events.slice(0, 5).map(e => e + '.'));
+  if (S.spouse) s.push(`${S.spouse}와(과) 혼인해 ${S.kids ? '자식 ' + S.kids + '명을 두었다' : '자식 없이 살았다'}.`); else s.push('평생 홀로 살았다.');
+  s.push(`${S.age}세에 ${S.cause}${S.cause.includes('—') ? '.' : '(으)로 세상을 떠났다.'}`);
+  return s.join(' ');
+}
+function ending() {
+  $('lifeScreen').classList.add('hidden'); $('endScreen').classList.remove('hidden');
+  $('eName').textContent = S.name + (S.alias ? ` 「${S.alias}」` : '');
+  $('eSub').textContent = `${S.origin} · ${S.sect || '무소속'} · ${REALMS[S.realm]} · 향년 ${S.age}세`;
+  $('eBio').textContent = bio(); $('eEpitaph').value = '';
+  window.scrollTo(0, 0);
+}
+
+// ---------- memorial ----------
+const MEM = 'gangho_memorial_v1';
+const loadMem = () => JSON.parse(localStorage.getItem(MEM) || '[]');
+function renderMem() {
+  const m = loadMem();
+  $('memorial').innerHTML = m.slice().reverse().slice(0, 30).map(x =>
+    `<div><b>${x.name}</b>${x.alias ? ` 「${x.alias}」` : ''}<br><span class="muted">${x.origin} · ${x.realm} · 향년 ${x.age}세</span><br>${x.cause}${x.epitaph ? `<br><i>“${x.epitaph.replace(/</g, '&lt;')}”</i>` : ''}</div>`).join('') || '<p class="muted">아직 아무도 없다.</p>';
+  if (m.length) {
+    const cnt = {}; m.forEach(x => cnt[x.realm] = (cnt[x.realm] || 0) + 1);
+    const avg = (m.reduce((a, x) => a + x.age, 0) / m.length).toFixed(1);
+    $('memStats').textContent = `${m.length}번의 삶 · 평균 향년 ${avg}세 · ` + REALMS.filter(r => cnt[r]).map(r => `${r} ${cnt[r]}`).join(' / ');
+  }
+}
+$('saveBtn').onclick = () => {
+  const m = loadMem();
+  m.push({ name: S.name, alias: S.alias, origin: S.origin, realm: REALMS[S.realm], age: S.age, cause: S.cause, epitaph: $('eEpitaph').value.trim() });
+  localStorage.setItem(MEM, JSON.stringify(m)); $('saveBtn').disabled = true; $('saveBtn').textContent = '모셨다';
+};
+
+// ---------- flow ----------
+async function live() {
+  $('intro').classList.add('hidden'); $('endScreen').classList.add('hidden'); $('lifeScreen').classList.remove('hidden');
+  $('saveBtn').disabled = false; $('saveBtn').textContent = '추모관에 모시기';
+  auto = $('autoStart').checked; $('autoChk').checked = auto;
+  await birth();
+  while (S.alive && S.age < 140) await year();
+  log(`${S.age}세, ${S.cause}.`, 'big'); render();
+  await wait(1500);
+  ending();
+}
+$('startBtn').onclick = live;
+$('againBtn').onclick = () => { $('endScreen').classList.add('hidden'); $('intro').classList.remove('hidden'); renderMem(); };
+$('pauseBtn').onclick = () => { paused = !paused; $('pauseBtn').textContent = paused ? '이어 살기' : '일시정지'; };
+$('autoChk').onchange = e => auto = e.target.checked;
+document.querySelectorAll('.spd').forEach(b => b.onclick = () => { speed = +b.dataset.s; document.querySelectorAll('.spd').forEach(x => x.classList.toggle('on', x === b)); });
+$('originTable').innerHTML = '<tr><th>d100</th><th>출신</th><th>무공 입문 기회</th></tr>' + ORIGINS.map((o, i) => `<tr><td>${(i ? ORIGINS[i - 1][0] + 1 : 1)}–${o[0]}</td><td>${o[1]}</td><td>${o[5] || i === 6 ? '태생부터' : o[3] + '%'}</td></tr>`).join('');
+renderMem();
+</script>
+</body>
+</html>

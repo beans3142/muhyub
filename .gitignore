@@ -1,0 +1,5 @@
+# Raw scraped wiki text (CC BY-NC-SA) and text derived from it
+sources/namu/
+sources/extract/
+# humanize-korean scratch output
+_workspace/
