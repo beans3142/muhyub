@@ -332,8 +332,10 @@ const CAREER_B = { farm: 1, fisher: 3, hunter: 5, herb: 7, smith: 9, merchant: 1
 const CAT_C = ['구파일방', '세가', '연합', '사교', '흑도', '암중', '관부', '오악도불', '새외', '생업'];
 const pad = n => String(n).padStart(2, '0');
 // 세력 초상(docs/p11-cast.md 3장): 직위를 네 단(0 삼대제자, 1 일대·이대제자, 2 장로, 3 수장)으로 묶는다
-const FAC_TIER = { sect: [0, 0, 1, 1, 2, 2, 2, 3], league: [0, 0, 1, 1, 2, 2, 2, 3], clan: [0, 1, 1, 2, 3], demon: [0, 0, 1, 1, 1, 2, 2, 2, 2, 3], beggar: [0, 0, 1, 1, 1, 2, 2, 3] };
-const facTier = (lad, rank, n) => (FAC_TIER[lad] || [])[rank] ?? (rank >= n - 1 ? 3 : rank >= n - 3 ? 2 : rank <= 1 ? 0 : 1);
+// 직위 이름으로 네 단을 정한다(사다리 길이가 바뀌어도 맞게): 맨 위는 수장, 장로·원로·호법·부수장 급은 장로, 맨 아래 견습 급은 삼대제자
+const TIER_ELDER = /장로|원로|태상|호법|부교주|부맹주|군사|총관|부채주|부막주|부수뇌|6결|7결|지휘첨사|부국주|소가주|각주|^당주|^채주/;
+const TIER_LOW = /입문|평제자|방계|맹원|조원|교도|하급|졸개|행동대원|^1결|^2결|심부름|정보원|견습|말단|소기|쟁자수/;
+const facTier = (lad, rank, n) => { const nm = (LADDERS[lad] || [])[rank] || ''; return rank >= n - 1 ? 3 : TIER_ELDER.test(nm) ? 2 : TIER_LOW.test(nm) ? 0 : 1; };
 // 그림의 성별: A는 번호, B는 짝홀(단독 생업 제외), C는 roster.json, F/N/M은 이름·데이터에서 읽는다
 const C_FEMALE = new Set([6, 11, 14, 17, 22, 24, 26, 30]);
 const hasArt = id => !!(window.FAC_ART && FAC_ART.has(id));
@@ -394,7 +396,7 @@ function npcFace(n, P) {
   if (n.fid) {
     const f = L.facDef(n.fid);
     if (f) {
-      const lad = LADDERS[f.lad] ? f.lad : 'sect', rk = /장문|가주|교주|방주|맹주|채주/.test(role) ? LADDERS[lad].length - 1 : /장로|호법/.test(role) ? LADDERS[lad].length - 3 : n.realm >= 4 ? 3 : 1;
+      const lad = LADDERS[f.lad] ? f.lad : 'sect', L0 = LADDERS[lad], rk = /장문|가주|교주|방주|맹주|채주/.test(role) ? L0.length - 1 : /장로|호법/.test(role) ? Math.max(0, L0.findIndex(x => TIER_ELDER.test(x))) : n.realm >= 4 ? Math.min(3, L0.length - 2) : 1;
       const id = `F_${f.id}_${facTier(lad, rk, LADDERS[lad].length)}${sex}`;
       if (hasArt(id)) return id;
       return catArt(Math.max(0, CAT_C.indexOf(f.cat)), /장문|가주|교주|방주|맹주/.test(role) ? 2 : n.realm >= 4 ? 1 : 0, sex);
