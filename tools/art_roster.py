@@ -8,7 +8,7 @@ Groups:
 Each entry carries a concrete look (face, body, hair, expression, clothes, pose, prop).
 Abstract requests for "variety" don't work; concrete looks do.
 """
-import json, os
+import json, os, re
 
 STYLE = (
     "Generate an image. Single full-body standing character illustration for a wuxia life-simulation game. "
@@ -107,7 +107,8 @@ C = [
  ("C13","흑도·제자","bandit thug, 28: hulking, low brow, missing teeth, shaggy hair. Ragged vest of animal hide, bare arms with tattoos. Spiked club."),
  ("C14","흑도·고수","river pirate captain (female), 38: lean and tanned, scarred lip, short wild hair, gold earring. Open dark jacket, sash, boots. Curved broadsword over her shoulder."),
  ("C15","흑도·수장","greenwood bandit king, 45: huge bearlike man, wild black beard, fur mantle, thick eyebrows, laughing. Tiger-skin vest, iron armbands. Giant two-handed axe."),
- ("C16","암중·제자","assassin apprentice, 16: thin, expressionless, dark circles under the eyes, short black hair. Close-fitting black outfit, face mask pulled down. Dagger held reverse-grip."),
+ # C16: the earlier wording (16-year-old assassin, mask, reverse-grip dagger) got no reply from ChatGPT three times.
+ ("C16","암중·제자","shadow guild initiate, 20: lean young man, quiet blank expression, tired eyes, short black hair. Plain close-fitting black clothes with wrapped forearms, a black cloth scarf around the neck. A short sheathed blade at the hip, standing still."),
  ("C17","암중·고수","master assassin (female), 30: slender, blank beautiful face, cold grey eyes, long hair in a tight braid. Dark grey night clothes, many throwing knives on the belt. Thin blade behind her back."),
  ("C18","암중·수장","spymaster of a shadow guild, 55: ordinary forgettable face, mild smile, small eyes, plain merchant clothes in brown. Holds a ledger and a small abacus; a hidden blade shows at the sleeve."),
  ("C19","관부·제자","government constable, 30: square jaw, mustache, stubborn look. Red and black constable uniform with a black hat. Iron chain and a saber."),
@@ -124,10 +125,27 @@ C = [
  ("C30","생업·수장","head of a great merchant guild (female), 50: elegant, sharp calculating eyes, thin smile, hair with gold pins. Dark gold brocade, jade abacus at the belt. Holds a contract scroll."),
 ]
 
+# Sex is stated explicitly in every prompt. Without it ChatGPT drew B12, B25 and B30
+# (women in the roster) as men. A and B take it from the "·남/·여" label; C is listed here.
+C_FEMALE = {"C06", "C11", "C14", "C17", "C22", "C24", "C26", "C30"}
+
+
+def sex_of(grp, i, ko):
+    if grp in "AB":
+        return "female" if "여" in ko.split("·")[1] else "male"
+    return "female" if i in C_FEMALE else "male"
+
+
 out = []
 for grp, rows in (("A", A), ("B", B), ("C", C)):
     for i, ko, desc in rows:
-        out.append({"id": i, "group": grp, "ko": ko, "prompt": STYLE + "Character: " + desc})
+        sex = sex_of(grp, i, ko)
+        word = "a woman" if sex == "female" else "a man"
+        age = re.search(r", (\d+)[:,]", desc)
+        if (grp == "A" and ("boy" in desc or "girl" in desc)) or (age and int(age.group(1)) < 18):
+            word = "a girl" if sex == "female" else "a boy"
+        out.append({"id": i, "group": grp, "ko": ko, "sex": sex,
+                    "prompt": STYLE + f"Character ({word}): " + desc})
 os.makedirs("art", exist_ok=True)
 json.dump(out, open("art/roster.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print(len(out), {g: sum(1 for o in out if o["group"] == g) for g in "ABC"})
