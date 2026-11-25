@@ -600,7 +600,7 @@ function* birth(P) {
   P.fiber = clamp(Math.round((d6(P) + d6(P) + d6(P) - 10.5) * 3), -30, 30);
   rollTraits(P);
   if (o.extraBig) { const OPPn = new Set(); for (const t of G.TRAITS || []) if (P.R() * 1e7 < t.p && !P.traits.some(x => x.n === t.n)) { P.traits.push(t); if (!o.revealTraits) P.hidden.push(t.id); } }
-  for (const [k, v] of Object.entries(o.aptBonus || {})) if (k in P.apt) P.apt[k] += v;
+  for (const [k, v] of Object.entries(o.aptBonus || {})) if (k in P.apt) P.apt[k] = Math.min(100, P.apt[k] + v);
   // 고른 자질은 한 번 더 굴려 높은 쪽을 쓴다
   if (o.aptFavor === 'lowest') o.aptFavor = ['근골', '오성', '심성', '기연', '풍모'].sort((a, b) => P.apt[a] - P.apt[b])[0];
   if (o.aptFavor && o.aptFavor in P.apt) { const again = (d6(P) + d6(P) + d6(P)) * 5; if (again > P.apt[o.aptFavor]) P.apt[o.aptFavor] = Math.round(again); }
@@ -625,8 +625,8 @@ function* birth(P) {
     if (f) { P.member = { fid, rank: og.rank || 0, disc: f.lad === 'sect' ? ['입문제자', '평제자', '내문제자', '진산제자', '직전제자'][og.rank || 0] : null, since: P.year, born: true, kind: f.lad === 'clan' ? ((og.rank || 0) >= 1 || /직계|가주|본가/.test(og.n) ? '직계' : '방계') : /속가/.test(og.n) ? '속가' : f.lad === 'sect' ? '정식' : '고용' }; if (P.member.kind === '직계' && P.member.rank < 1) P.member.rank = 1; }
   }
   if (og.career) P.flags.homeCareer = og.career;
-  if (o.longLife && P.R() < 0.5) { const t = G.TRAITS.find(x => x.n === "장수 집안"); if (t && !P.traits.some(x => x.n === t.n)) P.traits.push(t); }
-  if (o.rich && P.R() < 0.5) P.wealth *= 10;
+  if (o.wealthMul) P.wealth *= o.wealthMul;
+  if (o.longLife) { const t = G.TRAITS.find(x => x.n === "장수 집안"); if (t && !P.traits.some(x => x.n === t.n)) P.traits.push(t); }
   if (o.masterLuck) P.flags.masterLuck = 1;
   if (o.startArt && P.R() < 0.5) { const def = G.ARTS.find(a => a.n === o.startArt) || o.startArtDef; if (def) P.flags.memoryArt = def; }
   P.plan = P.member ? '무학 정진' : '가족과 함께';

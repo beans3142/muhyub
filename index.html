@@ -274,30 +274,25 @@ const has = n => !!rec.achs[n];
 
 // ---------- 해금(켜고 끄기, 10단계 9-10) ----------
 const CH = [[-500, -222, '검의 시대'], [-221, 219, '제국과 유협'], [220, 588, '산문의 시작'], [589, 906, '승병과 이교'], [907, 1126, '문파의 태동'], [1127, 1278, '구파 정립'], [1279, 1367, '명교와 홍건'], [1368, 1449, '마교의 굴기'], [1450, 1549, '강호의 전성기'], [1550, 1643, '왜구와 동영'], [1644, 1779, '반청'], [1780, 1840, '황혼']];
+// 해금(9-25): 켜고 끄기만. 자질·재산은 하·중·상 세 칸이고, 켠 것 가운데 가장 높은 칸이 적용된다
+const APT_TIERS = { 근골: [['첫걸음', '삼류에 오르면'], ['소년고수', '스무 살 전에 일류가 되면'], ['벽을 넘다', '절정에 오르면']], 오성: [['대성', '무공 하나를 대성하면'], ['무공 창안', '무공을 지으면'], ['신공', '신공을 익히면']], 심성: [['사부님', '스승을 모시면'], ['주화입마를 넘다', '주화입마를 이겨 내면'], ['폐관 수련', '세 해를 이어 폐관하면']], 기연: [['기연', '기연을 만나면'], ['세 번의 기연', '한 생에 기연을 세 번 만나면'], ['전설의 무덤', '전설 고수의 무덤에 닿으면']], 풍모: [['첫 만남', '마음에 둔 사람이 생기면'], ['혼례', '혼례를 올리면'], ['명동일방', '명동일방에 이르면']] };
+const TIER = [['하', 5], ['중', 10], ['상', 20]];
 const UNLOCKS = [
-  { id: 'bestOf4', n: '좋은 그릇', d: '자질이 대체로 좋게 나온다', open: () => endKinds(['黃']) >= 5, why: '평범하게 끝난 삶을 다섯 갈래 겪으면 열린다' },
+  ...Object.entries(APT_TIERS).flatMap(([k, l]) => l.map(([ach, why], i) => ({ id: `apt_${k}_${i}`, n: `${k} (${TIER[i][0]})`, d: `${k} +${TIER[i][1]}`, open: () => has(ach), why: `${why} 열린다`, apt: k, add: TIER[i][1] }))),
+  { id: 'rich_0', n: '재산 (하)', d: '집안 재산 ×3', open: () => has('돈으로 산 강함'), why: '가게에서 물건을 사면 열린다', wealth: 3 },
+  { id: 'rich_1', n: '재산 (중)', d: '집안 재산 ×10', open: () => has('부자'), why: '한 생에 만 냥을 모으면 열린다', wealth: 10 },
+  { id: 'rich_2', n: '재산 (상)', d: '집안 재산 ×30', open: () => has('거부'), why: '한 생에 십만 냥을 모으면 열린다', wealth: 30 },
   { id: 'reveal', n: '제 몸을 안다', d: '타고난 특성을 처음부터 안다', open: () => endCount() >= 3, why: '세 번 살아 보면 열린다' },
-  { id: 'martial', n: '무가의 피', d: '무가에서 태어나기 쉽다', open: () => has('첫걸음'), why: '처음 무공에 입문하면 열린다' },
-  { id: 'region', n: '돌아갈 고향', d: '지난 생의 고향 땅에서 태어나기 쉽다', open: () => has('유랑'), why: '떠돌며 여러 고장을 밟으면 열린다' },
-  { id: 'apt', n: '갈고닦은 바탕', d: '가장 낮게 나온 자질을 한 번 더 굴린다', open: () => Object.keys(rec.achs).length >= 15, why: '업적이 열다섯 개 쌓이면 열린다' },
-  { id: 'kiyon', n: '하늘이 돕는다', d: '기연이 잘 따른다', open: () => has('세 번의 기연'), why: '한 생에 기연을 세 번 만나면 열린다' },
   { id: 'extra', n: '한 번 더 타고난다', d: '큰 특성을 한 번 더 굴린다', open: () => endKinds(['玄', '地', '天', '神']) >= 1, why: '玄 이상으로 생을 마치면 열린다' },
-  { id: 'noble', n: '명문의 자손', d: '명문에서 태어나기 쉽다', open: () => endKinds(['地', '天', '神']) >= 1 || !!rec.endings['장로'] || !!rec.endings['절정 고수'], why: '장로나 절정 고수로 생을 마치면 열린다' },
   { id: 'traitX2', n: '하늘의 총애', d: '큰 특성이 두 배 잘 나온다', open: () => endKinds(['地', '天', '神']) >= 3, why: '地 이상의 끝을 세 가지 보면 열린다' },
-  { id: 'origin', n: '다시 그 집에', d: '지난 생과 같은 집안에 태어나기 쉽다', open: () => endCount() >= 10, why: '열 번 살아 보면 열린다' },
-  { id: 'trait', n: '이어지는 피', d: '지난 생의 좋은 특성 하나가 다시 붙기 쉽다', open: () => endKinds(['地', '天', '神']) >= 1, why: '地 이상으로 생을 마치면 열린다' },
-  { id: 'memory', n: '전생의 초식', d: '지난 생에 익힌 무공이 꿈에 떠오르기 쉽다', open: () => rec.legends.some(l => l.art), why: '무공을 익힌 채 죽으면 열린다' },
-  { id: 'chapter', n: '때를 고른다', d: '지난 생과 같은 시대에 태어나기 쉽다', open: () => endKinds(['天', '神']) >= 1, why: '天 이상으로 생을 마치면 열린다' },
-  { id: 'lean', n: '타고난 자리', d: '지난 생의 처지(흑도·세가·상인·고아·관부)와 닮은 집안에 태어나기 쉽다', open: () => has('파문') || has('곳간을 털다') || has('수장의 자리') || has('부자'), why: '파문당하거나, 세력의 곳간을 털거나, 수장이 되거나, 만 냥을 모으면 열린다' },
-  { id: 'rich', n: '곳간이 찬 집', d: '집안 재산이 열 배로 시작하기 쉽다', open: () => has('거부') || has('부자'), why: '한 생에 만 냥을 모으면 열린다' },
-  { id: 'longLife', n: '장수 집안의 피', d: '「장수 집안」을 타고나기 쉽다', open: () => has('백세'), why: '백 살을 넘기면 열린다' },
+  { id: 'longLife', n: '장수 집안의 피', d: '「장수 집안」(수명 +12)을 타고난다', open: () => has('백세'), why: '백 살을 넘기면 열린다' },
   { id: 'masterLuck', n: '스승 복', d: '고수가 먼저 찾아와 제자로 삼겠다는 일이 두 배', open: () => has('스승의 부름') && has('청출어람'), why: '스승의 부름을 받고, 그 스승을 넘어서면 열린다' },
   { id: 'founder', n: '개파조사의 기억', d: '세력을 세우는 데 드는 돈이 절반', open: () => has('삼대 제자') || has('큰 세력의 주인'), why: '삼대 제자를 두거나 큰 세력의 주인이 되면 열린다' },
 ];
 function renderUnlocks() {
   $('unlCount').textContent = `${UNLOCKS.filter(u => u.open()).length} / ${UNLOCKS.length}`;
   $('unlocks').innerHTML = UNLOCKS.map(u => {
-    if (!u.open()) return `<div class="unl locked"><span>🔒 <span class="muted">${u.why}</span></span></div>`;
+    if (!u.open()) return `<div class="unl locked"><span>🔒 <b>${u.n}</b> <span class="muted">${u.d}</span><br><span class="muted" style="font-size:13px">${u.why}</span></span></div>`;
     const on = !!rec.on[u.id];
     const opts = u.pick ? u.pick() : null;
     const sel = opts ? `<select data-pick="${u.id}" ${on ? '' : 'disabled'}>${opts.map(([v, n]) => `<option value="${esc(v)}" ${String(rec.pick[u.id]) === String(v) ? 'selected' : ''}>${esc(n)}</option>`).join('') || '<option>아직 없음</option>'}</select>` : '';
@@ -307,26 +302,15 @@ function renderUnlocks() {
   $('unlocks').querySelectorAll('[data-pick]').forEach(el => el.onchange = () => { rec.pick[el.dataset.pick] = el.value; save(); });
 }
 function buildOpts() {
-  const o = { legends: rec.legends.slice(-60), aptBonus: {} }, on = id => rec.on[id] && UNLOCKS.find(u => u.id === id).open();
-  if (on('bestOf4')) o.bestOf4 = true;
+  const o = { legends: rec.legends.slice(-60), aptBonus: {} }, on = id => rec.on[id] && (UNLOCKS.find(u => u.id === id) || { open: () => false }).open();
+  for (const u of UNLOCKS) if (u.apt && on(u.id)) o.aptBonus[u.apt] = Math.max(o.aptBonus[u.apt] || 0, u.add);
+  for (const u of UNLOCKS) if (u.wealth && on(u.id)) o.wealthMul = Math.max(o.wealthMul || 1, u.wealth);
   if (on('reveal')) o.revealTraits = true;
-  if (on('martial')) o.martial = true;
-  const last = rec.last || {};
-  if (on('region') && last.region) o.region = last.region;
-  if (on('apt')) o.aptFavor = 'lowest';
-  if (on('kiyon')) o.aptBonus.기연 = (o.aptBonus.기연 || 0) + 15;
   if (on('extra')) o.extraBig = true;
-  if (on('noble')) o.noble = true;
   if (on('traitX2')) o.traitX2 = true;
-  if (on('origin') && last.originId) o.originId = last.originId;
-  if (on('trait') && (last.traits || []).length) o.buyTraits = [last.traits[Math.floor(Math.random() * last.traits.length)]];
-  if (on('memory')) { const l = rec.legends.slice().reverse().find(x => x.art); if (l) { o.startArt = l.art; if (l.artDef) o.startArtDef = l.artDef; } }
-  if (on('lean') && last.lean) o.lean = last.lean;
-  if (on('rich')) o.rich = true;
   if (on('longLife')) o.longLife = true;
   if (on('masterLuck')) o.masterLuck = true;
   if (on('founder')) o.founder = true;
-  if (on('chapter') && last.year != null) { const c = CH.find(c => last.year >= c[0] && last.year <= c[1]); if (c) { o.chapter = [c[0], c[1]]; o.minYear = -9999; } }
   return o;
 }
 function renderIntro() {
