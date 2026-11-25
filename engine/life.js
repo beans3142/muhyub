@@ -1553,7 +1553,7 @@ function* tourneyYear(P) {
   const y = P.year;
   // 고을 비무대회: 큰 고을에서 2년에 한 번, 범인~이류가 나온다
   const hereP = G.PLACES2[P.place];
-  if (P.realm <= 2 && P.age >= 12 && P.age <= 35 && hereP && (hereP.t === '성' || hereP.t === '진') && y % 2 === 0 && !(P.realm === 0 && P.R() < 0.5)) {
+  if (P.realm <= 2 && P.age >= 12 && P.age <= 35 && hereP && (hereP.t === '성' || hereP.t === '진') && y % 3 === 0 && !(P.realm === 0 && P.R() < 0.6)) {
     const ch = yield { ask: '고을 비무대회', text: `${atText(P)} 장터에 비무대가 섰다. 고을의 힘깨나 쓰는 젊은이들이 모인다.`, options: [['나간다', '비무 셋, 상대는 범인~이류'], ['구경만 한다', '']] };
     if (ch === 0) yield* tourney(P, '고을');
   }
@@ -2269,7 +2269,7 @@ const OPP_TRAVEL = ['떠날 까닭도 생겼다.', '다른 고을 소식도 들�
 function* opportunity(P, withTravel) {
   if (P.age < 10) return;
   P.actUsed = P.actUsed || {};
-  const acts = LIFE.actions(P).filter(a => a.ok && !OPP_SKIP.has(a.id) && !(a.id === 'shop' && P.wealth < 30) && !(P.actUsed[a.id] >= P.year - 2)).map(a => ({ n: a.n, hint: a.desc, go: function* () { P.actUsed[a.id] = P.year; yield* doAction(P, a.id); } }));
+  const acts = LIFE.actions(P).filter(a => a.ok && !OPP_SKIP.has(a.id) && !(a.id === 'shop' && (P.wealth < 100 || P.R() < 0.6)) && !(a.id === 'manual' && P.R() < 0.6) && !(P.actUsed[a.id] >= P.year - 2)).map(a => ({ n: a.n, hint: a.desc, go: function* () { P.actUsed[a.id] = P.year; yield* doAction(P, a.id); } }));
   // 옮긴 지 두 해가 안 됐으면 떠날 곳은 덜 나온다
   const recs = recruitOffers(P), trav = withTravel && (P.year - (P.movedY || -99) >= 2 || P.R() < 0.25) ? travelOffers(P) : [];
   const pool = [];
@@ -2617,7 +2617,7 @@ function forceGrowth(P) {
 function backerFor(P, n) {
   if (n.backer !== undefined) return n.backer;
   n.backer = null;
-  if (!(n.men || /두목|채주|우두머리|관주|대주|호위대장/.test(n.role || '')) || P.R() > 0.4) return null;
+  if (!(n.men || /두목|채주|우두머리|관주|대주|호위대장/.test(n.role || '')) || P.R() > 0.3) return null;
   const dirty = n.t === '사' || n.t === '마' || /산적|흑도|왈패|수적|마적|녹림|채주/.test(n.role || '');
   const pool = G.FACTIONS.filter(f => factionAlive(P, f.id) && (f.prestige || 0) >= 1 && (dirty ? (f.t === '사' || f.lad === 'info' || f.lad === 'bandit' || f.t === '관') : (f.t === '정' || f.t === '중' || f.t === '관')));
   const b = pool.length ? pk(P, pool) : null;
@@ -2629,7 +2629,7 @@ function afterBeatBacked(P, n) {
   const b = backerFor(P, n); if (!b) return;
   const f = facDef(b); if (!f || (P.member && (P.member.fid === b))) return;
   repAdd(P, b, -15);
-  (P.threats = P.threats || []).push({ fid: b, y: P.year + 1 + Math.floor(P.R() * 3), who: n.name });
+  if (P.R() < 0.45) (P.threats = P.threats || []).push({ fid: b, y: P.year + 1 + Math.floor(P.R() * 3), who: n.name });
   if (n.backerKnown) say(P, `${n.name} 뒤에는 ${f.n}${J(f.n, '이가').slice(-1)} 있다. 그냥 넘어가지 않을 것이다.`, 'ng');
 }
 function* threatYear(P) {
@@ -2724,7 +2724,7 @@ function* year(P) {
         const t = pickTpl(P, s) || pickTpl(P, src);
         if (t) { got++; if (src === '협행') P.deeds.협행 = (P.deeds.협행 || 0) + 1; if (s === '표행') P.deeds.표행 = (P.deeds.표행 || 0) + 1; if (s === '약탈') P.deeds.약탈 = (P.deeds.약탈 || 0) + 1; yield* runTpl(P, t, mo); if (!P.alive) return; }
       }
-      if (P.force && P.R() < 0.06) { const t = pickTpl(P, '세력'); if (t) { yield* runTpl(P, t, mo); if (!P.alive) return; } }
+      if (P.force && P.R() < 0.025) { const t = pickTpl(P, '세력'); if (t) { yield* runTpl(P, t, mo); if (!P.alive) return; } }
     }
     yield { tick: 'month' };
   }
@@ -2903,7 +2903,7 @@ LIFE.effQi = effQi; LIFE.careerDef = careerDef; LIFE.facDef = facDef; LIFE.atTex
 LIFE.init = function () {
   if (LIFE.ready) return;
   LIFE.MINOR_IDS = new Set((G.TRAITS_MINOR || []).map(t => t.id));
-  LIFE.TPL = (G.EVENT_TEMPLATES || []).concat(G.LIFEBOOK || [], G.MURIMBOOK || [], G.MURIMBOOK2 || [], G.FACTIONBOOK || [], G.MURIMBOOK3 || []);
+  LIFE.TPL = (G.EVENT_TEMPLATES || []).concat(G.LIFEBOOK || [], G.MURIMBOOK || [], G.MURIMBOOK2 || [], G.FACTIONBOOK || [], G.MURIMBOOK3 || [], G.MURIMBOOK4 || []);
   LIFE.CLAN_SUR = new Set(G.FACTIONS.filter(f => f.sur).map(f => f.sur));
   LIFE.BIG = new Set(G.BIG_CITIES || []);
   LIFE.ARTS_BY_F = {}; LIFE.ARTS_BY_G = [[], [], [], [], [], []];

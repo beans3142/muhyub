@@ -4,7 +4,7 @@
 //   --log    첫 생의 기록을 출력한다.
 global.window = global;
 const path = require('path');
-for (const f of ['factions', 'places', 'regions', 'names', 'anchors', 'traits', 'traits_life', 'arts', 'careers', 'origins', 'items', 'eventbook', 'lifebook', 'murimbook', 'murimbook2', 'factionbook', 'murimbook3', 'events', 'starts', 'canon', 'named'])
+for (const f of ['factions', 'places', 'regions', 'names', 'anchors', 'traits', 'traits_life', 'arts', 'careers', 'origins', 'items', 'eventbook', 'lifebook', 'murimbook', 'murimbook2', 'factionbook', 'murimbook3', 'murimbook4', 'events', 'starts', 'canon', 'named'])
   require(path.join(__dirname, '..', 'data', f + '.js'));
 require(path.join(__dirname, '..', 'engine', 'world.js'));
 require(path.join(__dirname, '..', 'engine', 'life.js'));
