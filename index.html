@@ -276,14 +276,17 @@ window.addEventListener('scroll', () => { follow = window.innerHeight + window.s
 
 const R = L.REALMS;
 function bar(f, cls = '', mark) { return `<div class="bar"><i class="${cls}" style="width:${Math.max(0, Math.min(100, f * 100)).toFixed(1)}%"></i>${mark != null ? `<em style="left:${(mark * 100).toFixed(1)}%"></em>` : ''}</div>`; }
-const clean = e => String(e || '').replace(/`/g, '');
+const FXW = { train: '수련', enlight: '깨달음', ng: '축기', cap: '상한', grow: '성장', check: '판정', mastery: '성취', capa: '단전', inner: '내공', real: '실전', life: '수명', death: '요절 위험', flow: '운용', mind: '상단전', fiber: '근섬유', luck: '운', deviate: '주화입마', break: '돌파', resolve: '결단', career: '생업', bond: '인연', align: '성향', aging: '노화', curve: '성장 곡선', outer: '외물', stat: '자질', immune: '면역', eventRate: '사건', event: '사건', ban: '금기', special: '특수', mul: '배율', start: '시작', gain: '얻는 양', max: '최대', reroll: '다시 굴림', crit: '대실패' };
+const clean = e => String(e || '').replace(/`/g, '').replace(/([a-zA-Z]+)/g, w => FXW[w] || w);
 function renderSheet() {
   const fam = L.fameName(P), m = L.mainArt(P), ax = L.nextAxes(P);
   $('who').innerHTML = `${esc(P.dharma || P.name)}${P.epithet ? `<span class="ep">「${esc(P.epithet)}」</span>` : ''}<span class="sub">${P.sex === 'm' ? '남' : '여'} · ${P.age}세 · ${P.year < 0 ? '기원전 ' + -P.year : P.year}년 · ${esc(L.atText(P))}</span>`;
   if ($('plan').value !== P.plan) $('plan').value = P.plan;
   $('plan').disabled = P.age < 15;
   const ww = L.wuwei(P);
-  let h = `<div class="box"><div class="realm">${R[P.realm]}<small>${P.realm ? L.STAGES[P.stage] : ''}${ax && !ax.ok.every(Boolean) && ax.ok.filter(Boolean).length === ax.ok.length - 1 ? ' · 벽(' + ax.rows[ax.ok.indexOf(false)][0] + ')' : ''}</small></div>
+  const era = P.era;
+  let h = era ? `<div class="box"><h3>시대</h3><b>${esc(era.chapter)}</b> · ${esc(era.label)}${era.local.length ? `<div class="muted">${era.local.map(esc).join(' · ')}</div>` : ''}</div>` : '';
+  h += `<div class="box"><div class="realm">${R[P.realm]}<small>${P.realm ? L.STAGES[P.stage] : ''}${ax && !ax.ok.every(Boolean) && ax.ok.filter(Boolean).length === ax.ok.length - 1 ? ' · 벽(' + ax.rows[ax.ok.indexOf(false)][0] + ')' : ''}</small></div>
     <div class="ww">무위 <b>${ww >= 100 ? Math.round(ww).toLocaleString() : ww.toFixed(1)}</b> · 깨달음 ${L.ENL[P.enl]} · 실전 ${Math.round(P.real)}</div>`;
   // 다음 경지까지 얼마 남았는지는 숫자로 보이지 않는다(10단계 4-3). 느낌으로만 보인다
   if (ax && (P.arts.length || P.realm)) {

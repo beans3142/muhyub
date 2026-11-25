@@ -332,7 +332,7 @@ function* fight(P, n, opts = {}) {
     if (stage === '신승' && P.R() < 0.5) hurtMe(P, 1);
     if (stage === '승' && P.R() < 0.3) hurtMe(P, 1);
     if (res === '동귀어진' && win) { hurtMe(P, 2); if (P.R() < 0.3) die(P, '상대와 함께 쓰러졌다', 'combat'); }
-    const lk = opts.lethal ? 0.55 : 0.06;
+    const lk = opts.lethal ? 0.4 : 0.06;
     if (stage === '패') { hurtMe(P, opts.lethal ? 2 : 1); if (P.R() < lk * 0.2 * (res === '신중' ? 0.5 : res === '사생결단' ? 1.5 : res === '동귀어진' ? 4.5 : 1)) die(P, `${n.name}의 손에 쓰러졌다`, 'combat'); }
     if (stage === '대패') { hurtMe(P, opts.lethal ? 3 : 2); if (P.R() < lk * 0.6 * (res === '신중' ? 0.5 : 1.5)) die(P, `${n.name}의 손에 쓰러졌다`, 'combat'); }
     if (win) P.trigger = Math.max(P.trigger, 1);
@@ -462,7 +462,7 @@ function rollTraits(P) {
 }
 function revealTraits(P, cat) {
   const l = P.traits.filter(t => P.hidden.includes(t.id) && (!cat || t.c === cat));
-  for (const t of l) { P.hidden = P.hidden.filter(x => x !== t.id); say(P, `타고난 것이 드러났다: <b>${t.n}</b>. ${String(t.e || '').replace(/`/g, '')}`, 'big'); if (t.n === '천무지체') addAch(P, '천무지체'); }
+  for (const t of l) { P.hidden = P.hidden.filter(x => x !== t.id); say(P, `타고난 것이 드러났다: <b>${t.n}</b>(${t.tier}).`, 'big'); if (t.n === '천무지체') addAch(P, '천무지체'); }
 }
 LIFE.isHidden = (P, t) => P.hidden.includes(t.id);
 
@@ -523,7 +523,9 @@ function* birth(P) {
   card(P);
   const sx = P.sex === 'm' ? '사내아이' : '계집아이';
   say(P, `${yr(P.year)}, ${atText(P)}. <b>${og.n}</b>에서 ${sx} <b>${P.name}</b>${J(P.name, '이가').slice(-1)} 태어났다.`, 'big');
-  if (sp.title && sp.kind === '평시') say(P, `세상: ${sp.title.replace(/^[^·]*·\s*/, '')}`, 'world');
+  P.era = eraOf(P);
+  say(P, `때는 <b>${P.era.chapter}</b>, ${J(P.era.label, '이다')}.${P.era.why ? ' ' + P.era.why : ''}`, 'world');
+  for (const l of P.era.local) say(P, `${l}.`, 'world');
   // 태생 소속
   if (og.join && og.join.length) {
     const fid = og.join[0], f = facDef(fid);
@@ -558,6 +560,7 @@ function tplWeight(P, t) {
   if ((P.origin.tag || []).some(x => tg.includes(x) || (t.need && t.need.tag && [].concat(t.need.tag).includes(x)))) w *= 2;
   for (const ev of fxAll(P, 'event')) if ([].concat(ev).some(x => t.n.includes(x))) w *= 3;
   if (t.src === '상태') w *= Math.pow(1.25, Math.max(stageOf(P.fame), stageOf(P.infamy)));
+  if (P.era) { const key = t.n + ' ' + ((t.who && t.who.r) || ''); if (RE_BANDIT.test(key)) w *= 1 + 1.5 * P.era.dz.bandit; if (RE_DEMON.test(key)) w *= 1 + 1.5 * P.era.dz.demon; }
   const p = G.PLACES2[P.place];
   if (p && t.at) { const nat = (G.SEATS[p.t] || []).concat(LIFE.BIG.has(P.place) ? G.SEATS.대도시 : []); if (nat.includes(t.at)) w *= 1.5; else if (!G.SEATS.어디서나.includes(t.at)) w *= 0.3; }
   return w;
@@ -1066,23 +1069,126 @@ function recover(P) {
   if (P.poison && check(P, '체력', 50).ok) P.poison = 0;
 }
 
+// ---------- 시대와 지역의 위험(10단계 6-1) ----------
+const CHAPTERS = [[-500, -222, '검의 시대'], [-221, 219, '제국과 유협'], [220, 588, '산문의 시작'], [589, 906, '승병과 이교'], [907, 1126, '문파의 태동'], [1127, 1278, '구파 정립'], [1279, 1367, '명교와 홍건'], [1368, 1449, '마교의 굴기'], [1450, 1549, '강호의 전성기'], [1550, 1643, '왜구와 동영'], [1644, 1779, '반청'], [1780, 1840, '황혼']];
+// 전란을 부르는 정사 닻과 어지러움이 이어지는 해
+const WAR_ANCHORS = { qin_fall: 5, yellow_turban: 15, anshi: 8, huangchao: 10, fangla: 3, jingkang: 10, yuefei: 6, mongol: 44, xiangyang: 6, song_fall: 3, red_turban: 17, tumu: 3, wokou: 15, ming_fall: 20, bailian_revolt: 9, opium: 3 };
+const RE_BANDIT = /산적|수적|녹림|흑도|왈패|사파|흉적|마적|인신매매|복면|강도|도적/;
+const RE_DEMON = /마교|혈교|마두|사교|마공|마인/;
+function eraOf(P) {
+  const y = P.year, ch = CHAPTERS.find(c => y >= c[0] && y <= c[1]) || CHAPTERS[CHAPTERS.length - 1];
+  const e = { chapter: ch[2], label: '비교적 태평한 시기', dz: { bandit: 0, demon: 0, war: 0 }, local: [], banditF: null, demonF: null, why: '' };
+  const w = P.world;
+  if (w) {
+    const since = (re, n) => Object.entries(w.fired).find(([id, f]) => re.test(id) && y - f.y >= 0 && y - f.y < n);
+    let wa;
+    if (since(/^zhengmo/, 10)) { e.label = '정마대전의 한가운데'; e.dz.demon = 0.8; e.dz.war = 0.6; }
+    else if (since(/^blood_calamity/, 10)) { e.label = '혈겁이 휩쓰는 시기'; e.dz.demon = 0.8; }
+    else if ((wa = Object.entries(WAR_ANCHORS).find(([id, n]) => w.fired[id] && y - w.fired[id].y >= 0 && y - w.fired[id].y < n))) {
+      e.label = '천하가 어지러운 전란기'; e.dz.war = 0.7; e.dz.bandit = 0.4;
+      const a = (G.ANCHORS || []).find(x => x.id === wa[0]); e.why = a ? a.t.split(/(?<=다\.)/)[0] : '';
+    } else {
+      const vis = w.list.filter(f => f.alive && f.state !== '잠적' && f.cat !== '새외');
+      const top = t => Math.max(0, ...vis.filter(f => f.t === t).map(f => f.pow));
+      // 들어갈 때와 나올 때 문턱을 달리 해서 해마다 오락가락하지 않게 한다
+      const j = top('정') || 1, prev = P.era && P.era.label, wars = vis.filter(f => f.war).length / 2;
+      if (top('마') >= (prev === '마도가 기세를 올리는 시기' ? 0.55 : 0.7) * j) { e.label = '마도가 기세를 올리는 시기'; e.dz.demon = 0.4; }
+      else if (top('사') >= (prev === '사파가 날뛰는 시기' ? 0.55 : 0.7) * j) { e.label = '사파가 날뛰는 시기'; e.dz.bandit = 0.5; }
+      else if (wars >= (prev === '문파들이 다투는 어지러운 시기' ? 2 : 5)) { e.label = '문파들이 다투는 어지러운 시기'; e.dz.bandit = 0.3; }
+    }
+    const me = G.PLACES2[P.place];
+    if (me) {
+      let nb = null, nd = null;
+      for (const [id, o] of Object.entries(w.owner)) {
+        const f = w.F[o], p = G.PLACES2[id]; if (!f || !f.alive || !p) continue;
+        const d = Math.hypot(p.x - me.x, p.y - me.y);
+        if (f.t === '사' && d <= 60 && (!nb || d < nb[2])) nb = [f, p, d];
+        if (f.t === '마' && d <= 100 && (!nd || d < nd[2])) nd = [f, p, d];
+      }
+      if (nb) { e.dz.bandit += 0.4; e.banditF = nb[0].n; e.local.push(nb[1] === me ? `이 고을은 ${nb[0].n}의 손안에 있다` : `근처 ${nb[1].n}에 ${J(nb[0].n, '이가')} 자리 잡고 있다`); }
+      if (nd) { e.dz.demon += 0.3; e.demonF = nd[0].n; e.local.push(`${nd[1].n} 쪽에 ${nd[0].n}의 세력이 뻗어 있다`); }
+    }
+  }
+  if (y >= 1550 && y <= 1600 && ['강남', '복건', '광동', '산동'].includes(P.region)) { e.dz.bandit += 0.3; e.local.push('바닷가에 왜구가 출몰한다'); }
+  return e;
+}
+LIFE.eraOf = eraOf;
+// 습격 사건: 산적·마교·난리(10단계 6-1). 무공을 모르는 사람도 겪는다
+function* incident(P) {
+  const dz = P.era.dz, wb = 0.06 * dz.bandit, wd = 0.04 * dz.demon, ww = 0.04 * dz.war, tot = wb + wd + ww;
+  if (P.age < 6 || tot <= 0 || P.R() >= tot) return;
+  const r = P.R() * tot, kind = r < wb ? 'bandit' : r < wb + wd ? 'demon' : 'war';
+  const young = P.age < 14;
+  if (kind === 'bandit') {
+    const org = P.era.banditF || '산적';
+    const n = makeNpc(P, '산적 두목', [0, 1]); n.org = P.era.banditF;
+    const per = perceive(P, n);
+    const text = `${atText(P)}에 ${org}의 무리가 들이닥쳤다. 앞장선 것은 ${J(per.txt, '이다')}.`;
+    const opts = [['숨는다', '들키면 다친다'], ['재물을 내준다', '목숨은 건진다']];
+    if (!young) opts.push(['맞선다', guessOdds(P, n, per)]);
+    const ch = yield { ask: '산적의 습격', text, options: opts };
+    say(P, text, 'big'); say(P, `▸ ${opts[ch][0]}`, 'pick');
+    if (ch === 0) {
+      const c = check(P, '순발', 50, P.real / 50);
+      if (c.ok) { P.wealth *= 0.8; say(P, '숨어서 화를 피했다. 집은 털렸다.', 'ok'); }
+      else { P.wealth *= 0.5; hurtMe(P, 1); if (P.R() < ((P.age < 10 || P.age > 60) ? 0.08 : 0.03)) die(P, `${org}의 칼에 쓰러졌다`, 'combat'); }
+    } else if (ch === 1) { P.wealth *= 0.4; say(P, '가진 것을 내주고 목숨을 건졌다.'); }
+    else {
+      meet(P, n, '원수');
+      const f = yield* fight(P, n, { lethal: true });
+      if (f.win) { addFame(P, 80); P.align = clamp(P.align + 5, -100, 100); P.merit += 10; say(P, '산적을 물리쳤다. 마을 사람들이 고개를 숙였다.', 'ok'); }
+    }
+  } else if (kind === 'demon') {
+    const org = P.era.demonF || '마교';
+    const n = makeNpc(P, '마교도', [0, 1]); n.org = P.era.demonF;
+    const per = perceive(P, n);
+    const text = `${atText(P)}에 ${org}의 무리가 나타나 사람들을 끌고 간다. ${J(per.txt, '이가')} 앞장섰다.`;
+    const opts = [['숨는다', '']];
+    if (!young) opts.push(['맞선다', guessOdds(P, n, per)]);
+    const myF = P.member && facDef(P.member.fid);
+    if (myF && myF.t === '정') opts.push(['사문에 알린다', myF.n]);
+    const ch = yield { ask: '마교도', text, options: opts };
+    say(P, text, 'big'); say(P, `▸ ${opts[ch][0]}`, 'pick');
+    const act = opts[ch][0];
+    if (act === '숨는다') {
+      if (!check(P, '수읽기', 50).ok) {
+        if (P.R() < 0.3) die(P, `${org}에게 끌려가 돌아오지 못했다`, 'combat');
+        else { hurtMe(P, 2); say(P, '끌려갔다가 겨우 달아났다.', 'ng'); P.trigger = 1; }
+      } else say(P, '숨어서 지켜보았다. 이웃들이 끌려갔다.');
+    } else if (act === '맞선다') {
+      const f = yield* fight(P, n, { lethal: true });
+      if (f.win) { addFame(P, 150); P.align = clamp(P.align + 8, -100, 100); say(P, '마교도를 쳐냈다.', 'ok'); }
+    } else { P.merit += 20; addFame(P, 40); say(P, '사문에 알렸다. 사형들이 내려와 마교도를 몰아냈다.', 'ok'); }
+  } else {
+    const text = `난리가 ${atText(P)}까지 번졌다. ${P.era.why || ''}`;
+    const ch = yield { ask: '난리', text, options: [['피란한다', '다른 고을로 떠난다'], ['고향을 지킨다', '몸이 버텨야 한다']] };
+    say(P, text, 'big'); say(P, `▸ ${['피란한다', '고향을 지킨다'][ch]}`, 'pick');
+    if (ch === 0) { P.wealth *= 0.7; moveTo(P, nearPlace(P, 160)); say(P, `${J(atText(P), '으로')} 피란했다.`); }
+    else if (!check(P, '체력', 50).ok) { hurtMe(P, 2); if (P.R() < 0.1) die(P, '난리 통에 목숨을 잃었다', 'combat'); }
+    else say(P, '고향을 지켜 냈다.', 'ok');
+  }
+}
+
 // ---------- 한 해 ----------
 function* year(P) {
   P.flags.tierUp = false; P.flags.bigWin = false; P.flags.timeUsed = 0;
   card(P);
   if (P.world) yield* worldYear(P);
   if (!P.alive) return;
+  const prevEra = P.era; P.era = eraOf(P);
+  if (prevEra && prevEra.label !== P.era.label) say(P, `세상의 기운이 바뀌었다: <b>${P.era.label}</b>.`, 'world');
   mortality(P); if (!P.alive) return;
   yield* threadYear(P); if (!P.alive) return;
   // 생애 사건(해마다 30%)
   if (P.age >= 6 && P.R() < 0.3) { const t = pickTpl(P, '생애'); if (t) yield* runTpl(P, t); if (!P.alive) return; }
   // 진로·초청
   yield* pathEvents(P); if (!P.alive) return;
+  yield* incident(P); if (!P.alive) return;
   if (P.age >= 15) { yield* invitations(P); if (!P.alive) return; }
   // 달마다 칸 사건(10단계 3-2)
   const sch = scheduleOf(P);
   if (P.age >= 10) {
-    const mulF = Math.pow(1.15, Math.max(stageOf(P.fame), stageOf(P.infamy))) * Math.pow(1.1, Math.max(0, P.realm - 1)) * (hasTrait(P, '행운아') || hasTrait(P, '불운') ? 1.2 : 1);
+    const dz = P.era.dz, mulF = Math.pow(1.15, Math.max(stageOf(P.fame), stageOf(P.infamy))) * Math.pow(1.1, Math.max(0, P.realm - 1)) * (hasTrait(P, '행운아') || hasTrait(P, '불운') ? 1.2 : 1) * (1 + 0.4 * Math.max(dz.bandit, dz.demon, dz.war));
     const months = []; for (const a of sch.list) for (let k = 0; k < 3; k++) months.push(a);
     const n12 = months.length / 12;
     let got = 0;

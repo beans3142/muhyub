@@ -34,7 +34,7 @@ function live(seed) {
 }
 
 const t0 = Date.now();
-const grade = {}, names = {}, peak = {}, ach = {}, ages = [], causes = {};
+const grade = {}, names = {}, peak = {}, ach = {}, ages = [], causes = {}, ccause = {};
 let first;
 for (let i = 0; i < N; i++) {
   const P = live(1000 + i * 7919);
@@ -43,7 +43,7 @@ for (let i = 0; i < N; i++) {
   names[P.end.name] = (names[P.end.name] || 0) + 1;
   peak[P.peak] = (peak[P.peak] || 0) + 1;
   for (const a of P.ach) ach[a] = (ach[a] || 0) + 1;
-  ages.push(P.age); causes[P.causeKind || '?'] = (causes[P.causeKind || '?'] || 0) + 1;
+  ages.push(P.age); causes[P.causeKind || '?'] = (causes[P.causeKind || '?'] || 0) + 1; if (P.causeKind === 'combat') { const k = (P.cause || '').replace(/^.*의 손에/, '손에').replace(/[가-힣]+의 칼/, '산적 칼').slice(0, 14); ccause[k] = (ccause[k] || 0) + 1; }
 }
 const pct = (o, k) => Object.entries(o).sort((a, b) => (k ? k(a, b) : b[1] - a[1])).map(([x, v]) => `${x} ${(100 * v / N).toFixed(2)}%`).join(', ');
 console.log(`${N}생, ${((Date.now() - t0) / 1000).toFixed(1)}초${WORLD ? ' (세계 포함)' : ''}`);
@@ -52,4 +52,5 @@ console.log('최고 경지:', LIFE.REALMS.map((r, i) => `${r} ${(100 * (peak[i] 
 console.log('엔딩:', pct(names));
 ages.sort((a, b) => a - b); console.log(`향년 중앙 ${ages[N >> 1]}, 사인:`, pct(causes));
 console.log('업적:', pct(ach));
+console.log('싸움 사인:', pct(ccause));
 if (LOG) for (const c of first.log) { console.log(`\n[${c.year}년 ${c.age}세 ${c.place}]`); for (const l of c.lines) console.log(' ', (l.m ? l.m + '월 ' : '') + l.t.replace(/<[^>]+>/g, '')); }
