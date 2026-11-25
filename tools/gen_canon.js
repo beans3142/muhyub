@@ -4,11 +4,11 @@
 // 게임은 시작점 연도까지 같은 seed·canon 옵션으로 세계를 다시 돌려 같은 상태를 얻는다(스냅숏은 저장하지 않는다).
 const fs = require('fs'), path = require('path');
 global.window = global;
-for (const f of ['data/factions.js', 'data/places.js', 'data/regions.js', 'data/names.js', 'data/anchors.js', 'engine/world.js']) require(path.join(__dirname, '..', f));
+for (const f of ['data/factions.js', 'data/places.js', 'data/regions.js', 'data/names.js', 'data/anchors.js', 'data/named.js', 'engine/world.js']) require(path.join(__dirname, '..', f));
 const WS = global.WORLDSIM;
 const CANON_SEED = 20261124, VERSION = 2;
-// lore.md 4장에서 이름을 정한 개파조사
-const FOUNDERS = { shaolin: '발타', wudang: '장삼봉', huashan: '청허자', gaibang: '연무백', qingcheng: '송학도인', zhongnan: '운허진인', emei: '정연 사태', diancang: '단목휘', kunlun: '백운자', kongtong: '철벽진인', bailian: '모자원', quanzhen: '왕중양' };
+// 개파조사와 네임드 수장은 data/named.js(docs/p11-cast.md)
+const FOUNDERS = global.FOUNDERS, NAMED = global.NAMED;
 const CHAPTERS = [
   [-500, -222, '검의 시대'], [-221, 219, '제국과 유협'], [220, 588, '산문의 시작'], [589, 906, '승병과 이교'], [907, 1126, '문파의 태동'],
   [1127, 1278, '구파 정립'], [1279, 1367, '명교와 홍건'], [1368, 1449, '마교의 굴기'], [1450, 1549, '강호의 전성기'], [1550, 1643, '왜구와 동영'],
@@ -17,7 +17,7 @@ const chapterOf = y => CHAPTERS.find(c => y >= c[0] && y <= c[1]);
 const yr = y => (y < 0 ? `기원전 ${-y}년` : `${y}년`);
 
 function run(seed, canon) {
-  const ctx = WS.create({ seed, canon, founders: FOUNDERS });
+  const ctx = WS.create({ seed, canon, founders: FOUNDERS, named: NAMED });
   WS.runTo(ctx, WS.END);
   return ctx;
 }
@@ -58,7 +58,7 @@ for (let y = -500; y <= MAX_START; y += step(y)) {
 // 평시 제목에 그해 판도를 붙인다(세계를 한 번 더 돌리며 해당 연도 상태를 본다)
 const list = [...starts.values()].sort((a, b) => a.y - b.y);
 {
-  const c2 = WS.create({ seed: CANON_SEED, canon: true, founders: FOUNDERS });
+  const c2 = WS.create({ seed: CANON_SEED, canon: true, founders: FOUNDERS, named: NAMED });
   for (const s of list) {
     WS.runTo(c2, s.y);
     const snap = WS.snapshot(c2);
@@ -95,7 +95,7 @@ console.log(`시작점 ${list.length}개`, JSON.stringify(kinds));
 const byCh = CHAPTERS.map(c => `${c[2]} ${list.filter(s => s.y >= c[0] && s.y <= c[1]).length}`); console.log('장별 시작점:', byCh.join(', '));
 console.log(`생성 세력 ${canon.generated_factions.length}, 멸문 ${Object.keys(falls).length}, 신물 출세 ${ctx.relics.length}, 세계 갈래 ${ctx.routes.map(r => r.y + ' ' + r.route).join(', ') || '없음'}`);
 for (const y of [-300, 300, 800, 1100, 1300, 1450, 1550, 1700, 1840]) {
-  const c2 = WS.create({ seed: CANON_SEED, canon: true, founders: FOUNDERS }); WS.runTo(c2, y);
+  const c2 = WS.create({ seed: CANON_SEED, canon: true, founders: FOUNDERS, named: NAMED }); WS.runTo(c2, y);
   const sn = WS.snapshot(c2).sort((a, b) => b.pow - a.pow);
   console.log(`${yr(y)}: 세력 ${sn.length} | 상위 ${sn.slice(0, 5).map(f => `${f.n}(${f.t},${f.pow},${f.leader})`).join(' ')}`);
 }

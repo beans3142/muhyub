@@ -60,9 +60,16 @@ function activate(ctx, f, year, how) {
 }
 function newLeader(ctx, f, year, founder) {
   const R = ctx.R; f.gen += 1;
-  const fixed = founder && ((ctx.opts.founders && ctx.opts.founders[f.id]) || f.def.founder);
-  const name = fixed || makeName(ctx, f);
-  f.leader = { name, age: Math.floor(35 + R() * 25), from: year, gen: f.gen };
+  // 네임드(docs/p11-cast.md 2-3): 개파조사·수장 자리에 그 해 살아 있고 아직 앉지 않은 네임드가 있으면 그 사람이 앉는다
+  const named = ctx.opts.named || [], used = ctx.namedUsed = ctx.namedUsed || {};
+  const fits = n => n.fid === f.id && year >= n.born + 20 && year <= n.died - 3 && !used[n.id];
+  let fixed = founder && ((ctx.opts.founders && ctx.opts.founders[f.id]) || f.def.founder);
+  const fn = fixed && named.find(n => n.name === fixed && n.fid === f.id);
+  if (fn && !fits(fn)) fixed = null;
+  const nm = fixed ? (fn || null) : named.find(n => n.rank === 'head' && fits(n) && year >= n.born + 25);
+  if (nm) used[nm.id] = true;
+  const name = fixed || (nm && nm.name) || makeName(ctx, f), age = Math.floor(35 + R() * 25);
+  f.leader = { name, age: nm ? year - nm.born : age, from: year, gen: f.gen, dies: nm ? nm.died : null };
   (ctx.leaders[f.id] = ctx.leaders[f.id] || []).push({ gen: f.gen, name, from: year, to: null });
 }
 function kill(ctx, f, year, why, kind) {
@@ -326,7 +333,7 @@ function stepFactions(ctx, year) {
     // 수장
     const L = f.leader; L.age++;
     const dp = L.age < 60 ? 0.012 : 0.012 * Math.pow(1.11, L.age - 60);
-    if (R() < dp) {
+    if (R() < dp || (L.dies != null && year >= L.dies)) {
       const old = ctx.leaders[f.id]; old[old.length - 1].to = year;
       const roll = R() * 100;
       if (roll < f.coh + 25) newLeader(ctx, f, year);
