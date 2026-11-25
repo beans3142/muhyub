@@ -57,29 +57,31 @@ h3{font-size:14px;margin:0 0 8px;color:var(--ink2);font-weight:700;letter-spacin
 .chron{max-height:420px;overflow:auto}
 .chron div{padding:7px 0;border-bottom:1px dotted var(--line);font-size:15px}
 .chron .yr{display:inline-block;min-width:120px;color:var(--ink2);font-size:13.5px}
-.hero{position:sticky;top:0;z-index:6;background:linear-gradient(180deg,rgba(251,246,234,.97),rgba(251,246,234,.93));border-bottom:3px solid var(--band);box-shadow:0 4px 14px rgba(0,0,0,.08);display:grid;grid-template-columns:118px 1fr auto;gap:16px;padding:10px 16px;align-items:center}
-.hero .pt{width:118px;height:150px;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(circle at 50% 70%,#fff8e6,#e8dcc0);border:1px solid var(--line)}
-.hero .pt img{height:146px;object-fit:contain}
-.hn{font-size:30px;font-weight:900;line-height:1.15}
-.hn .ep{display:inline-block;background:var(--red);color:#fff;font-size:15px;padding:1px 9px;margin-left:8px;vertical-align:middle;font-weight:700}
-.hsub{color:var(--ink2);font-size:15px;margin:2px 0 6px}
-.hchips{display:flex;flex-wrap:wrap;gap:6px}
-.hc{background:var(--paper);border:1px solid var(--line);padding:2px 10px;font-size:14.5px}
+/* 왼쪽 사이드바: 초상·상태·조작·탭을 한곳에(사용자 요청 2026-11-25) */
+.life{display:grid;grid-template-columns:400px minmax(0,1fr);gap:20px;align-items:start}
+.sb{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto;background:var(--card);border:1px solid var(--line);border-top:5px solid var(--band);box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.sbtop{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:14px 14px 8px;align-items:end;background:linear-gradient(180deg,rgba(255,250,236,.9),rgba(251,246,234,0))}
+.sb .pt{width:150px;height:220px;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(circle at 50% 70%,#fff8e6,#e8dcc0);border:1px solid var(--line);overflow:hidden}
+.sb .pt img{height:214px;object-fit:contain}
+.hn{font-size:28px;font-weight:900;line-height:1.2;word-break:keep-all}
+.hn .ep{display:inline-block;background:var(--red);color:#fff;font-size:14px;padding:1px 8px;margin:4px 0 0;font-weight:700}
+.hsub{color:var(--ink2);font-size:14px;margin:6px 0}
+.hchips{display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 10px}
+.hc{background:var(--paper);border:1px solid var(--line);padding:2px 9px;font-size:14px}
 .hc b{font-weight:700}
 .hc.realm{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:700}
 .hc.warn{border-color:var(--red2);color:var(--red)}
-.items{display:flex;gap:6px;margin-top:6px}
-.it{width:30px;height:30px;border:2px solid var(--red);color:var(--red);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:16px;background:#fff8ee;transform:rotate(-3deg);cursor:help}
+.items{display:flex;gap:6px;flex-wrap:wrap}
+.it{width:30px;height:30px;border:2px solid var(--red);color:var(--red);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:16px;background:#fff8ee;transform:rotate(-3deg)}
 .it.g{border-color:var(--gold);color:var(--gold)}
 .it.j{border-color:var(--jade);color:var(--jade)}
-.ctrl{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
-.ctrl .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.ctrl select{padding:4px 6px;border:1px solid var(--ink);background:var(--card);font-size:14px}
-@media(max-width:820px){.hero{grid-template-columns:80px 1fr;gap:10px;padding:8px 10px}.hero .pt{width:80px;height:104px}.hero .pt img{height:100px}.ctrl{grid-column:1/3;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px}.ctrl .row{justify-content:flex-start}.hn{font-size:24px}}
-.life{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;margin-top:16px;align-items:start}
-@media(max-width:1100px){.life{grid-template-columns:minmax(0,1fr) 300px;gap:12px}}
-/* 좁은 창에서는 정보 칸을 기록 위에 둔다(맨 아래로 떨어지지 않게) */
-@media(max-width:720px){.life{grid-template-columns:1fr}.life .side{order:-1;position:static;max-height:46vh}}
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 14px;border-top:1px dotted var(--line);border-bottom:1px dotted var(--line)}
+.ctrl select{padding:3px 5px;border:1px solid var(--ink);background:var(--card);font-size:14px}
+.sb .tabs{padding:0 6px;margin-top:6px}
+.sb .tabbody{border:0;border-top:0;background:transparent}
+main{min-width:0}
+@media(max-width:1100px){.life{grid-template-columns:340px minmax(0,1fr)}.sbtop{grid-template-columns:120px 1fr}.sb .pt{width:120px;height:176px}.sb .pt img{height:170px}.hn{font-size:24px}}
+@media(max-width:760px){.life{grid-template-columns:1fr}.sb{position:static;max-height:none}}
 .choice{border:2px solid var(--ink);background:var(--card);padding:16px 18px;margin-bottom:14px;box-shadow:0 5px 0 rgba(0,0,0,.08);animation:pop .25s}
 @keyframes pop{from{transform:translateY(-6px);opacity:.3}to{transform:none;opacity:1}}
 .choice .q{font-size:13px;color:var(--red);font-weight:700;letter-spacing:.12em}
@@ -108,8 +110,7 @@ h3{font-size:14px;margin:0 0 8px;color:var(--ink2);font-weight:700;letter-spacin
 .l-rumor{color:#7a4f9a;font-weight:600}
 .l-act{color:var(--ink);font-weight:700;border-left:3px solid var(--gold);padding-left:8px}
 .l-muted{color:var(--ink3);font-size:14.5px}
-.side{position:sticky;top:180px;max-height:calc(100vh - 190px);overflow:auto}
-@media(max-width:1100px){.tabs button{padding:6px 8px;font-size:14px}}
+.sb .tabs button{padding:6px 9px;font-size:14px}
 .tabs{display:flex;flex-wrap:wrap;border-bottom:2px solid var(--ink)}
 .tabs button{border:0;background:transparent;padding:7px 12px;font-size:15px;font-weight:600;color:var(--ink2)}
 .tabs button.on{background:var(--ink);color:var(--paper)}
@@ -180,34 +181,32 @@ h3{font-size:14px;margin:0 0 8px;color:var(--ink2);font-weight:700;letter-spacin
 </section>
 
 <section id="lifeScreen" class="hidden">
-  <div class="hero" id="hero">
-    <div class="pt"><img id="portrait" alt=""></div>
-    <div>
-      <div class="hn" id="hName"></div>
-      <div class="hsub" id="hSub"></div>
+  <div class="life">
+    <aside class="sb" id="hero">
+      <div class="sbtop">
+        <div class="pt"><img id="portrait" alt=""></div>
+        <div class="who">
+          <div class="hn" id="hName"></div>
+          <div class="hsub" id="hSub"></div>
+          <div class="items" id="hItems"></div>
+        </div>
+      </div>
       <div class="hchips" id="hChips"></div>
-      <div class="items" id="hItems"></div>
-    </div>
-    <div class="ctrl">
-      <div class="row"><label class="muted">한 해 방침 <select id="plan"></select></label></div>
-      <div class="row">
+      <div class="ctrl">
+        <label class="muted">방침 <select id="plan"></select></label>
         <button class="btn sm ghost" id="pauseBtn">멈춤</button>
         <button class="btn sm ghost spd on" data-s="1">1배</button>
         <button class="btn sm ghost spd" data-s="3">3배</button>
         <button class="btn sm ghost spd" data-s="10">10배</button>
+        <label class="muted"><input type="checkbox" id="autoChk"> 운명에 맡기기</label>
       </div>
-      <div class="row"><label class="muted"><input type="checkbox" id="autoChk"> 운명에 맡기기</label></div>
-    </div>
-  </div>
-  <div class="life">
+      <div class="tabs" id="tabs"></div>
+      <div class="tabbody" id="tabbody"></div>
+    </aside>
     <main>
       <div id="choice" class="choice hidden"></div>
       <div id="log"></div>
     </main>
-    <aside class="side">
-      <div class="tabs" id="tabs"></div>
-      <div class="tabbody" id="tabbody"></div>
-    </aside>
   </div>
 </section>
 
@@ -454,7 +453,7 @@ function renderLog() {
   flush();
   $('log').innerHTML = out.join('');
 }
-function fitSide() { const h = $('hero').offsetHeight, sd = document.querySelector('.side'); if (sd && innerWidth > 720) { sd.style.top = (h + 12) + 'px'; sd.style.maxHeight = `calc(100vh - ${h + 24}px)`; } else if (sd) { sd.style.top = ''; sd.style.maxHeight = ''; } }
+function fitSide() {}
 window.addEventListener('resize', fitSide);
 function renderAll() { renderHero(); renderTabs(); renderLog(); fitSide(); }
 function ask(q) {
