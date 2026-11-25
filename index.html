@@ -133,6 +133,8 @@ h3{font-size:14px;margin:0 0 8px;color:var(--ink2);font-weight:700;letter-spacin
 .chip.t천품{background:var(--red);color:#fff;border-color:var(--red);font-weight:900}
 .bond{font-size:15px;padding:4px 0;border-bottom:1px dotted var(--line)}
 .bond i{font-style:normal;color:var(--ink3);font-size:13px;margin-left:6px}
+#tip{position:fixed;z-index:100;max-width:300px;background:#1d1812;color:#fbf6ea;font-size:13.5px;line-height:1.55;padding:7px 10px;box-shadow:0 4px 14px rgba(0,0,0,.3);pointer-events:none;display:none}
+[data-tip]{cursor:help}
 .feel{margin-top:6px;font-size:15px;color:var(--ink2)}
 .pc{border:1px solid var(--line);border-left:4px solid #8b7e69;background:var(--paper);padding:7px 10px;margin:6px 0;cursor:pointer}
 .pc:hover{background:#fff8ea}
@@ -155,6 +157,7 @@ h3{font-size:14px;margin:0 0 8px;color:var(--ink2);font-weight:700;letter-spacin
 </style>
 </head>
 <body>
+<div id="tip"></div>
 <div class="wrap">
 
 <section id="intro">
@@ -356,13 +359,13 @@ function renderHero() {
   if (P.hurt) chips.push(`<span class="hc warn">${['', '경상', '중상', '위중'][P.hurt]}</span>`);
   $('hChips').innerHTML = chips.join('');
   const items = [];
-  if (P.weapon) items.push(`<span class="it" title="${['', '명병', '보검', '신병이기'][P.weapon]}">${['', '劍', '劍', '神'][P.weapon]}</span>`);
-  if (P.pqi > 1) items.push(`<span class="it g" title="몸에 든 약기 ${Math.round(P.pqi)}년">丹</span>`);
-  const manuals = P.arts.filter(a => /비급/.test(a.from)).length; if (manuals) items.push(`<span class="it j" title="비급으로 익힌 무공 ${manuals}">書</span>`);
-  if (P.force) items.push(`<span class="it" title="${esc(P.force.name)}의 인장">印</span>`);
-  if ((P.dishes || []).length) items.push(`<span class="it g" title="이름난 요리: ${esc(P.dishes.join(', '))}">食</span>`);
-  if ((P.forged || []).length) items.push(`<span class="it" title="벼린 병기: ${esc(P.forged.join(', '))}">鐵</span>`);
-  if (L.myMen(P)) items.push(`<span class="it j" title="따르는 사람 ${L.myMen(P)}명">衆</span>`);
+  if (P.weapon) items.push(`<span class="it" data-tip="${['', '명병', '보검', '신병이기'][P.weapon]}">${['', '劍', '劍', '神'][P.weapon]}</span>`);
+  if (P.pqi > 1) items.push(`<span class="it g" data-tip="몸에 든 약기 ${Math.round(P.pqi)}년">丹</span>`);
+  const manuals = P.arts.filter(a => /비급/.test(a.from)).length; if (manuals) items.push(`<span class="it j" data-tip="비급으로 익힌 무공 ${manuals}">書</span>`);
+  if (P.force) items.push(`<span class="it" data-tip="${esc(P.force.name)}의 인장">印</span>`);
+  if ((P.dishes || []).length) items.push(`<span class="it g" data-tip="이름난 요리: ${esc(P.dishes.join(', '))}">食</span>`);
+  if ((P.forged || []).length) items.push(`<span class="it" data-tip="벼린 병기: ${esc(P.forged.join(', '))}">鐵</span>`);
+  if (L.myMen(P)) items.push(`<span class="it j" data-tip="따르는 사람 ${L.myMen(P)}명">衆</span>`);
   $('hItems').innerHTML = items.join('');
   if ($('plan').value !== P.plan) $('plan').value = P.plan;
   $('plan').disabled = P.age < 15;
@@ -384,11 +387,11 @@ function renderTabs() {
     h += `<details><summary class="muted">열여덟 스탯</summary><div class="st18">${Object.values(L.BRANCH).flat().map(([s]) => `<span>${s} ${Math.round(P.st[s])}<span class="muted">/${Math.round(L.statCap(P, s))}</span></span>`).join('')}</div></details>`;
     const M = { 근골: ['허약한 골격', '근골이 약함', '근골이 좋음', '타고난 근골'], 오성: ['깨우침이 더딤', '이해가 더딘 편', '이해가 빠른 편', '깨우침이 빠름'], 심성: ['마음이 쉽게 흔들림', '마음이 여림', '심지가 있음', '마음이 굳음'] };
     const marks = Object.keys(M).map(k => { const x = P.apt[k]; return x >= 75 ? M[k][3] : x >= 65 ? M[k][2] : x >= 40 ? null : x >= 30 ? M[k][1] : M[k][0]; }).filter(Boolean);
-    h += `<h3 style="margin-top:12px">타고난 것</h3><div class="chips">${marks.map(x => `<span class="chip" style="border-style:dotted">${x}</span>`).join('')}${P.traits.map(t => L.isHidden(P, t) ? '<span class="chip unk" title="아직 드러나지 않았다">???</span>' : `<span class="chip t${t.tier}${t.good === 0 ? ' bad' : ''}" title="${esc(t.tier + ' · ' + clean(t.e))}">${esc(t.n)}</span>`).join('')}</div>`;
+    h += `<h3 style="margin-top:12px">타고난 것</h3><div class="chips">${marks.map(x => `<span class="chip" style="border-style:dotted">${x}</span>`).join('')}${P.traits.map(t => L.isHidden(P, t) ? '<span class="chip unk" data-tip="아직 드러나지 않았다">???</span>' : `<span class="chip t${t.tier}${t.good === 0 ? ' bad' : ''}" data-tip="${esc(t.tier + ' · ' + clean(t.e))}">${esc(t.n)}</span>`).join('')}</div>`;
     h += `<div class="kv" style="margin-top:12px"><span>일정</span><b>한 해 ${L.slotsOf(P)}칸</b><span>운용</span><b>${Math.floor(P.flow)}</b><span>정순</span><b>${Math.round(P.pur)}%</b></div>`;
   } else if (tab === '행동') {
     const acts = L.actions(P);
-    h += `<p class="muted" style="margin-top:0">고른 행동은 다음 달에 일어난다. 활동 범위: <b>${L.RANGE_NAME[L.rangeLevel(P)]}</b></p><div class="acts">${acts.map(a => `<button data-a="${a.id}" ${a.ok && P.alive ? '' : 'disabled'} class="${P.pending === a.id ? 'queued' : ''}" title="${esc(a.why || a.desc || '')}">${esc(a.n)}<small>${esc(a.ok ? (P.pending === a.id ? '다음 달에' : a.desc || '') : a.why)}</small></button>`).join('')}</div>`;
+    h += `<p class="muted" style="margin-top:0">고른 행동은 다음 달에 일어난다. 활동 범위: <b>${L.RANGE_NAME[L.rangeLevel(P)]}</b></p><div class="acts">${acts.map(a => `<button data-a="${a.id}" ${a.ok && P.alive ? '' : 'disabled'} class="${P.pending === a.id ? 'queued' : ''}" data-tip="${esc(a.why || a.desc || '')}">${esc(a.n)}<small>${esc(a.ok ? (P.pending === a.id ? '다음 달에' : a.desc || '') : a.why)}</small></button>`).join('')}</div>`;
   } else if (tab === '인연') {
     const ORDER = ['배우자', '정인', '혼약', '마음에 둔 사람', '스승', '제자', '의형제', '벗', '수하', '맞수', '원수'];
     const rank = b => Math.min(...b.rels.map(r => { const i = ORDER.indexOf(r); return i < 0 ? 99 : i; }));
@@ -506,6 +509,12 @@ function ending(e) {
 }
 $('againBtn').onclick = () => { $('endScreen').classList.add('hidden'); $('intro').classList.remove('hidden'); renderIntro(); window.scrollTo(0, 0); };
 $('startBtn').onclick = live;
+// 마우스를 올리자마자 설명이 뜬다(특성·기물·행동)
+{ const tip = $('tip');
+  document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); if (!el || !el.dataset.tip) { tip.style.display = 'none'; return; } tip.textContent = el.dataset.tip; tip.style.display = 'block'; });
+  setInterval(() => { if (tip.style.display === 'block' && tip._x != null) { const el = document.elementFromPoint(tip._x, tip._y); const t = el && el.closest('[data-tip]'); if (!t) tip.style.display = 'none'; else tip.textContent = t.dataset.tip; } }, 300);
+  document.addEventListener('mousemove', e => { tip._x = e.clientX; tip._y = e.clientY; if (tip.style.display !== 'block') return; const w = tip.offsetWidth, h = tip.offsetHeight; let x = e.clientX + 14, y = e.clientY + 16; if (x + w > innerWidth - 8) x = e.clientX - w - 10; if (y + h > innerHeight - 8) y = e.clientY - h - 10; tip.style.left = x + 'px'; tip.style.top = y + 'px'; });
+  document.addEventListener('mouseout', e => { if (e.target.closest && e.target.closest('[data-tip]') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('[data-tip]'))) tip.style.display = 'none'; }); }
 renderIntro();
 </script>
 </body>
