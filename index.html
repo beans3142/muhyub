@@ -241,9 +241,12 @@ main{min-width:0}
 <script src="data/eventbook.js"></script>
 <script src="data/lifebook.js"></script>
 <script src="data/murimbook.js"></script>
+<script src="data/murimbook2.js"></script>
 <script src="data/events.js"></script>
 <script src="data/starts.js"></script>
 <script src="data/canon.js"></script>
+<script src="data/named.js"></script>
+<script src="art/fac_art.js"></script>
 <script src="engine/world.js"></script>
 <script src="engine/life.js"></script>
 <script>
@@ -325,14 +328,23 @@ function renderIntro() {
 const CAREER_B = { farm: 1, fisher: 3, hunter: 5, herb: 7, smith: 9, merchant: 11, cook: 13, craft: 15, artist: 17, troupe: 19, geomancer: 21, scholar: 22, military: 24, eunuch: 26, doctor: 27, thief: 29 };
 const CAT_C = ['구파일방', '세가', '연합', '사교', '흑도', '암중', '관부', '오악도불', '새외', '생업'];
 const pad = n => String(n).padStart(2, '0');
+// 세력 초상(docs/p11-cast.md 3장): 직위를 네 단(0 삼대제자, 1 일대·이대제자, 2 장로, 3 수장)으로 묶는다
+const FAC_TIER = { sect: [0, 0, 1, 1, 2, 2, 2, 3], league: [0, 0, 1, 1, 2, 2, 2, 3], clan: [0, 1, 1, 2, 3], demon: [0, 0, 1, 1, 1, 2, 2, 2, 2, 3], beggar: [0, 0, 1, 1, 1, 2, 2, 3] };
+const facTier = (lad, rank, n) => (FAC_TIER[lad] || [])[rank] ?? (rank >= n - 1 ? 3 : rank >= n - 3 ? 2 : rank <= 1 ? 0 : 1);
 function portrait(P) {
+  if (P.age >= 16 && P.member && window.FAC_ART) {
+    const f = L.facDef(P.member.fid), lad = LADDERS[f.lad] ? f.lad : 'sect';
+    const id = `F_${f.id}_${facTier(lad, P.member.rank, LADDERS[lad].length)}${P.sex}`;
+    if (FAC_ART.has(id)) return id;
+  }
   if (P.age >= 16 && (P.member || P.force)) {
     let cat, tier;
     if (P.member) { const f = L.facDef(P.member.fid), lad = LADDERS[f.lad] || LADDERS.sect, fr = P.member.rank / Math.max(1, lad.length - 1); cat = CAT_C.indexOf(f.cat); if (cat < 0) cat = 7; tier = fr >= 0.95 ? 2 : fr >= 0.4 || P.realm >= 4 ? 1 : 0; }
     else { cat = { 문파: 0, 방회: 4, 산채: 4, 상단: 9 }[P.force.kind]; tier = P.force.men >= 50 ? 2 : 1; }
-    return `C${pad(cat * 3 + tier + 1)}`;
+    const c = `C${pad(cat * 3 + tier + 1)}`, alt = c + P.sex; // 반대 성별 그림(art/roster_extra.json)이 있으면 그것
+    return window.FAC_ART && FAC_ART.has(alt) ? alt : c;
   }
-  if (P.age >= 16 && P.career && CAREER_B[P.career]) { const b = CAREER_B[P.career]; const single = [21, 26].includes(b); return `B${pad(b + (P.sex === 'f' && !single ? 1 : 0))}`; }
+  if (P.age >= 16 && P.career && CAREER_B[P.career]) { const b = CAREER_B[P.career]; const single = [21, 26].includes(b), alt = `B${pad(b)}f`; if (single && P.sex === 'f' && window.FAC_ART && FAC_ART.has(alt)) return alt; return `B${pad(b + (P.sex === 'f' && !single ? 1 : 0))}`; }
   if (P.age >= 16 && P.flags.ronin && P.arts.length) return P.sex === 'f' ? 'B32' : 'B31';
   const st = P.age < 10 ? 0 : P.age < 18 ? 1 : P.age < 35 ? 2 : P.age < 55 ? 3 : 4, w = P.wealth < 30 ? 0 : P.wealth < 1000 ? 1 : 2;
   return `A${pad(st * 6 + (P.sex === 'f' ? 3 : 0) + w + 1)}`;

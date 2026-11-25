@@ -101,7 +101,7 @@ function fixPlan(P) {
   if (P.age < 15) return; if (P.plan === '무공 전념') P.plan = '무학 정진'; const l = LIFE.plansFor(P); if (!l.some(d => d.n === P.plan)) P.plan = P.arts.length ? '무학 정진' : P.career ? '생업 전념' : '배울 곳 찾기'; }
 LIFE.PLANS = PLAN_DEF.map(d => d[0]);
 // 할 일별 사건 확률(6단계 2-2, 한 칸 한 해)과 사건 틀 갈래
-const ACT_EV = { 탐색: [0.5, '유람'], 사문: [0.35, '의뢰'], 제자: [0, null], 놀이: [0.4, '놀이'], 세력: [0.3, '세력'], 수련: [0, null], 운기: [0, null], 폐관: [0, null], 생업: [0.05, '생업'], 가족: [0.05, '가족'], 벗: [0.2, '벗'], 스승: [0.1, '스승'], 유람: [0.35, '유람'], 협행: [0.5, '협행'], 의뢰: [0.6, '의뢰'], 연애: [0.3, '연애'], 글공부: [0, null], 쉼: [0.05, '쉼'], 숨기: [0.05, '숨기'] };
+const ACT_EV = { 탐색: [0.5, '유람'], 사문: [0.35, '의뢰'], 제자: [0.25, '제자'], 놀이: [0.4, '놀이'], 세력: [0.3, '세력'], 수련: [0, null], 운기: [0, null], 폐관: [0, null], 생업: [0.05, '생업'], 가족: [0.05, '가족'], 벗: [0.2, '벗'], 스승: [0.1, '스승'], 유람: [0.35, '유람'], 협행: [0.5, '협행'], 의뢰: [0.6, '의뢰'], 연애: [0.3, '연애'], 글공부: [0, null], 쉼: [0.05, '쉼'], 숨기: [0.05, '숨기'] };
 const slotEff = n => Math.min(1.25, n === 0 ? 0.2 : 0.2 + 0.8 * Math.min(n, 4) / 4 + 0.05 * Math.max(0, n - 4));
 
 // ---------- 생 만들기 ----------
@@ -565,9 +565,9 @@ function* birth(P) {
     const WS = G.WORLDSIM;
     // 지난 생들이 세운 세력은 그 연도에 서는 세력으로 들어간다(10단계 9-8)
     const extra = (o.legends || []).filter(l => l.force && G.PLACES2[l.force.at]).map((l, i) => ({ id: 'legend' + i, n: l.force.n, t: l.force.kind === '산채' ? '사' : l.force.kind === '상단' ? '중' : '정', cat: '신생', rel: '없음', lad: l.force.kind === '산채' ? 'bandit' : 'sect', at: l.force.at, from: [l.force.y, l.force.y], fall: 20, prestige: l.force.men >= 300 ? 2 : 1, size: Math.max(60, l.force.men), founder: l.name }));
-    const w = WS.create({ seed: (G.CANON || {}).seed || 20261124, canon: true, founders: LIFE.FOUNDERS, extra });
+    const w = WS.create({ seed: (G.CANON || {}).seed || 20261124, canon: true, founders: LIFE.FOUNDERS, named: G.NAMED, extra });
     WS.runTo(w, P.year - 1);
-    w.opts = { seed: P.seed, canon: false, founders: LIFE.FOUNDERS }; w.R = rng(P.seed ^ 0x5bd1e995);
+    w.opts = { seed: P.seed, canon: false, founders: LIFE.FOUNDERS, named: G.NAMED }; w.R = rng(P.seed ^ 0x5bd1e995);
     P.world = w; P.wev = w.ev.length;
   }
   P.sex = o.sex ? (P.R() < 0.75 ? o.sex : o.sex === 'm' ? 'f' : 'm') : (P.R() < 0.5 ? 'm' : 'f');
@@ -714,7 +714,8 @@ function* runTpl(P, t, month, extra = {}) {
   if (t.ch.length > 1) say(P, `▸ ${c.t}`, 'pick', month);
   let stage = '성공';
   if (c.c === '싸움') {
-    if (npc) meet(P, npc);
+    if (!npc) { npc = makeNpc(P, '상대', [0, 1]); per = perceive(P, npc); }
+    meet(P, npc);
     if (/떼|무리|졸개들|관군|두목|채주|우두머리/.test(t.s + ' ' + npc.role) && !npc.men && P.R() < 0.7) { npc.men = 5 + Math.floor(P.R() * (10 + npc.realm * 15)); if (!npc.org && RE_BANDIT.test(npc.role) && P.era && P.era.banditF) npc.org = P.era.banditF; }
     const r = yield* fightAsk(P, npc, t.n, { lethal: (c.bad || []).concat(c.fum || []).some(e => /death|중상/.test(e)) || /생사|습격|암살|복수|흉적/.test(t.n), spar: /비무|대회|도장/.test(t.n) });
     if (r.retreat) return;
@@ -1331,7 +1332,7 @@ function* rumorYear(P) {
     if (!cand.length) continue;
     const [pid] = pk(P, cand);
     let legend = null;
-    if (kind === '전설 고수의 무덤') legend = (P.opts.legends || []).filter(l => l.died < P.year && l.died > P.year - 600 && l.realm >= 4 && l.died - l.born >= 30 && !P.legendsMet.has('무덤:' + l.name)).sort(() => P.R() - 0.5)[0] || null;
+    if (kind === '전설 고수의 무덤') legend = legendsOf(P).filter(l => l.died < P.year && l.died > P.year - 600 && l.realm >= 4 && l.died - l.born >= 30 && !P.legendsMet.has('무덤:' + l.name)).sort(() => P.R() - 0.5)[0] || null;
     if (legend) P.legendsMet.add('무덤:' + legend.name);
     P.rumorSeen[kind] = P.year;
     const month = 1 + Math.floor(P.R() * 12);
@@ -1520,12 +1521,14 @@ function* tourneyYear(P) {
 }
 
 // ---------- 전설(10단계 9-8) ----------
+// 네임드 인물(data/named.js)과 지난 생 기록을 함께 쓴다(docs/p11-cast.md 2-3)
+const legendsOf = P => (G.NAMED || []).concat(P.opts.legends || []);
 function legendNpc(P) {
-  const l = (P.opts.legends || []).filter(x => x.born <= P.year - 16 && x.died >= P.year && x.realm >= 3);
+  const l = legendsOf(P).filter(x => x.born <= P.year - 16 && x.died >= P.year && x.realm >= 3);
   if (!l.length) return null;
   const x = pk(P, l), n = makeNpc(P, '이름난 고수', [0, 0]);
   n.name = x.name; n.epithet = x.ep; n.realm = x.realm; n.shown = x.realm; n.stage = 2; n.fame = 500000; n.legend = true; n.g = COMMON_GRADE[x.realm] + 1;
-  if (!P.legendsMet.has(x.name)) { P.legendsMet.add(x.name); addAch(P, '전생과 마주치다'); say(P, `${x.ep ? '「' + x.ep + '」 ' : ''}${x.name} — 어디선가 들어 본 이름이다.`, 'muted'); }
+  if (!P.legendsMet.has(x.name)) { P.legendsMet.add(x.name); if (x.kind) say(P, `${x.ep ? '「' + x.ep + '」 ' : ''}${x.name} — 강호에 모르는 사람이 없는 이름이다.`, 'muted'); else { addAch(P, '전생과 마주치다'); say(P, `${x.ep ? '「' + x.ep + '」 ' : ''}${x.name} — 어디선가 들어 본 이름이다.`, 'muted'); } }
   return n;
 }
 
@@ -2487,14 +2490,14 @@ LIFE.effQi = effQi; LIFE.careerDef = careerDef; LIFE.facDef = facDef; LIFE.atTex
 LIFE.init = function () {
   if (LIFE.ready) return;
   LIFE.MINOR_IDS = new Set((G.TRAITS_MINOR || []).map(t => t.id));
-  LIFE.TPL = (G.EVENT_TEMPLATES || []).concat(G.LIFEBOOK || [], G.MURIMBOOK || []);
+  LIFE.TPL = (G.EVENT_TEMPLATES || []).concat(G.LIFEBOOK || [], G.MURIMBOOK || [], G.MURIMBOOK2 || []);
   LIFE.CLAN_SUR = new Set(G.FACTIONS.filter(f => f.sur).map(f => f.sur));
   LIFE.BIG = new Set(G.BIG_CITIES || []);
   LIFE.ARTS_BY_F = {}; LIFE.ARTS_BY_G = [[], [], [], [], [], []];
   for (const a of G.ARTS) { (LIFE.ARTS_BY_F[a.f] = LIFE.ARTS_BY_F[a.f] || []).push(a); const gi = GRADES.indexOf(a.g); if (gi >= 0) LIFE.ARTS_BY_G[gi].push(a); }
   LIFE.FREE_HEART = (LIFE.ARTS_BY_F.free || []).filter(a => a.role === '심법' && a.g === '삼류');
   if (!LIFE.FREE_HEART.length) LIFE.FREE_HEART = LIFE.ARTS_BY_G[0].filter(a => a.role === '심법');
-  LIFE.FOUNDERS = { shaolin: '발타', wudang: '장삼봉', huashan: '청허자', gaibang: '연무백', qingcheng: '송학도인', zhongnan: '운허진인', emei: '정연 사태', diancang: '단목휘', kunlun: '백운자', kongtong: '철벽진인', bailian: '모자원', quanzhen: '왕중양' };
+  LIFE.FOUNDERS = G.FOUNDERS || { shaolin: '발타', wudang: '장삼봉', huashan: '청허자', gaibang: '연무백', qingcheng: '송학도인', zhongnan: '운허진인', emei: '정연 사태', diancang: '단목휘', kunlun: '백운자', kongtong: '철벽진인', bailian: '모자원', quanzhen: '왕중양' };
   LIFE.ready = true;
 };
 G.LIFE = LIFE;
