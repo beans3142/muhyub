@@ -602,6 +602,7 @@ function* birth(P) {
   if (o.extraBig) { const OPPn = new Set(); for (const t of G.TRAITS || []) if (P.R() * 1e7 < t.p && !P.traits.some(x => x.n === t.n)) { P.traits.push(t); if (!o.revealTraits) P.hidden.push(t.id); } }
   for (const [k, v] of Object.entries(o.aptBonus || {})) if (k in P.apt) P.apt[k] += v;
   // 고른 자질은 한 번 더 굴려 높은 쪽을 쓴다
+  if (o.aptFavor === 'lowest') o.aptFavor = ['근골', '오성', '심성', '기연', '풍모'].sort((a, b) => P.apt[a] - P.apt[b])[0];
   if (o.aptFavor && o.aptFavor in P.apt) { const again = (d6(P) + d6(P) + d6(P)) * 5; if (again > P.apt[o.aptFavor]) P.apt[o.aptFavor] = Math.round(again); }
   for (const id of (o.buyTraits || []).filter(() => P.R() < 0.35)) { const t = (G.TRAITS || []).find(x => x.id === id); if (t && !P.traits.some(x => x.n === t.n)) { P.traits.push(t); P.boughtTraits = (P.boughtTraits || []).concat(t.n); } }
   for (const st of fxAll(P, 'stat')) for (const [k, v] of Object.entries(st)) if (k in P.apt) P.apt[k] = Math.max(15, P.apt[k] + v);
@@ -3106,6 +3107,12 @@ LIFE.birthInfo = function (P) {
   const og = P.origin; if (!og) return null;
   const w = [3, 30, 300, 3000, 30000, 300000][og.wealth || 0], wl = (G.WEALTH.slice().reverse().find(x => w >= x.min) || G.WEALTH[0]).n;
   return { home: atText({ place: P.home }), origin: og.n, status: og.status || '양민', wealth: wl, trade: og.career ? careerDef(og.career).n : null, year: P.start ? P.start.y : P.year, era: P.startEra ? `${P.startEra.chapter}, ${P.startEra.label}` : '' };
+};
+// 지난 생의 요약: 해금이 고르는 대신 지난 생을 따라간다(9-25 보충)
+LIFE.lastOf = function (P) {
+  const lad = ladOf(P) || (P.flags.expelled && facDef(P.flags.expelled) ? facDef(P.flags.expelled).lad : null);
+  const lean = ['bandit', 'info', 'assassin', 'demon', 'shadow'].includes(lad) ? '흑도' : lad === 'clan' ? '세가' : P.career === 'merchant' || P.wealth >= 3000 ? '상인' : lad === 'guard' || P.career === 'scholar' || P.career === 'military' ? '관부' : P.wealth < 30 && !P.member ? '고아' : null;
+  return { region: regionOf(P.home), originId: P.origin && P.origin.id, year: P.start ? P.start.y : P.year, lean, traits: P.traits.filter(t => !LIFE.MINOR_IDS.has(t.id) && t.good !== 0 && G.TRAITS.some(x => x.id === t.id) && t.tier !== '천품').map(t => t.id) };
 };
 LIFE.legendOf = function (P) {
   const m = mainArt(P);
