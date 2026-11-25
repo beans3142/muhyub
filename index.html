@@ -67,6 +67,8 @@ h3{font-size:14px;margin:0 0 8px;color:var(--ink2);font-weight:700;letter-spacin
 .hn{font-size:28px;font-weight:900;line-height:1.2;word-break:keep-all}
 .hn .ep{display:inline-block;background:var(--red);color:#fff;font-size:14px;padding:1px 8px;margin:4px 0 0;font-weight:700}
 .hsub{color:var(--ink2);font-size:14px;margin:6px 0}
+h3.sec{margin:14px 0 6px;padding-top:10px;border-top:1px solid var(--line)}
+h3.sec:first-child{border-top:0;padding-top:0;margin-top:4px}
 .hsub.birth{font-size:13px;line-height:1.5;margin-top:-2px}
 .hchips{display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 10px}
 .hc{background:var(--paper);border:1px solid var(--line);padding:2px 9px;font-size:14px}
@@ -336,7 +338,7 @@ function portrait(P) {
 
 // ---------- 생 화면 ----------
 let P = null, speed = 1, paused = false, auto = false, choiceResolve = null, tab = '무공';
-L.PLANS.forEach(p => { const o = document.createElement('option'); o.textContent = p; $('plan').appendChild(o); });
+let planKey = '';
 $('plan').onchange = e => { if (P) P.plan = e.target.value; };
 $('pauseBtn').onclick = () => { paused = !paused; $('pauseBtn').textContent = paused ? '이어 살기' : '멈춤'; };
 $('autoChk').onchange = e => { auto = e.target.checked; if (P) P.auto = auto; if (auto && choiceResolve) choiceResolve(); };
@@ -375,41 +377,46 @@ function renderHero() {
   if ((P.forged || []).length) items.push(`<span class="it" data-tip="벼린 병기: ${esc(P.forged.join(', '))}">鐵</span>`);
   if (L.myMen(P)) items.push(`<span class="it j" data-tip="따르는 사람 ${L.myMen(P)}명">衆</span>`);
   $('hItems').innerHTML = items.join('');
-  if ($('plan').value !== P.plan) $('plan').value = P.plan;
+  const pl = L.plansFor(P), key = pl.map(d => d.n).join('|');
+  if (key !== planKey) { planKey = key; $('plan').innerHTML = pl.map(d => `<option value="${esc(d.n)}" title="${esc(d.desc)}">${esc(d.n)}</option>`).join('') || '<option>어린 날</option>'; }
+  if (pl.some(d => d.n === P.plan) && $('plan').value !== P.plan) $('plan').value = P.plan;
+  $('plan').title = (pl.find(d => d.n === P.plan) || {}).desc || '';
   $('plan').disabled = P.age < 15;
 }
-const TABS = ['무공', '몸', '행동', '관계도', '인연', '세상'];
+// 탭 없이 모든 칸을 한 번에 펼친다. 행동은 기회(3·7·11월)로만 온다(사용자 요청 2026-11-25)
 let focusId = null;
 function renderTabs() {
-  $('tabs').innerHTML = TABS.map(t => `<button class="${t === tab ? 'on' : ''}" data-t="${t}">${t}</button>`).join('');
-  $('tabs').querySelectorAll('button').forEach(b => b.onclick = () => { tab = b.dataset.t; renderTabs(); });
+  $('tabs').innerHTML = '';
   let h = '';
   const m = L.mainArt(P), ax = L.nextAxes(P);
-  if (tab === '무공') {
+  {
+    h += '<h3 class="sec">무공</h3>';
     h += `<div class="kv"><span>경지</span><b>${R[P.realm]}${P.realm ? ' · ' + L.STAGES[P.stage] : ''}</b><span>깨달음</span><b>${L.ENL[P.enl]}</b><span>내공</span><b>${Math.floor(L.effQi(P))}년 <span class="muted">단전 ${Math.round(P.capa)}년</span></b><span>실전</span><b>${Math.round(P.real)}</b></div>`;
     if (ax && (P.arts.length || P.realm)) { const lack = ax.rows.filter((r, i) => !ax.ok[i]).map(r => r[0]), fill = ax.rows.reduce((a, r) => a + r[2], 0) / ax.rows.length; h += `<div class="feel">${ax.to}의 경지 — ${lack.length === 0 ? '문턱에 섰다.' : lack.length === 1 ? `무언가 하나가 모자라다(${lack[0]}).` : fill > 0.75 ? '길이 보이기 시작한다.' : fill > 0.45 ? '아직 멀지만 나아가고 있다.' : '아직 아득하다.'}</div>`; }
     const lvl = s => s >= 12 ? '대성' : s >= 10 ? '극성' : s >= 7 ? '중성' : s >= 4 ? '소성' : '입문';
     h += `<h3 style="margin-top:12px">익힌 무공 ${P.arts.length}</h3>` + (P.arts.slice().sort((a, b) => (b === m) - (a === m) || L.GRADES.indexOf(b.def.g) - L.GRADES.indexOf(a.def.g)).map(a => { const s = L.s12(a), cap = L.sungCap(P, a); return `<div class="art ${a === m ? 'main' : ''}"><span class="nm">${esc(a.def.n)}</span><span class="gr">${a.def.g} ${esc(a.def.k)}</span><span class="sg">${lvl(s)}${s < 12 ? ' ' + Math.max(0, Math.floor(s)) + '성' : ''}${s < 12 && s >= cap - 0.01 ? ' · 막힘' : ''}</span></div>`; }).join('') || '<p class="muted">아직 익힌 무공이 없다.</p>');
-  } else if (tab === '몸') {
-    h += '<h3>몸과 마음 <span class="muted">바탕값</span></h3>' + Object.keys(L.BRANCH).map(b => { const v = L.branchBase(P, b); return `<div class="br"><span>${b}</span><div class="bar"><i style="width:${Math.min(100, v / 1.8)}%"></i></div><span class="v">${v.toFixed(0)}</span></div>`; }).join('');
+  }
+  {
+    h += '<h3 class="sec">몸과 마음 <span class="muted">바탕값</span></h3>' + Object.keys(L.BRANCH).map(b => { const v = L.branchBase(P, b); return `<div class="br"><span>${b}</span><div class="bar"><i style="width:${Math.min(100, v / 1.8)}%"></i></div><span class="v">${v.toFixed(0)}</span></div>`; }).join('');
     h += `<details><summary class="muted">열여덟 스탯</summary><div class="st18">${Object.values(L.BRANCH).flat().map(([s]) => `<span>${s} ${Math.round(P.st[s])}<span class="muted">/${Math.round(L.statCap(P, s))}</span></span>`).join('')}</div></details>`;
     const M = { 근골: ['허약한 골격', '근골이 약함', '근골이 좋음', '타고난 근골'], 오성: ['깨우침이 더딤', '이해가 더딘 편', '이해가 빠른 편', '깨우침이 빠름'], 심성: ['마음이 쉽게 흔들림', '마음이 여림', '심지가 있음', '마음이 굳음'] };
     const marks = Object.keys(M).map(k => { const x = P.apt[k]; return x >= 75 ? M[k][3] : x >= 65 ? M[k][2] : x >= 40 ? null : x >= 30 ? M[k][1] : M[k][0]; }).filter(Boolean);
     h += `<h3 style="margin-top:12px">타고난 것</h3><div class="chips">${marks.map(x => `<span class="chip" style="border-style:dotted">${x}</span>`).join('')}${P.traits.map(t => L.isHidden(P, t) ? '<span class="chip unk" data-tip="아직 드러나지 않았다">???</span>' : `<span class="chip t${t.tier}${t.good === 0 ? ' bad' : ''}" data-tip="${esc(t.tier + ' · ' + clean(t.e))}">${esc(t.n)}</span>`).join('')}</div>`;
     h += `<div class="kv" style="margin-top:12px"><span>일정</span><b>한 해 ${L.slotsOf(P)}칸</b><span>운용</span><b>${Math.floor(P.flow)}</b><span>정순</span><b>${Math.round(P.pur)}%</b></div>`;
-  } else if (tab === '행동') {
-    // 지금 할 수 있는 일만 보인다(9-16)
-    const acts = L.actions(P).filter(a => a.ok);
-    h += `<p class="muted" style="margin-top:0">고른 행동은 다음 달에 일어난다. 활동 범위: <b>${L.RANGE_NAME[L.rangeLevel(P)]}</b></p><div class="acts">${acts.map(a => `<button data-a="${a.id}" ${a.ok && P.alive ? '' : 'disabled'} class="${P.pending === a.id ? 'queued' : ''}" data-tip="${esc(a.why || a.desc || '')}">${esc(a.n)}<small>${esc(a.ok ? (P.pending === a.id ? '다음 달에' : a.desc || '') : a.why)}</small></button>`).join('')}</div>${acts.length ? '' : '<p class="muted">지금은 할 수 있는 일이 없다. 기회는 3·7·11월에 찾아온다.</p>'}`;
-  } else if (tab === '인연') {
+  }
+  {
+    h += '<h3 class="sec">인연</h3>';
     const ORDER = ['배우자', '정인', '혼약', '마음에 둔 사람', '스승', '제자', '의형제', '벗', '수하', '맞수', '원수'];
     const rank = b => Math.min(...b.rels.map(r => { const i = ORDER.indexOf(r); return i < 0 ? 99 : i; }));
     const bonds = P.bonds.filter(b => b.rels.length).slice().sort((a, b) => (b.alive - a.alive) || rank(a) - rank(b));
-    h += bonds.length ? bonds.slice(0, 24).map(b => personCard(b)).join('') : '<p class="muted">아직 깊은 인연이 없다.</p>';
+    h += bonds.length ? bonds.slice(0, 8).map(b => personCard(b)).join('') + (bonds.length > 8 ? `<p class="muted">그 밖 ${bonds.length - 8}명은 관계도에</p>` : '') : '<p class="muted">아직 깊은 인연이 없다.</p>';
     if (P.kids) h += `<p class="muted">자식 ${P.kids}명</p>`;
-  } else if (tab === '관계도') {
-    h += graphSvg() + (focusId != null ? personCard(P.bonds.find(b => b.id === focusId), true) : '<p class="muted">사람을 누르면 그 사람의 이야기가 열린다.</p>');
-  } else if (tab === '세상') {
+  }
+  if (P.bonds.some(b => b.rels.length) || P.member || P.force) {
+    h += '<h3 class="sec">관계도</h3>' + graphSvg() + (focusId != null ? personCard(P.bonds.find(b => b.id === focusId), true) : '<p class="muted">사람을 누르면 그 사람의 이야기가 열린다.</p>');
+  }
+  {
+    h += '<h3 class="sec">세상</h3>';
     const era = P.era;
     if (era) h += `<h3>시대</h3><p style="margin:0 0 8px"><b>${esc(era.chapter)}</b> · ${esc(era.label)}${era.local.length ? `<br><span class="muted">${era.local.map(esc).join(' · ')}</span>` : ''}</p>`;
     const th = P.threads.filter(t => t.k.startsWith('소문:'));
@@ -420,8 +427,7 @@ function renderTabs() {
     if (L.myMen(P) && !P.force) h += `<p class="muted">따르는 사람 ${L.myMen(P)}명${L.unitSize(P) ? ` (직위로 거느리는 단 ${L.unitSize(P)}명 포함)` : ''}</p>`;
   }
   $('tabbody').innerHTML = h;
-  $('tabbody').querySelectorAll('[data-pid]').forEach(el => el.onclick = () => { focusId = +el.dataset.pid; tab = '관계도'; renderTabs(); });
-  $('tabbody').querySelectorAll('[data-a]').forEach(b => b.onclick = () => { P.pending = P.pending === b.dataset.a ? null : b.dataset.a; renderTabs(); });
+  $('tabbody').querySelectorAll('[data-pid]').forEach(el => el.onclick = () => { focusId = +el.dataset.pid; renderTabs(); });
 }
 // ---------- 관계(10단계 9-15) ----------
 function personCard(b, full) {
@@ -488,7 +494,7 @@ async function live() {
   while (!r.done) {
     let ans;
     if (r.value && r.value.ask) { renderAll(); ans = await ask(r.value); }
-    else if (r.value && r.value.tick === 'month') { if (++ticks % 2 === 0 || speed < 3) { renderHero(); renderLog(); if (tab === '세상' || tab === '행동') renderTabs(); } await wait(P.age < 6 ? 40 : 110); }
+    else if (r.value && r.value.tick === 'month') { if (++ticks % 2 === 0 || speed < 3) { renderHero(); renderLog(); renderTabs(); } await wait(P.age < 6 ? 40 : 110); }
     else if (r.value && r.value.tick === 'year') { renderAll(); await wait(120); }
     r = gen.next(ans);
   }

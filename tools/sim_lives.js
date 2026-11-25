@@ -10,7 +10,7 @@ require(path.join(__dirname, '..', 'engine', 'world.js'));
 require(path.join(__dirname, '..', 'engine', 'life.js'));
 const LIFE = global.LIFE; LIFE.init();
 const args = process.argv.slice(2), N = +(args.find(a => /^\d+$/.test(a)) || 200), WORLD = args.includes('--world'), LOG = args.includes('--log');
-const PERSONA = ['무공 전념', '무공과 생업', '생업 전념', '강호 유람', '협행'];
+const PERSONA = ['무학 정진', '무공과 생업', '생업 전념', '강호 유람', '협행'];
 
 function live(seed) {
   const P = LIFE.create({ seed, noWorld: !WORLD });
