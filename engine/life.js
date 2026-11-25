@@ -401,7 +401,7 @@ function* fight(P, n, opts = {}) {
     // 후천 특성의 계수기(9-22)
     const c = P.cnt || (P.cnt = {});
     if (opts.lethal && P.alive) c.생사결 = (c.생사결 || 0) + 1;
-    if (opts.lethal && win && (stage === '대승' || P.R() < 0.4)) { P.kills = (P.kills || 0) + 1; c.lastKill = P.year; }
+    if (opts.lethal && win && (stage === '대승' || P.R() < 0.4)) { P.kills = (P.kills || 0) + 1; c.lastKill = P.year; if (n.t !== '마' && n.t !== '사' && P.R() < 0.5) ruleBreak(P, '살생', `${J(n.name, '을를')} 베었다`); }
     if (stage === '대패') { c.대패 = P.year; c.대패들 = (c.대패들 || []).filter(y => y > P.year - 5).concat(P.year); if (opts.lethal && !check(P, '정신력', 55).ok) c.겁 = P.year; }
     if (opts.lethal && win) c.생사승 = (c.생사승 || 0) + 1;
   }
@@ -696,6 +696,8 @@ function* runTpl(P, t, month, extra = {}) {
   if (t.who) {
     const known = t.who.k !== 'new' && (t.who.k === 'known' || P.R() < 0.6) ? findKnown(P, b => (!t.who.rel || b.rels.includes(t.who.rel)) && b.role === t.who.r) : null;
     npc = known || (t.who.k === 'known' ? null : makeNpc(P, t.who.r, t.who.d));
+    // 숙적의 그림자(9-28): 소속이 있으면 싸움 상대가 숙적·적대 세력 사람일 때가 있다
+    if (npc && !known && P.member && !npc.org && t.ch.some(c => c.c === '싸움') && P.R() < 0.25) { const rv = rivalOf(P); if (rv) { npc.org = rv.n; npc.fid = rv.id; npc.rivalSect = true; } }
     if (!npc && t.who.k === 'known') return;
     if (t.who.rel && !npc.rels.includes(t.who.rel)) { const k = findKnown(P, b => b.rels.includes(t.who.rel)); if (k) npc = k; }
     per = perceive(P, npc);
@@ -717,6 +719,7 @@ function* runTpl(P, t, month, extra = {}) {
     const r = yield* fightAsk(P, npc, t.n, { lethal: (c.bad || []).concat(c.fum || []).some(e => /death|중상/.test(e)) || /생사|습격|암살|복수|흉적/.test(t.n), spar: /비무|대회|도장/.test(t.n) });
     if (r.retreat) return;
     stage = r.outcome;
+    if (npc && npc.rivalSect) { if (r.win) { P.merit += 8; say(P, `${npc.org} 사람을 꺾어 사문의 체면을 세웠다.`, 'ok'); } else P.merit = Math.max(0, P.merit - 5); }
     if (r.stage) say(P, `${r.win ? '이겼다' : '졌다'}${r.stage === '대승' ? ' — 압승이었다' : r.stage === '신승' ? ' — 간신히' : r.stage === '대패' ? ' — 처참하게' : ''}. ${npc.realm !== npc.shown && per.level !== 'exact' && per.level !== 'realm' ? `상대는 ${REALMS[npc.realm]}의 고수였다.` : ''}`, r.win ? 'ok' : 'ng', month);
   } else if (c.c && c.c !== '없음') {
     const r = check(P, c.c, c.dc || 50, 0, `${t.src} ${t.n} ${c.t}`);
@@ -762,7 +765,7 @@ function* applyFx(P, list, npc, t) {
     else if (e === 'rank+1') { if (P.member) promote(P, true); }
     else if (e === 'realm+1') { P.trigger = 2; }
     else if ((m = e.match(/^thread:(.+)$/))) { if (G.EVENT_THREADS[m[1]] && !P.threads.some(x => x.k === m[1])) { P.threads.push({ k: m[1], step: 0, npc }); say(P, `— 「${m[1]}」의 실마리가 생겼다.`, 'thread'); } }
-    else if ((m = e.match(/^count:(.+)$/))) P.deeds[m[1]] = (P.deeds[m[1]] || 0) + 1;
+    else if ((m = e.match(/^count:(.+)$/))) { P.deeds[m[1]] = (P.deeds[m[1]] || 0) + 1; if (m[1] === '파문 위기') ruleBreak(P, '문규'); if (m[1] === '술') ruleBreak(P, '음주'); }
     else if ((m = e.match(/^rep([+-])(\d+)$/))) { const v = (m[1] === '-' ? -1 : 1) * +m[2]; const fid = (npc && (npc.fid || facIdByName(P, npc.org))) || (P.member && P.member.fid); repAdd(P, fid, v); if (P.member && fid === P.member.fid) P.merit += v / 2; }
     else if ((m = e.match(/^epithet:(.+)$/))) makeEpithet(P, m[1]);
     else if ((m = e.match(/^men([+-])(\d+)$/))) { if (m[1] === '+') gainMen(P, +m[2], '사람들 가운데'); else loseMen(P, +m[2]); }
@@ -776,7 +779,7 @@ function* applyFx(P, list, npc, t) {
 function relHook(P, npc, rel) {
   if (rel === '스승') { addAch(P, '사부님'); P.teacher = npc; }
   if (rel === '의형제') addAch(P, '결의형제');
-  if (rel === '배우자') { P.spouse = npc; P.married = P.year; }
+  if (rel === '배우자') { P.spouse = npc; P.married = P.year; ruleBreak(P, '혼인'); }
   if (rel === '제자') { P.disciples++; addAch(P, '사제의 연'); }
 }
 function giveArt(P, g, npc, how) {
@@ -1724,7 +1727,7 @@ function fleshOut(P, n) {
   n.from = og ? og.n : '평범한 집';
   n.temper = pk(P, TEMPER);
   n.job = og && og.career ? careerDef(og.career).n : og && (og.join || og.f) ? (facDef((og.join || [og.f])[0]) || {}).n || '무가' : '집안일';
-  n.heart = P.R(); n.know = n.know || 1;
+  n.heart = P.R(); n.know = n.know || 1; n.home = n.home || P.place;
   return n;
 }
 function know(P, n, k = 1) { n.know = Math.min(5, (n.know || 1) + k); }
@@ -1794,7 +1797,7 @@ function* loveStep(P, sch) {
 }
 function* wed(P, n) {
   n.rels = n.rels.filter(x => !['정인', '혼약', '마음에 둔 사람'].includes(x)).concat('배우자');
-  P.spouse = n; P.married = P.year; know(P, n, 5);
+  P.spouse = n; P.married = P.year; know(P, n, 5); ruleBreak(P, '혼인');
   say(P, `${J(n.name, '과와')} 혼례를 올렸다.`, 'big', P.month);
   P.events.push(`${P.age}세에 ${J(n.name, '과와')} 혼인했다`);
   addAch(P, '혼례');
@@ -1858,7 +1861,85 @@ function* bondStep(P, sch) {
   }
 }
 // 인물의 한 해: 나이·죽음·경지, 원수와 맞수의 재방문
+// ---------- 문파 규율(9-28): 세력의 rules를 어기면 경고가 쌓이고, 넘치면 파문이다 ----------
+function rivalOf(P) {
+  const me = P.member && facDef(P.member.fid); if (!me) return null;
+  const ids = (G.RIVALS || []).filter(p => p.includes(me.id)).map(p => p[0] === me.id ? p[1] : p[0]);
+  const foes = { 정: ['사', '마'], 사: ['정'], 마: ['정'], 중: ['사'] }[me.t] || [];
+  const pool = ids.map(facDef).filter(Boolean).concat(G.FACTIONS.filter(f => foes.includes(f.t) && (f.prestige || 0) >= 1).sort(() => P.R() - 0.5).slice(0, 3));
+  return pool.length ? pk(P, pool) : null;
+}
+function ruleBreak(P, kind, why) {
+  const m = P.member; if (!m || m.kind === '객경') return;
+  const f = facDef(m.fid), rules = (f && f.rules) || [];
+  const hit = { 살생: rules.some(r => /살생 금지/.test(r)), 혼인: rules.some(r => /혼인 금지/.test(r)) && (m.kind === '정식'), 음주: rules.includes('음주 금지'), 내통: rules.some(r => /내통 금지|배신 금지/.test(r)), 문규: true }[kind];
+  if (!hit) return;
+  m.warn = (m.warn || 0) + 1;
+  say(P, `${f.n}의 규율(${kind === '문규' ? '문규' : kind + ' 금지'})을 어겼다${why ? ' — ' + why : ''}. 경고 ${m.warn}번째.`, 'ng');
+  repAdd(P, m.fid, -10); P.merit = Math.max(0, P.merit - 10);
+  if (m.warn >= 3) expel(P, `${kind === '문규' ? '문규' : kind + ' 금지'}를 거듭 어겨`);
+}
+function expel(P, why) {
+  const m = P.member; if (!m) return; const f = facDef(m.fid);
+  say(P, `${why} <b>${f.n}에서 파문당했다.</b> 무공을 거두겠다는 말까지 나왔다.`, 'big');
+  P.events.push(`${P.age}세에 ${f.n}에서 파문당했다`); repAdd(P, m.fid, -40);
+  P.member = null; P.flags.ronin = true; P.flags.expelled = f.id;
+  const t = acqTrait('낙인'); if (t && !P.traits.some(x => x.n === '낙인')) P.traits.push(t);
+  addAch(P, '파문');
+}
+LIFE.ruleBreak = ruleBreak;
+// ---------- 인연 인물의 삶(9-27): 아는 사람들도 해마다 자라고, 자리에 오르고, 혼인하고, 곤경에 빠진다 ----------
+const CLOSE = ['스승', '벗', '의형제', '제자', '정인', '배우자', '맞수', '원수', '수하', '은인'];
+const TITLES = { 3: ['표국의 표두', '무관의 관주', '문파의 당주', '세가의 무사장'], 4: ['문파의 장로', '세가의 총관', '표국의 국주', '산채의 채주'], 5: ['문파의 장문인', '세가의 가주', '무림맹의 호법'] };
+function newsOf(P, n, txt) { if ((P.news || 0) >= 3) return; P.news = (P.news || 0) + 1; say(P, `소식: ${n.rels[0] ? n.rels[0] + ' ' : ''}${J(n.name, '이가')} ${txt}`, 'bond'); (n.log = n.log || []).push(`${P.year}년 ${txt}`); }
+function npcLife(P, n) {
+  if (!n.rels.some(r => CLOSE.includes(r))) return;
+  if (n.tal == null) n.tal = 0.3 + P.R() * 0.9;
+  // 경지: 젊고 재능 있을수록 오른다. 화경은 드물고 현경은 없다
+  if (n.age < 60 && n.realm < 6 && P.R() < (0.015 + 0.05 * n.tal) * (n.realm < 3 ? 1 : n.realm < 5 ? 0.45 : 0.12)) { n.realm++; n.shown = Math.max(n.shown || 0, n.realm); newsOf(P, n, `${REALMS[n.realm]}에 올랐다고 한다.`); }
+  // 자리
+  const tl = TITLES[Math.min(5, n.realm)];
+  if (tl && n.age >= 28 && (!n.title || (n.titleLv || 0) < Math.min(5, n.realm)) && P.R() < 0.08) { n.title = pk(P, tl); n.titleLv = Math.min(5, n.realm); newsOf(P, n, `${n.title}가 되었다.`); }
+  // 별호
+  if (n.realm >= 4 && !n.epithet && P.R() < 0.1) { n.epithet = pk(P, ['일검', '철장', '비연', '광풍', '청운', '흑수', '백의', '쾌도', '무영', '독행']) + pk(P, ['객', '검', '수', '도', '신룡', '호', '랑']); newsOf(P, n, `「${n.epithet}」라 불리기 시작했다.`); }
+  // 혼인과 자식
+  if (!n.married && n.age >= 20 && n.age <= 40 && !n.rels.some(r => r === '정인' || r === '배우자' || r === '마음에 둔 사람') && P.R() < 0.07) { n.married = P.year; if (n.bond >= 30) newsOf(P, n, '혼례를 올렸다. 청첩장이 왔다.'); }
+  // 곤경: 가까운 사람이면 도움을 청한다(bondOffers)
+  if (!n.trouble && n.bond >= 25 && n.rels.some(r => ['벗', '의형제', '제자', '스승', '은인'].includes(r)) && P.R() < 0.04) n.trouble = { y: P.year, k: pk(P, ['원수에게 쫓긴다', '빚에 몰렸다', '누명을 썼다', '문파에서 쫓겨날 처지다', '식솔이 납치되었다']) };
+  if (n.trouble && P.year - n.trouble.y > 2) { if (P.R() < 0.4) { n.alive = false; say(P, `${J(n.name, '이가')} 끝내 화를 면치 못하고 세상을 떠났다는 소식이 들렸다.`, 'ng'); } n.trouble = null; n.bond -= 10; }
+  // 원수의 원한은 대를 잇는다
+  if (n.rels.includes('원수') && !n.alive) n.heir = true;
+}
+// 인연이 여는 기회(9-27)
+function bondOffers(P) {
+  const out = [];
+  for (const n of P.bonds) {
+    if (!n.alive) continue;
+    if (n.trouble) { const t = n.trouble; out.push({ n: `${n.rels[0] || ''} ${n.name}의 부탁`, hint: `${t.k}. 도움을 청한다`, go: function* () {
+      n.trouble = null; say(P, `${J(n.name, '을를')} 도우러 나섰다.`, 'act', P.month);
+      let ok;
+      if (/쫓긴다|납치/.test(t.k)) { const e = makeNpc(P, pk(P, ['흑도 두목', '복면 살수', '산적 두목']), [0, 1]); const r = yield* fightAsk(P, e, `${n.name}의 부탁`, { lethal: true }); ok = r.win; }
+      else if (/빚/.test(t.k)) { ok = P.wealth >= 50; if (ok) P.wealth -= 50; }
+      else ok = check(P, /누명/.test(t.k) ? '수읽기' : '풍모', 60).ok;
+      if (!P.alive) return;
+      if (ok) { n.bond += 30; addFame(P, 50); say(P, `${n.name}의 일을 풀었다. 은혜를 잊지 않겠다 한다.`, 'ok', P.month); if (!n.rels.includes('은인') && n.bond >= 70 && n.rels.includes('벗')) { n.rels.push('의형제'); say(P, `${J(n.name, '과와')} 의형제를 맺었다.`, 'bond', P.month); addAch(P, '결의형제'); } }
+      else { n.bond -= 5; say(P, '힘이 닿지 않았다.', 'ng', P.month); }
+    } }); continue; }
+    if (n.rels.includes('벗') && !n.rels.includes('의형제') && n.bond >= 70) out.push({ n: `${J(n.name, '과와')} 의형제를 맺는다`, hint: '같은 날 죽기를 맹세한다', go: function* () { n.rels.push('의형제'); n.bond += 10; say(P, `${J(n.name, '과와')} 술잔을 깨고 의형제를 맺었다.`, 'bond', P.month); addAch(P, '결의형제'); } });
+    if (n.rels.includes('맞수') && !n.rels.includes('벗') && n.bond >= 35) out.push({ n: `맞수 ${J(n.name, '과와')} 술잔을 나눈다`, hint: '칼을 섞던 사이가 벗이 될지도', go: function* () { if (check(P, '성품', 50).ok) { n.rels.push('벗'); n.bond += 15; say(P, `밤새 술을 마셨다. ${J(n.name, '과와')} 벗이 되었다.`, 'bond', P.month); } else { n.bond += 5; say(P, '서로 말이 없었다. 그래도 술은 달았다.', 'muted', P.month); } } });
+    if (n.rels.includes('원수') && P.age >= 50 && (n.age || 0) >= 50 && n.bond > -60) out.push({ n: `원수 ${J(n.name, '과와')} 묵은 원한을 푼다`, hint: '둘 다 늙었다', go: function* () { if (check(P, '성품', 60).ok) { n.rels = n.rels.filter(r => r !== '원수'); n.bond = 10; say(P, `${J(n.name, '과와')} 마주 앉아 지난 일을 털었다.`, 'bond', P.month); addAch(P, '원한을 끊다'); } else say(P, '끝내 서로 등을 돌렸다.', 'ng', P.month); } });
+    if (n.rels.includes('제자') && n.realm >= 3 && !n.sentDown && n.realm >= P.realm - 1) out.push({ n: `제자 ${J(n.name, '을를')} 하산시킨다`, hint: '이제 제 길을 가게 한다', go: function* () { n.sentDown = true; n.bond += 15; addFame(P, 300); say(P, `${J(n.name, '이가')} 큰절을 올리고 산을 내려갔다.`, 'bond', P.month); addAch(P, '청출어람(제자)'); } });
+    if (CLOSE.slice(0, 6).some(r => n.rels.includes(r)) && n.home && n.home !== P.place && P.year - (n.visited || 0) >= 4 && n.bond >= 20) out.push({ n: `${n.rels[0]} ${J(n.name, '을를')} 찾아간다`, hint: `${atText({ place: n.home })}`, go: function* () {
+      n.visited = P.year; moveTo(P, n.home); n.bond += 12; know(P, n);
+      say(P, `${J(atText(P), '으로')} ${J(n.name, '을를')} 찾아갔다.${n.title ? ` 이제 ${n.title}다.` : ''}`, 'bond', P.month);
+      if (n.realm > P.realm && P.R() < 0.4) giveArt(P, '견식', n);
+      if (P.R() < 0.35) { const m = makeNpc(P, pk(P, ['벗의 벗', '젊은 무사', '그 집 식객']), [-1, 1]); meet(P, m, '벗'); m.bond = 15; say(P, `그 집에서 ${J(m.name, '을를')} 알게 되었다.`, 'bond', P.month); }
+    } });
+  }
+  return out;
+}
 function* npcYear(P) {
+  P.news = 0;
   for (const n of P.bonds) {
     if (!n.alive) continue;
     n.age = (n.age || P.age) + 1;
@@ -1871,7 +1952,7 @@ function* npcYear(P) {
       if (n === P.spouse) { say(P, '홀로 남았다.', 'muted'); }
       continue;
     }
-    if (n.rels.some(r => ['스승', '벗', '의형제', '맞수', '원수'].includes(r)) && n.realm < 5 && n.age < 60 && P.R() < 0.03) n.realm++;
+    npcLife(P, n);
     if (n.rels.includes('정인') || n.rels.includes('마음에 둔 사람')) continue;
     if (n.met != null && n.met < P.year - 3 && n.bond > 10 && !n.rels.includes('배우자')) n.bond -= 2;
   }
@@ -2015,7 +2096,7 @@ function* opportunity(P, withTravel) {
   const recs = recruitOffers(P), trav = withTravel ? travelOffers(P) : [];
   const pool = [];
   const take = (l, n) => { for (const x of l.sort(() => P.R() - 0.5).slice(0, n)) pool.push(x); };
-  take(recs, 2); take(forceOffers(P), 2); take(trav, withTravel ? 2 : 0); take(acts, 4 - Math.min(3, pool.length));
+  take(recs, 2); take(bondOffers(P), 1); take(forceOffers(P), 2); take(trav, withTravel ? 2 : 0); take(acts, 4 - Math.min(3, pool.length));
   if (!pool.length) return;
   const opts = pool.slice(0, 4);
   const ch = yield { ask: withTravel ? '길과 기회' : '기회', text: `${P.month}월, ${atText(P)}. 해 볼 만한 일이 있다.`, month: P.month, options: opts.map(o => [o.n, o.hint || '']).concat([['하던 대로 지낸다', '']]) };
@@ -2338,7 +2419,7 @@ const BASE_ACHS = ['첫걸음', '벽을 넘다', '늦깎이', '소년고수', '�
   '별호', '명동천하', '문풍상담', '거부', '장원급제', '가업을 잇다', '기연', '세 번의 기연', '천무지체', '세상이 바뀌다', '정마대전', '유랑', '백세',
   '소문을 쫓다', '정보는 힘', '전설의 무덤', '전생과 마주치다', '도장 깨기', '개파', '세력을 세우다', '무공 창안', '은거',
   '수하 열 명', '수하 쉰 명', '백인을 거느리다', '오백 무리', '천인을 거느리다',
-  '신메뉴', '분점', '상단주', '명검을 벼리다', '땅부자', '돈으로 산 강함', '첫 만남', '정인', '짝사랑', '혼례', '비전을 잇다', '청출어람(제자)', '생사지교', '원한을 끊다', '용병', '대문파의 산문', '장로의 후인', '절대고수의 후인', '폐관 수련', '길 떠나기', '충성의 맹세', '제자 모집', '사파 토벌', '하위 세력', '표행 열 번', '약탈 열 번', '협행 열 번', '어린 날의 모험', '신동'];
+  '신메뉴', '분점', '상단주', '명검을 벼리다', '땅부자', '돈으로 산 강함', '첫 만남', '정인', '짝사랑', '혼례', '비전을 잇다', '청출어람(제자)', '생사지교', '원한을 끊다', '파문', '용병', '대문파의 산문', '장로의 후인', '절대고수의 후인', '폐관 수련', '길 떠나기', '충성의 맹세', '제자 모집', '사파 토벌', '하위 세력', '표행 열 번', '약탈 열 번', '협행 열 번', '어린 날의 모험', '신동'];
 LIFE.ACHS = BASE_ACHS
   .concat(Object.keys((G.RUMORS || {})).map(k => '소문의 끝: ' + k))
   .concat(['구파일방', '세가', '연합', '사교', '흑도', '암중', '관부', '오악도불', '새외', '생업'].map(c => c + '에 들다'))
