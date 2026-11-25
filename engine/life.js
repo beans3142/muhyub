@@ -1601,7 +1601,7 @@ LIFE.actions = function (P) {
   add('found', '문파를 세운다', !P.force && (P.realm >= 4 || fs >= 2) && P.wealth >= 1000 * (P.opts.founder ? 0.5 : 1) && P.age >= 20, P.force ? '이미 세력이 있다' : '절정 이상 또는 명성 2단계, 재산 1,000냥', '내 세력');
   add('found2', '방회·산채·상단을 세운다', !P.force && (P.realm >= 3 || P.rung >= 3) && P.wealth >= 300 && P.age >= 18, P.force ? '이미 세력이 있다' : '일류 이상 또는 생업 3단, 재산 300냥', '사파·상인 쪽 세력');
   add('create', '무공을 창안한다', P.realm >= 3 && P.enl >= 2 && mainArt(P), '일류 이상, 깨달음 득의 이상', '한 해 폐관');
-  add('manual', '비급을 구한다', P.wealth >= 50 && P.age >= 12, '재산 50냥 이상', '흑점·헌책방');
+  add('manual', '비급을 구한다', P.wealth >= 30 && P.age >= 12, '재산 30냥 이상', '헌책방·책장수·흑점·사문 장경각');
   add('dojo', '도장 깨기', P.realm >= 1 && P.age >= 16, '삼류 이상', '이 고을 무관에 비무를 건다');
   add('master', relPeople(P, ['스승']).length ? '더 높은 스승을 찾는다' : '스승을 찾는다', P.age >= 10 && P.age <= 50 && !relPeople(P, ['스승']).some(b => b.alive && b.realm > P.realm), P.age < 10 ? '열 살부터' : P.age > 50 ? '쉰 살까지' : '지금 스승에게 배울 것이 남았다', '시험이 있다');
   add('disciple', '제자를 들인다', (P.realm >= 4 || P.force) && P.age >= 30, '절정 이상 또는 세력 수장', '');
@@ -1667,6 +1667,7 @@ function* doAction(P, id) {
     } else sayA('무공의 꼴이 잡히지 않았다. 한 해가 헛되이 갔다.');
     P.trigger = 1;
   } else if (id === 'manual') {
+    yield* buyManual(P); return;
     const tiers = [['삼류 비급', 0, 50], ['이류 비급', 1, 200], ['일류 비급', 2, 1000], ['상승 비급', 3, 5000]].filter(t => t[2] <= P.wealth);
     const ch = yield { ask: '흑점', text: '흑점 주인이 비급 몇 권을 늘어놓는다.', options: tiers.map(t => [t[0], `${t[2]}냥`]).concat([['그만둔다', '']]) };
     if (ch < tiers.length) { P.wealth -= tiers[ch][2]; if (check(P, '학식', 45 + tiers[ch][1] * 8).ok) giveArt(P, GRADES[tiers[ch][1]], null, '흑점에서 산 비급으로 익히기 시작했다'); else sayA('산 비급이 가짜였다. 아니면 해독하지 못했다.'); }
@@ -1795,15 +1796,7 @@ function giveWeapon(P, g) { const lv = { 명병: 1, 보검: 2, 신병이기: 3 }
 const PRICE = { 하품: 30, 중품: 300, 상품: 3000, 극품: 30000 };
 const WPRICE = [0, 400, 6000, 80000], MPRICE = [60, 250, 1200, 9000];
 const GENERAL = /약방|의원|표국|도가 문파|기루/;
-function shopsHere(P) {
-  const p = G.PLACES2[P.place]; if (!p || !['성', '진'].includes(p.t)) return [];
-  const fs = Math.max(stageOf(P.fame), stageOf(P.infamy)), lad = P.member && facDef(P.member.fid).lad;
-  const out = ['장터'];
-  if (p.t === '성' && rangeLevel(P) >= 1) out.push('큰 가게');
-  if (p.t === '성' && (P.realm >= 3 || fs >= 2 || lad === 'bandit' || lad === 'info')) out.push('흑점');
-  if (LIFE.BIG.has(P.place) && (stageOf(P.fame) >= 3 || P.wealth >= 20000)) out.push('경매');
-  return out;
-}
+function shopsHere(P) { return shopsHere2(P); }
 LIFE.shopsHere = shopsHere;
 function shopStock(P, shop) {
   const rr = rng((P.year * 131 + (G.PLACES2[P.place] ? G.PLACES2[P.place].x * 7 : 0) + shop.length * 977) >>> 0);
@@ -1818,11 +1811,12 @@ function shopStock(P, shop) {
   if (shop === '큰 가게') { pick(pills('중품').concat(herbs('중품')), 3).forEach(x => addPill(x, '중품')); it.push({ k: 'weapon', n: '명병', lv: 1, price: price(WPRICE[1]) }); it.push({ k: 'manual', n: '이류 비급', g: 1, price: price(MPRICE[1]) }); if (rr() < 0.4) it.push({ k: 'manual', n: '일류 비급', g: 2, price: price(MPRICE[2]) }); }
   if (shop === '흑점') { pick(pills('상품').concat(herbs('상품')), 3).forEach(x => addPill(x, '상품')); if (rr() < 0.6) it.push({ k: 'weapon', n: '보검', lv: 2, price: price(WPRICE[2]) }); it.push({ k: 'manual', n: '일류 비급', g: 2, price: price(MPRICE[2]) }); if (rr() < 0.4) it.push({ k: 'manual', n: '상승 비급', g: 3, price: price(MPRICE[3]) }); const t = pick((G.TREASURES || []).filter(x => ['renpi', 'bidu', 'yemingzhu'].includes(x.id)), 1)[0]; if (t) it.push({ k: 'treasure', n: t.n, id: t.id, price: price(t.q === '상품' ? 4000 : 800) }); }
   if (shop === '경매') { pick(pills('극품').concat(herbs('극품')), 2).forEach(x => addPill(x, '극품')); if (rr() < 0.5) it.push({ k: 'weapon', n: '신병이기', lv: 3, price: price(WPRICE[3]) }); it.push({ k: 'manual', n: '상승 비급', g: 3, price: price(MPRICE[3]) }); const t = pick((G.TREASURES || []).filter(x => ['tiancansi', 'lengyu'].includes(x.id)), 1)[0]; if (t) it.push({ k: 'treasure', n: t.n, id: t.id, price: price(20000) }); }
+  shopStock2(P, shop, it, rr, price, pills, herbs, addPill, pick);
   return it.filter(x => !(P.bought || {})[shop + x.n + P.year]);
 }
 function* doShop(P) {
   const shops = shopsHere(P); if (!shops.length) { say(P, '이 근처에는 가게가 없다.', 'muted', P.month); return; }
-  const si = shops.length > 1 ? yield { ask: '가게', text: `${atText(P)}. 어느 가게에 갈까?`, options: shops.map(s => [s, { 장터: '흔한 물건', '큰 가게': '중품 영약·명병', 흑점: '값비싼 물건, 출처는 묻지 않는다', 경매: '천하의 보물' }[s]]) } : 0;
+  const si = shops.length > 1 ? yield { ask: '가게', text: `${atText(P)}. 어느 가게에 갈까?`, options: shops.map(s => [s, SHOP_DESC[s] || '']) } : 0;
   const shop = shops[si];
   for (let n = 0; n < 4; n++) {
     const st = shopStock(P, shop);
@@ -1833,6 +1827,10 @@ function* doShop(P) {
     if (x.price > P.wealth) { say(P, `${J(x.n, '을를')} 사기엔 돈이 모자랐다.`, 'muted', P.month); continue; }
     P.wealth -= x.price; P.bought = P.bought || {}; P.bought[shop + x.n + P.year] = 1;
     addAch(P, '돈으로 산 강함');
+    if (x.k === 'cure') { P.hurt = Math.max(0, P.hurt - 1); say(P, `${shop}에서 상처를 치료받았다.`, 'act', P.month); continue; }
+    if (x.k === 'cure2') { P.poison = 0; say(P, `${shop}에서 해독 탕약을 마셨다.`, 'act', P.month); continue; }
+    if (x.k === 'sharpen') { P.wealth += 0; P.flags.sharp = P.year; say(P, '칼날이 다시 섰다. 한동안 손에 착 붙는다.', 'act', P.month); continue; }
+    if (x.fake && P.R() < x.fake) { say(P, `${shop}에서 산 ${J(x.n, '이가')} 가짜였다.`, 'ng', P.month); continue; }
     if (x.k === 'pill') {
       if (x.qi) { P.pqi += x.qi; P.pillYear = P.year; }
       if (x.side && x.side.heal) P.hurt = Math.max(0, P.hurt - 1);
@@ -1842,6 +1840,92 @@ function* doShop(P) {
     } else if (x.k === 'weapon') { if (x.lv > P.weapon) P.weapon = x.lv; say(P, `${shop}에서 ${J(x.n, '을를')} 샀다.`, 'act', P.month); }
     else if (x.k === 'manual') { say(P, `${shop}에서 ${J(x.n, '을를')} 샀다.`, 'act', P.month); if (check(P, '학식', 45 + x.g * 8).ok) giveArt(P, GRADES[x.g], null, '산 비급으로 익히기 시작했다'); else say(P, '비급을 펼쳤지만 끝내 해독하지 못했다.', 'ng', P.month); }
     else if (x.k === 'treasure') { P.treasures = (P.treasures || []).concat(x.n); if (x.id === 'tiancansi') P.flags.armor = true; if (x.id === 'lengyu') P.flags.jadeSeat = true; say(P, `${shop}에서 「${x.n}」${J(x.n, '을를').slice(-1)} 손에 넣었다.`, 'act', P.month); }
+  }
+}
+
+// ---------- 가게 종류(9-47) ----------
+// 고을마다 서는 가게가 다르다. 흑점은 장물과 금지된 물건을 다루는 곳이라 흑도에 줄이 있거나 이름난 사람만 들어간다
+const SHOP_DESC = { 장터: '흔한 물건', 약방: '탕약과 영약, 상처 치료', 대장간: '병기를 사고 벼린다', 헌책방: '낡은 책 사이에 비급이 섞였다', 행상: '떠도는 장사꾼, 무엇이 나올지 모른다', '큰 가게': '중품 영약·명병', 골동품점: '옛 보물, 진짜인지는 모른다', '서역 상인': '먼 곳의 진귀한 물건', 흑점: '장물과 금지된 물건, 출처는 묻지 않는다', 경매: '천하의 보물' };
+function shopsHere2(P) {
+  const p = G.PLACES2[P.place]; if (!p || !['성', '진', '관문'].includes(p.t)) return [];
+  const fs = Math.max(stageOf(P.fame), stageOf(P.infamy)), lad = ladOf(P);
+  const rr = rng((P.year * 977 + (p.x || 0) * 31 + (p.y || 0)) >>> 0);
+  const out = ['장터'];
+  if (p.t !== '관문') out.push('약방');
+  if (p.t === '성' || rr() < 0.5) out.push('대장간');
+  if (p.t === '성' && rr() < 0.7) out.push('헌책방');
+  if (rr() < 0.35) out.push('행상');
+  if (p.t === '성' && rangeLevel(P) >= 1) out.push('큰 가게');
+  if (p.t === '성' && rr() < 0.4) out.push('골동품점');
+  if ((p.t === '성' || p.t === '관문') && ['서역', '감숙', '섬서', '새외', '대막'].some(k => (p.r || '').includes(k) || (G.REGIONS[p.r] || {}).zone !== '중원') && rr() < 0.6) out.push('서역 상인');
+  if (p.t === '성' && (lad === 'bandit' || lad === 'info' || lad === 'assassin' || P.align <= -20 || fs >= 2 || (P.knownBackers || []).length)) out.push('흑점');
+  if (LIFE.BIG.has(P.place) && (stageOf(P.fame) >= 3 || P.wealth >= 20000)) out.push('경매');
+  return out;
+}
+function shopStock2(P, shop, it, rr, price, pills, herbs, addPill, pick) {
+  if (shop === '약방') { pick(pills('하품').concat(herbs('하품')), 2).forEach(x => addPill(x, '하품')); if (rr() < 0.5) pick(pills('중품'), 1).forEach(x => addPill(x, '중품')); it.push({ k: 'cure', n: '상처 치료', price: price(20) }); it.push({ k: 'cure2', n: '해독 탕약', price: price(40) }); }
+  if (shop === '대장간') { it.push({ k: 'weapon', n: '쓸 만한 칼(명병)', lv: 1, price: price(WPRICE[1]) }); if (rr() < 0.25) it.push({ k: 'weapon', n: '잘 벼린 보검', lv: 2, price: price(WPRICE[2] * 1.2) }); if (P.weapon >= 1) it.push({ k: 'sharpen', n: '칼을 다시 벼린다', price: price(60) }); }
+  if (shop === '헌책방') { it.push({ k: 'manual', n: '낡은 삼류 비급', g: 0, price: price(MPRICE[0] * 0.6), fake: 0.1 }); if (rr() < 0.5) it.push({ k: 'manual', n: '헌 이류 비급', g: 1, price: price(MPRICE[1] * 0.7), fake: 0.2 }); if (rr() < 0.08) it.push({ k: 'manual', n: '먼지 쌓인 이상한 책', g: 3, price: price(80), fake: 0.6 }); }
+  if (shop === '행상') { const r = rr(); if (r < 0.4) pick(herbs('하품').concat(herbs('중품')), 1).forEach(x => addPill(x, x.q)); else if (r < 0.7) it.push({ k: 'manual', n: '행상이 파는 비급', g: rr() < 0.8 ? 0 : 1, price: price(40), fake: 0.45 }); else it.push({ k: 'weapon', n: '행상의 칼', lv: 1, price: price(WPRICE[1] * 0.5), fake: 0.5 }); if (rr() < 0.15) { const t = pk(P, G.TREASURES || []); if (t) it.push({ k: 'treasure', id: t.id, n: t.n, price: price(500), fake: 0.5 }); } }
+  if (shop === '골동품점') { for (const t of pick(G.TREASURES || [], 2)) it.push({ k: 'treasure', id: t.id, n: t.n, price: price(1500 + rr() * 3000), fake: 0.35 }); if (rr() < 0.3) it.push({ k: 'weapon', n: '옛 명장의 칼', lv: 2, price: price(WPRICE[2] * 0.8), fake: 0.35 }); }
+  if (shop === '서역 상인') { pick(pills('중품').concat(pills('상품')), 2).forEach(x => addPill(x, x.q)); if (rr() < 0.4) it.push({ k: 'manual', n: '서역 무공의 경전', g: 2, price: price(MPRICE[2] * 1.3), fake: 0.15 }); const t = pk(P, G.TREASURES || []); if (t) it.push({ k: 'treasure', id: t.id, n: t.n, price: price(2500) }); }
+}
+// 비급을 구한다(9-47): 파는 사람이 고을과 처지에 따라 다르다
+function* buyManual(P) {
+  const p = G.PLACES2[P.place], lad = ladOf(P);
+  const sellers = [['헌책방 주인', [['낡은 삼류 비급', 0, 40, 0.1], ['헌 이류 비급', 1, 160, 0.2]], p && p.t === '성' ? 3 : 1], ['떠돌이 책장수', [['삼류 비급', 0, 25, 0.4], ['이류 비급이라는 책', 1, 90, 0.5], ['일류 비급이라는 책', 2, 300, 0.7]], 2]];
+  if (p && p.t === '성' && (lad === 'bandit' || lad === 'info' || lad === 'assassin' || P.align <= -20 || P.realm >= 3 || (P.knownBackers || []).length)) sellers.push(['흑점 주인', [['일류 비급', 2, 1000, 0.2], ['상승 비급', 3, 5000, 0.25]], 2]);
+  if (P.member && ['sect', 'clan'].includes(lad)) sellers.push(['사문 장경각의 필사승', [['사문의 필사본', Math.min(3, accessGrade(P)), 30 + P.member.rank * 20, 0]], 2]);
+  const [who, tiers] = wpick(P, sellers, s => s[2]);
+  const can = tiers.filter(t => t[2] <= P.wealth);
+  if (!can.length) { say(P, `${who}를 찾아갔지만 살 만한 돈이 없었다.`, 'muted', P.month); return; }
+  const ch = yield { ask: who, text: `${who}가 책 몇 권을 늘어놓는다.${who.startsWith('떠돌이') ? ' 진짜인지는 펼쳐 봐야 안다.' : who.startsWith('흑점') ? ' 어디서 나온 물건인지는 묻지 않는 것이 규칙이다.' : ''}`, month: P.month, options: can.map(t => [t[0], `${t[2]}냥`]).concat([['그만둔다', '']]) };
+  if (ch >= can.length) return;
+  const t = can[ch]; P.wealth -= t[2];
+  if (P.R() < t[3]) { say(P, `산 ${J(t[0], '이가')} 가짜였다. ${who}는 이미 자취를 감췄다.`, 'ng', P.month); return; }
+  if (check(P, '학식', 40 + t[1] * 8).ok) giveArt(P, GRADES[t[1]], who.includes('사문') ? { fid: P.member.fid } : null, `${who}에게서 산 책으로 익히기 시작했다`); else say(P, '책을 펼쳤지만 끝내 해독하지 못했다.', 'ng', P.month);
+}
+
+// ---------- 수소문(9-48): 지금 알아보면 몇 달 뒤 일이 찾아온다 ----------
+const LEAD_KINDS = [
+  { k: 'master', n: '이름난 스승의 행방', cost: 20, ok: P => !relPeople(P, ['스승']).some(b => b.alive && b.realm > P.realm) && P.age <= 50 },
+  { k: 'foe', n: '원수의 행방', cost: 30, ok: P => relPeople(P, ['원수']).length > 0 },
+  { k: 'kin', n: '소식 끊긴 사람의 행방', cost: 15, ok: P => P.bonds.some(b => b.alive && b.bond >= 30 && b.home && b.home !== P.place) },
+  { k: 'manual', n: '진짜 비급을 파는 곳', cost: 40, ok: P => P.arts.length > 0 },
+  { k: 'elixir', n: '영약·영물의 소문', cost: 30, ok: P => P.age >= 15 },
+  { k: 'job', n: '큰 돈벌이 자리', cost: 10, ok: P => P.age >= 16 },
+  { k: 'backer', n: '이 고을 흑도의 뒷배', cost: 15, ok: P => P.age >= 16 },
+  { k: 'love', n: '마음에 둔 사람의 마음', cost: 10, ok: P => relPeople(P, ['마음에 둔 사람']).length > 0 },
+];
+function leadOffers(P) {
+  P.leads = P.leads || [];
+  if (P.leads.length >= 1 || P.age < 14 || P.R() < 0.55) return [];
+  const l = LEAD_KINDS.filter(x => x.ok(P) && !P.leads.some(y => y.k === x.k) && !(P.leadUsed && P.leadUsed[x.k] >= P.year - 4));
+  if (!l.length) return [];
+  const x = pk(P, l);
+  return [{ n: `수소문한다: ${x.n}`, hint: `${x.cost}냥. 몇 달 뒤 소식이 온다`, go: function* () {
+    P.wealth = Math.max(0, P.wealth - x.cost); P.leadUsed = P.leadUsed || {}; P.leadUsed[x.k] = P.year;
+    const sk = check(P, '수읽기', 50, (P.knownBackers || []).length * 2 + (ladOf(P) === 'info' || ladOf(P) === 'beggar' ? 15 : 0));
+    const at = P.year * 12 + P.month + 2 + Math.floor(P.R() * 6);
+    P.leads.push({ k: x.k, at, good: sk.ok, crit: sk.crit });
+    say(P, `${pk(P, ['객잔 주인에게', '하오문 꼬마에게', '거지 아이들에게', '표국 쟁자수들에게', '찻집 노인들에게'])} ${x.cost}냥을 쥐여 주고 「${x.n}」을 알아봐 달라 했다.`, 'act', P.month);
+  } }];
+}
+function* leadStep(P) {
+  if (!(P.leads || []).length) return;
+  const now = P.year * 12 + P.month, due = P.leads.filter(l => l.at <= now);
+  if (!due.length) return;
+  P.leads = P.leads.filter(l => l.at > now);
+  for (const L of due) {
+    if (!L.good && P.R() < 0.6) { say(P, `맡겨 둔 수소문(${(LEAD_KINDS.find(x => x.k === L.k) || {}).n})은 헛소문만 물어 왔다.`, 'muted', P.month); continue; }
+    if (L.k === 'master') { say(P, '수소문 끝에 은거한 고수가 머무는 곳을 알아냈다.', 'path', P.month); P.flags.masterLuck = Math.max(P.flags.masterLuck || 0, 1); yield* seekMaster(P); }
+    else if (L.k === 'foe') { const f = relPeople(P, ['원수'])[0]; if (!f) continue; say(P, `${J(f.name, '이가')} 어디 머무는지 알아냈다. 먼저 칠 수 있다.`, 'path', P.month); f.intel = true; know(P, f, 3); const r = yield* fightAsk(P, f, '원수를 먼저 친다', { lethal: true, pMul: 1.15 }); if (r.win) { f.rels = f.rels.filter(x => x !== '원수'); addAch(P, '원한을 끊다'); } }
+    else if (L.k === 'kin') { const b = P.bonds.filter(b => b.alive && b.bond >= 30 && b.home && b.home !== P.place).sort((a, c) => c.bond - a.bond)[0]; if (!b) continue; b.bond += 10; know(P, b); say(P, `${J(b.name, '이가')} ${atText({ place: b.home })}에 있다는 소식을 들었다.${b.title ? ` 이제 ${b.title}라고 한다.` : ''}${b.trouble ? ` 곤경에 빠졌다고 한다 — ${b.trouble.k}.` : ''}`, 'bond', P.month); }
+    else if (L.k === 'manual') { say(P, '진짜 비급을 파는 사람을 찾았다.', 'path', P.month); const g = Math.min(3, (mainArt(P) ? gIdx(mainArt(P).def.g) : 0) + (L.crit ? 1 : 0)); const c = MPRICE[g]; const ch = yield { ask: '수소문의 끝', text: `${GRADES[g]} 비급이다. 진본이라는 보증이 붙었다. ${c}냥.`, month: P.month, options: [['산다', `${c}냥`], ['그만둔다', '']] }; if (ch === 0 && P.wealth >= c) { P.wealth -= c; giveArt(P, GRADES[g], null, '수소문 끝에 구한 진본으로 익히기 시작했다'); } }
+    else if (L.k === 'elixir') { const k = pk(P, ['영물', '천년 영초', '신병이기', '비급 출세']); yield* applyFx(P, ['rumor:' + k]); say(P, `「${k}」에 관한 믿을 만한 소식을 얻었다.`, 'rumor', P.month); }
+    else if (L.k === 'job') { const w = 40 + Math.floor(P.R() * 80) + P.realm * 30; const ch = yield { ask: '수소문의 끝', text: pk(P, [`부잣집 호위 자리가 났다. 석 달에 ${w}냥.`, `표국에서 한 철 표사를 구한다. ${w}냥.`, `관아에서 도적 잡는 일에 현상금을 걸었다. ${w}냥.`]), month: P.month, options: [['맡는다', ''], ['그만둔다', '']] }; if (ch === 0) { const n = makeNpc(P, pk(P, ['산적 두목', '흉적', '도둑 떼 우두머리']), [-1, 1]); const r = yield* fight(P, n); if (r.win) { P.wealth += w; say(P, `일을 끝내고 ${w}냥을 받았다.`, 'ok', P.month); } } }
+    else if (L.k === 'backer') { const bk = G.FACTIONS.filter(f => factionAlive(P, f.id) && (f.t === '사' || f.lad === 'info' || f.lad === 'bandit') && (f.prestige || 0) >= 1); if (!bk.length) continue; const b = pk(P, bk); P.knownBackers = (P.knownBackers || []).concat(b.id); say(P, `이 고을 흑도 뒤에 ${J(b.n, '이가')} 있다는 것을 알아냈다. 흑점에도 줄이 닿았다.`, 'path', P.month); }
+    else if (L.k === 'love') { const b = relPeople(P, ['마음에 둔 사람'])[0]; if (!b) continue; const yes = b.heart > 0.4 || L.crit; say(P, yes ? `${J(b.name, '이가')} 나를 마음에 두고 있다는 말을 들었다.` : `${J(b.name, '은는')} 다른 사람을 마음에 두었다고 한다.`, 'bond', P.month); if (yes) b.bond += 15; else b.bond -= 5; }
   }
 }
 
@@ -2274,7 +2358,7 @@ function* opportunity(P, withTravel) {
   const recs = recruitOffers(P), trav = withTravel && (P.year - (P.movedY || -99) >= 2 || P.R() < 0.25) ? travelOffers(P) : [];
   const pool = [];
   const take = (l, n) => { for (const x of l.sort(() => P.R() - 0.5).slice(0, n)) pool.push(x); };
-  take(recs, 2); take(bondOffers(P), 1); take(memberOffers(P), 1); take(forceOffers(P), 2); take(trav, withTravel ? 2 : 0); take(acts, 4 - Math.min(3, pool.length));
+  take(recs, 2); take(bondOffers(P), 1); take(leadOffers(P), 1); take(memberOffers(P), 1); take(forceOffers(P), 2); take(trav, withTravel ? 2 : 0); take(acts, 4 - Math.min(3, pool.length));
   if (!pool.length) return;
   const opts = pool.slice(0, 4);
   const ch = yield { ask: withTravel ? '길과 기회' : '기회', text: `${P.month}월, ${atText(P)}. ${sceneOf(P, P.month)}${pk(P, OPP_LEAD)}${withTravel ? ' ' + pk(P, OPP_TRAVEL) : ''}`, month: P.month, options: opts.map(o => [o.n, o.hint || '']).concat([['하던 대로 지낸다', '']]) };
@@ -2562,7 +2646,18 @@ const FORCE_TIERS = {
 const FORCE_INCOME_MUL = [1, 1.3, 1.7, 2.2, 3];
 function forceTierOf(f) { let t = 0; for (let i = 0; i < FORCE_TIER_MEN.length; i++) if (f.men >= FORCE_TIER_MEN[i]) t = i; return t; }
 // 직함(9-42): 낭인도 이름값에 따라 부르는 말이 다르고, 세력의 주인은 규모에 맞는 자리 이름을 갖는다
-LIFE.roninTitle = P => { const st = Math.max(stageOf(P.fame), stageOf(P.infamy)); return st >= 3 ? (P.infamy > P.fame ? '천하의 흉객' : '천하의 협객') : st >= 2 ? (P.infamy > P.fame ? '이름난 흉객' : '이름난 낭인') : st >= 1 || P.realm >= 3 ? '낭인' : '떠돌이'; };
+// 낭인의 칭호(9-42): 해 온 일·성향·경지가 바탕 이름을, 이름값이 머리말을 정한다
+LIFE.roninTitle = P => {
+  const d = P.deeds || {}, st = Math.max(stageOf(P.fame), stageOf(P.infamy)), dark = P.infamy > P.fame || P.align <= -30;
+  const top = Object.entries({ 표행: d.표행 || 0, 청부: d.청부 || 0, 협행: d.협행 || 0, 약탈: d.약탈 || 0, 현상금: (P.ach.has('소문의 끝: 흉적 현상금') ? 3 : 0), 은거: P.flags.hidden ? 5 : 0, 용병: P.ach.has('용병') ? 3 : 0 }).sort((a, b) => b[1] - a[1])[0];
+  let base;
+  if (top[1] >= 3) base = { 표행: '떠돌이 표사', 청부: dark ? '살수' : '청부업자', 협행: dark ? '복수귀' : '협객', 약탈: '도적', 현상금: '현상금 사냥꾼', 은거: '은자', 용병: '용병' }[top[0]];
+  else base = P.realm >= 6 ? (dark ? '마두' : '기인') : P.realm >= 4 ? (dark ? '흉객' : '고수') : P.realm >= 3 ? (dark ? '칼잡이' : '검객') : P.realm >= 1 ? (dark ? '무뢰배' : '낭인') : '떠돌이';
+  if (base === '협객' && st >= 3) base = P.realm >= 5 ? '대협' : '의협';
+  if (base === '살수' && st >= 3) base = '살성';
+  const pre = st >= 4 ? (dark ? '천하가 두려워하는 ' : '천하가 우러르는 ') : st >= 3 ? '천하의 ' : st >= 2 ? '이름난 ' : st >= 1 ? '고을에서 소문난 ' : '';
+  return pre + base;
+};
 LIFE.forceTitle = P => { const f = P.force; if (!f) return null; const t = forceTierOf(f); return ({ 문파: ['관주', '문주', '문주', '장문인', '장문인'], 산채: ['두목', '채주', '채주', '대채주', '총채주'], 상단: ['행수', '단주', '단주', '대단주', '대단주'], 방회: ['우두머리', '방주', '방주', '회주', '대방주'] }[f.kind] || ['주인'])[t] || '주인'; };
 LIFE.forceTierName = f => (FORCE_TIERS[f.kind] || FORCE_TIERS.방회).n[forceTierOf(f)];
 function fillPosts(P, f, tier) {
@@ -2696,6 +2791,7 @@ function* year(P) {
       else if (f === 'match') yield* matchmaking(P);
       if (!P.alive) return;
     }
+    if (!closed) { yield* leadStep(P); if (!P.alive) return; }
     // 소문
     for (const r of P.rumorQueue.filter(x => x.month === mo)) { P.rumorQueue.splice(P.rumorQueue.indexOf(r), 1); yield* rumorHear(P, r); if (!P.alive) return; }
     // 사슬·소문 쫓기(달마다 조금씩)
