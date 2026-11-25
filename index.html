@@ -239,6 +239,7 @@ main{min-width:0}
 <script src="data/items.js"></script>
 <script src="data/eventbook.js"></script>
 <script src="data/lifebook.js"></script>
+<script src="data/murimbook.js"></script>
 <script src="data/events.js"></script>
 <script src="data/starts.js"></script>
 <script src="data/canon.js"></script>
@@ -264,29 +265,29 @@ const has = n => !!rec.achs[n];
 // ---------- 해금(켜고 끄기, 10단계 9-10) ----------
 const CH = [[-500, -222, '검의 시대'], [-221, 219, '제국과 유협'], [220, 588, '산문의 시작'], [589, 906, '승병과 이교'], [907, 1126, '문파의 태동'], [1127, 1278, '구파 정립'], [1279, 1367, '명교와 홍건'], [1368, 1449, '마교의 굴기'], [1450, 1549, '강호의 전성기'], [1550, 1643, '왜구와 동영'], [1644, 1779, '반청'], [1780, 1840, '황혼']];
 const UNLOCKS = [
-  { id: 'bestOf4', n: '자질 4d6 중 높은 셋', open: () => endKinds(['黃']) >= 5, why: '黃 엔딩 5종' },
-  { id: 'reveal', n: '타고난 것 처음부터 보기', open: () => endCount() >= 3, why: '엔딩 3번' },
-  { id: 'sex', n: '성별 고르기', open: () => endCount() >= 5, why: '엔딩 5번', pick: () => [['m', '남'], ['f', '여']] },
-  { id: 'martial', n: '무가 출신', open: () => has('첫걸음'), why: '업적 「첫걸음」' },
-  { id: 'region', n: '고향 고르기', open: () => has('유랑'), why: '업적 「유랑」', pick: () => Object.keys(REGIONS).filter(r => REGIONS[r].zone === '중원').map(r => [r, r]) },
-  { id: 'apt', n: '자질 하나 +10', open: () => Object.keys(rec.achs).length >= 15, why: '업적 15개', pick: () => ['근골', '오성', '심성', '기연', '풍모'].map(k => [k, k]) },
-  { id: 'kiyon', n: '기연이 따르는 몸(기연 +15)', open: () => has('세 번의 기연'), why: '업적 「세 번의 기연」' },
-  { id: 'extra', n: '큰 특성 한 번 더', open: () => endKinds(['玄', '地', '天', '神']) >= 1, why: '玄 이상 엔딩' },
-  { id: 'noble', n: '명문 출신', open: () => endKinds(['地', '天', '神']) >= 1 || !!rec.endings['장로'] || !!rec.endings['절정 고수'], why: '엔딩 「장로」·「절정 고수」 또는 地 이상' },
-  { id: 'traitX2', n: '큰 특성 확률 두 배', open: () => endKinds(['地', '天', '神']) >= 3, why: '地 이상 엔딩 3종' },
-  { id: 'origin', n: '출신 고르기', open: () => endCount() >= 10, why: '엔딩 10번', pick: () => rec.origins.map(id => ORIGINS.find(o => o.id === id)).filter(Boolean).map(o => [o.id, o.n]) },
-  { id: 'trait', n: '특성 하나 고르기', open: () => endKinds(['地', '天', '神']) >= 1, why: '地 이상 엔딩', pick: () => rec.traits.map(id => TRAITS.find(t => t.id === id)).filter(t => t && t.tier !== '천품').map(t => [t.id, `${t.n} (${t.tier})`]) },
-  { id: 'memory', n: '전생의 무공', open: () => rec.legends.some(l => l.art), why: '무공을 익힌 채 죽은 생', pick: () => rec.legends.filter(l => l.art).slice(-12).map(l => [l.art, `${l.art} — ${l.name}`]) },
-  { id: 'chapter', n: '시대 고르기', open: () => endKinds(['天', '神']) >= 1, why: '天 이상 엔딩', pick: () => CH.map((c, i) => [i, `${c[2]} (${c[0]}~${c[1]})`]) },
+  { id: 'bestOf4', n: '좋은 그릇', d: '자질이 대체로 좋게 나온다', open: () => endKinds(['黃']) >= 5, why: '평범하게 끝난 삶을 다섯 갈래 겪으면 열린다' },
+  { id: 'reveal', n: '제 몸을 안다', d: '타고난 특성을 처음부터 안다', open: () => endCount() >= 3, why: '세 번 살아 보면 열린다' },
+  { id: 'sex', n: '바라는 몸', d: '고른 성별로 태어나기 쉽다', open: () => endCount() >= 5, why: '다섯 번 살아 보면 열린다', pick: () => [['m', '남'], ['f', '여']] },
+  { id: 'martial', n: '무가의 피', d: '무가에서 태어나기 쉽다', open: () => has('첫걸음'), why: '처음 무공에 입문하면 열린다' },
+  { id: 'region', n: '돌아갈 고향', d: '고른 고장에서 태어나기 쉽다', open: () => has('유랑'), why: '떠돌며 여러 고장을 밟으면 열린다', pick: () => Object.keys(REGIONS).filter(r => REGIONS[r].zone === '중원').map(r => [r, r]) },
+  { id: 'apt', n: '갈고닦은 바탕', d: '고른 자질이 좋게 나오기 쉽다', open: () => Object.keys(rec.achs).length >= 15, why: '업적이 열다섯 개 쌓이면 열린다', pick: () => ['근골', '오성', '심성', '기연', '풍모'].map(k => [k, k]) },
+  { id: 'kiyon', n: '하늘이 돕는다', d: '기연이 잘 따른다', open: () => has('세 번의 기연'), why: '한 생에 기연을 세 번 만나면 열린다' },
+  { id: 'extra', n: '한 번 더 타고난다', d: '큰 특성을 한 번 더 굴린다', open: () => endKinds(['玄', '地', '天', '神']) >= 1, why: '玄 이상으로 생을 마치면 열린다' },
+  { id: 'noble', n: '명문의 자손', d: '명문에서 태어나기 쉽다', open: () => endKinds(['地', '天', '神']) >= 1 || !!rec.endings['장로'] || !!rec.endings['절정 고수'], why: '장로나 절정 고수로 생을 마치면 열린다' },
+  { id: 'traitX2', n: '하늘의 총애', d: '큰 특성이 두 배 잘 나온다', open: () => endKinds(['地', '天', '神']) >= 3, why: '地 이상의 끝을 세 가지 보면 열린다' },
+  { id: 'origin', n: '다시 그 집에', d: '고른 출신으로 태어나기 쉽다', open: () => endCount() >= 10, why: '열 번 살아 보면 열린다', pick: () => rec.origins.map(id => ORIGINS.find(o => o.id === id)).filter(Boolean).map(o => [o.id, o.n]) },
+  { id: 'trait', n: '이어지는 피', d: '지난 생의 특성 하나가 다시 붙기 쉽다', open: () => endKinds(['地', '天', '神']) >= 1, why: '地 이상으로 생을 마치면 열린다', pick: () => rec.traits.map(id => TRAITS.find(t => t.id === id)).filter(t => t && t.tier !== '천품').map(t => [t.id, `${t.n} (${t.tier})`]) },
+  { id: 'memory', n: '전생의 초식', d: '전생에 익힌 무공이 꿈에 떠오르기 쉽다', open: () => rec.legends.some(l => l.art), why: '무공을 익힌 채 죽으면 열린다', pick: () => rec.legends.filter(l => l.art).slice(-12).map(l => [l.art, `${l.art} — ${l.name}`]) },
+  { id: 'chapter', n: '때를 고른다', d: '고른 시대에 태어나기 쉽다', open: () => endKinds(['天', '神']) >= 1, why: '天 이상으로 생을 마치면 열린다', pick: () => CH.map((c, i) => [i, `${c[2]} (${c[0]}~${c[1]})`]) },
 ];
 function renderUnlocks() {
   $('unlCount').textContent = `${UNLOCKS.filter(u => u.open()).length} / ${UNLOCKS.length}`;
   $('unlocks').innerHTML = UNLOCKS.map(u => {
-    if (!u.open()) return `<div class="unl locked"><span>🔒 ${u.n}</span><span class="muted">${u.why}</span></div>`;
+    if (!u.open()) return `<div class="unl locked"><span>🔒 <span class="muted">${u.why}</span></span></div>`;
     const on = !!rec.on[u.id];
     const opts = u.pick ? u.pick() : null;
     const sel = opts ? `<select data-pick="${u.id}" ${on ? '' : 'disabled'}>${opts.map(([v, n]) => `<option value="${esc(v)}" ${String(rec.pick[u.id]) === String(v) ? 'selected' : ''}>${esc(n)}</option>`).join('') || '<option>아직 없음</option>'}</select>` : '';
-    return `<div class="unl"><span><b>${u.n}</b></span><span style="display:flex;gap:8px;align-items:center">${sel}<span class="sw ${on ? 'on' : ''}" data-sw="${u.id}"></span></span></div>`;
+    return `<div class="unl"><span><b>${u.n}</b><br><span class="muted" style="font-size:13px">${u.d}</span></span><span style="display:flex;gap:8px;align-items:center">${sel}<span class="sw ${on ? 'on' : ''}" data-sw="${u.id}"></span></span></div>`;
   }).join('');
   $('unlocks').querySelectorAll('[data-sw]').forEach(el => el.onclick = () => { const id = el.dataset.sw; rec.on[id] = !rec.on[id]; const u = UNLOCKS.find(x => x.id === id); if (u.pick && rec.pick[id] == null) { const p = u.pick()[0]; if (p) rec.pick[id] = p[0]; } save(); renderUnlocks(); });
   $('unlocks').querySelectorAll('[data-pick]').forEach(el => el.onchange = () => { rec.pick[el.dataset.pick] = el.value; save(); });
@@ -298,7 +299,7 @@ function buildOpts() {
   if (on('sex') && rec.pick.sex) o.sex = rec.pick.sex;
   if (on('martial')) o.martial = true;
   if (on('region') && rec.pick.region) o.region = rec.pick.region;
-  if (on('apt') && rec.pick.apt) o.aptBonus[rec.pick.apt] = 10;
+  if (on('apt') && rec.pick.apt) o.aptFavor = rec.pick.apt;
   if (on('kiyon')) o.aptBonus.기연 = (o.aptBonus.기연 || 0) + 15;
   if (on('extra')) o.extraBig = true;
   if (on('noble')) o.noble = true;
