@@ -1026,7 +1026,7 @@ function* warCall(P, a, txt) {
   say(P, `${txt || a.t.split(/(?<=다\.)/)[0]} 소집령이 왔다.`, 'big'); say(P, `▸ ${ch ? '몸을 숨긴다' : '참전한다'}`, 'pick');
   if (ch === 1) { addFame(P, -50); return; }
   addAch(P, '정마대전'); let w = 0;
-  for (let i = 0; i < 3 && P.alive; i++) { const n = makeNpc(P, pk(P, ['마교 무사', '적의 고수', '적의 무사']), [-1, 1]); const r = yield* fight(P, n, { lethal: true }); if (r.win) w++; }
+  for (let i = 0; i < 3 && P.alive; i++) { const n = makeNpc(P, pk(P, ['마교 무사', '적의 고수', '적의 무사']), [-1, 0]); const r = yield* fight(P, n, { lethal: i === 2 }); if (r.win) w++; else if (P.hurt >= 2) { say(P, '크게 다쳐 싸움터에서 물러났다.', 'ng', P.month); break; } }
   if (P.alive) { say(P, `${w}번 싸워 이겼다.`, w >= 2 ? 'ok' : ''); addFame(P, w * 100); P.real = Math.min(1000, P.real + 100); P.trigger = 2; P.merit += w * 10; }
 }
 
@@ -1748,9 +1748,10 @@ function recruitOffers(P) {
     const l = nearFactions(P, f => f.t === '사' && ['bandit', 'info'].includes(f.lad));
     if (l.length) { const f = pk(P, l); out.push({ n: `${f.n}의 영입`, hint: '뒷골목의 일', go: function* () { join(P, f.id, '연줄을 타고 ', 0, null, '고용'); P.align = clamp(P.align - 10, -100, 100); } }); }
   }
-  if (age >= 16 && age <= 55 && (P.era.dz.war > 0 || P.era.label === '정마대전의 한가운데' || P.era.label === '문파들이 다투는 어지러운 시기')) {
+  // 용병: 삼류 이상, 전란이 짙을 때, 3년에 한 번만 나온다
+  if (P.realm >= 1 && !(P.flags.mercY > P.year - 3) && age >= 16 && age <= 55 && (P.era.dz.war >= 0.3 || P.era.label === '정마대전의 한가운데' || P.era.label === '문파들이 다투는 어지러운 시기')) {
     const side = pk(P, nearFactions(P, f => ['정', '사', '마'].includes(f.t) && f.prestige >= 1, 200)) || null;
-    if (side) out.push({ n: `${side.n}이 용병을 모은다`, hint: side.t === '정' ? '낭인으로 지원, 싸움 셋' : '낭인으로 지원, 싸움 셋, 악명', go: function* () { yield* mercenary(P, side); } });
+    if (side) out.push({ n: `${J(side.n, '이가')} 용병을 모은다`, hint: side.t === '정' ? '낭인으로 지원, 싸움 셋' : '낭인으로 지원, 싸움 셋, 악명', go: function* () { P.flags.mercY = P.year; yield* mercenary(P, side); } });
   }
   if (!mem && P.realm >= 2 && stageOf(P.fame) >= 1) {
     const l = nearFactions(P, f => f.cat === '세가', 200);
@@ -1761,7 +1762,7 @@ function recruitOffers(P) {
 function* mercenary(P, f) {
   say(P, `${f.n} 쪽에 낭인으로 지원했다.`, 'act', P.month);
   let w = 0;
-  for (let i = 0; i < 3 && P.alive; i++) { const n = makeNpc(P, pk(P, ['적의 무사', '적의 낭인', '적의 조장']), [-1, 1]); const r = yield* fight(P, n, { lethal: true }); if (r.win) w++; }
+  for (let i = 0; i < 3 && P.alive; i++) { const n = makeNpc(P, pk(P, ['적의 무사', '적의 낭인', '적의 조장']), [-1, 0]); const r = yield* fight(P, n, { lethal: i === 2 }); if (r.win) w++; else if (P.hurt >= 2) { say(P, '크게 다쳐 싸움터에서 물러났다.', 'ng', P.month); break; } }
   if (!P.alive) return;
   P.wealth += 30 + w * 40; P.real = Math.min(1000, P.real + 80); P.flags.ronin = true;
   if (f.t === '정') addFame(P, w * 120); else addFame(P, w * 120, 'infamy');
