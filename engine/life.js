@@ -1204,8 +1204,10 @@ function mortality(P) {
   if (P.deathWin && P.age >= P.deathWin[0] && P.age <= P.deathWin[1] && P.realm < 4 && P.R() < 0.04) { die(P, '타고난 절맥이 터져 세상을 떠났다', 'vein'); return; }
   // 내공이 깊을수록 늙음이 늦다: 유효 내공 6년마다 한 해(최대 25년). 특성 life는 지금 가진 특성으로 다시 센다. 반로환동이면 노쇠가 없다
   const life = fxAll(P, 'life').concat(fxAll(P, 'aging')).reduce((a, v) => a + (typeof v === 'number' ? v : 0), 0);
-  const eff = P.age - P.realm * 6 - (P.apt.근골 - 50) / 8 - life - Math.min(25, effQi(P) / 6) - (P.wealth >= 1000 ? 3 : 0);
+  const eff = P.age - P.realm * 6 - (P.apt.근골 - 50) / 8 - Math.min(15, life) - Math.min(18, effQi(P) / 7) - (P.wealth >= 1000 ? 3 : 0);
   let q = P.flags.rejuv ? 0.002 : 0.002 + 0.0003 * Math.exp(0.09 * (eff - 20));
+  // 아흔이 넘으면 내공·특성과 상관없이 해마다 죽음이 가까워진다(반로환동만 예외)
+  if (!P.flags.rejuv && P.age >= 90) q = Math.max(q, 0.06 + (P.age - 90) * 0.025);
   if (P.hurt === 3) q += 0.08; else if (P.hurt === 2) q += 0.01;
   if (P.poison) q += 0.03;
   if (P.R() < q) die(P, P.hurt >= 2 && P.age < 60 ? '상처가 덧나 세상을 떠났다' : P.realm >= 6 ? '좌화했다 — 앉은 채로 숨을 거두었다' : P.age > 60 ? pk(P, ['노환으로 세상을 떠났다', '중풍으로 세상을 떠났다', '해수병으로 세상을 떠났다']) : pk(P, ['병으로 세상을 떠났다', '갑작스러운 병으로 세상을 떠났다']), 'age');
@@ -2723,7 +2725,7 @@ LIFE.effQi = effQi; LIFE.careerDef = careerDef; LIFE.facDef = facDef; LIFE.atTex
 LIFE.init = function () {
   if (LIFE.ready) return;
   LIFE.MINOR_IDS = new Set((G.TRAITS_MINOR || []).map(t => t.id));
-  LIFE.TPL = (G.EVENT_TEMPLATES || []).concat(G.LIFEBOOK || [], G.MURIMBOOK || [], G.MURIMBOOK2 || [], G.FACTIONBOOK || []);
+  LIFE.TPL = (G.EVENT_TEMPLATES || []).concat(G.LIFEBOOK || [], G.MURIMBOOK || [], G.MURIMBOOK2 || [], G.FACTIONBOOK || [], G.MURIMBOOK3 || []);
   LIFE.CLAN_SUR = new Set(G.FACTIONS.filter(f => f.sur).map(f => f.sur));
   LIFE.BIG = new Set(G.BIG_CITIES || []);
   LIFE.ARTS_BY_F = {}; LIFE.ARTS_BY_G = [[], [], [], [], [], []];
