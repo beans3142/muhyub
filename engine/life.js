@@ -408,7 +408,7 @@ function* fight(P, n, opts = {}) {
   }
   return { stage, win, outcome: stage === '대승' ? '대성공' : win ? '성공' : stage === '대패' ? '대실패' : '실패', per, res };
 }
-function hurtMe(P, lv) { if (P.flags.armor && lv > 1 && P.R() < 0.4) lv--; if (lv >= 2) { const c = P.cnt || (P.cnt = {}); c.중상 = (c.중상 || 0) + 1; if (lv >= 3) c.위중 = P.year; } if (lv > P.hurt) { P.hurt = lv; say(P, ['', '가볍게 다쳤다.', '크게 다쳤다. 내상이 깊다.', '사경을 헤맬 만큼 다쳤다.'][lv], 'ng'); } }
+function hurtMe(P, lv) { if (P.flags.armor && lv > 1 && P.R() < 0.4) lv--; if (lv >= 2) { const c = P.cnt || (P.cnt = {}); c.중상 = (c.중상 || 0) + 1; if (lv >= 3) { c.위중 = P.year; c.위중n = (c.위중n || 0) + 1; c.사경 = 1; } } if (lv > P.hurt) { P.hurt = lv; say(P, ['', '가볍게 다쳤다.', '크게 다쳤다. 내상이 깊다.', '사경을 헤맬 만큼 다쳤다.'][lv], 'ng'); } }
 function die(P, cause, kind) { if (!P.alive) return; P.alive = false; P.cause = cause; P.causeKind = kind || ''; }
 
 // ---------- 명성 ----------
@@ -496,7 +496,7 @@ function rankName(P) { const m = P.member; if (!m) return null; const f = facDef
 LIFE.rankName = rankName;
 function join(P, fid, how, rank = 0, disc, kind) {
   const f = facDef(fid); if (!f) return;
-  if (P.member) say(P, `${J(facDef(P.member.fid).n, '을를')} 떠났다.`);
+  if (P.member) { const old = facDef(P.member.fid), nf = facDef(fid); if (old && nf && old.t !== nf.t && [old.t, nf.t].includes('정')) P.flags.turncoat = P.year; say(P, `${J(old.n, '을를')} 떠났다.`); }
   P.member = { fid, rank, disc: disc || (f.lad === 'sect' ? (rank >= 3 ? '진산제자' : rank >= 2 ? '내문제자' : '입문제자') : null), since: P.year, kind: kind || (f.lad === 'sect' ? '정식' : f.lad === 'clan' ? '방계' : '고용') };
   if (f.at && G.PLACES2[f.at]) moveTo(P, f.at);
   say(P, `${how || ''}<b>${f.n}</b>의 ${J(rankName(P), '이가')} 되었다.`, 'big');
@@ -722,6 +722,7 @@ const OUTCOME = {
 };
 function* runTpl(P, t, month, extra = {}) {
   P.used[t.id] = (P.used[t.id] || 0) + 1; P.usedYear[t.id] = P.year;
+  if (t.id === 'lf_parent_death' && P.flags.parentDeathAge == null) P.flags.parentDeathAge = P.age;
   let npc = null, per = null;
   if (t.who) {
     const known = t.who.k !== 'new' && (t.who.k === 'known' || P.R() < 0.6) ? findKnown(P, b => (!t.who.rel || b.rels.includes(t.who.rel)) && b.role === t.who.r) : null;
@@ -811,7 +812,7 @@ function relHook(P, npc, rel) {
   if (rel === '스승') { addAch(P, '사부님'); P.teacher = npc; }
   if (rel === '의형제') addAch(P, '결의형제');
   if (rel === '배우자') { P.spouse = npc; P.married = P.year; ruleBreak(P, '혼인'); }
-  if (rel === '제자') { P.disciples++; addAch(P, '사제의 연'); if (P.member && P.R() < 0.35) ruleBreak(P, '전수', '사문 밖 사람에게 사문의 무공을 가르쳤다'); }
+  if (rel === '제자') { P.disciples++; addAch(P, '사제의 연'); if (P.member && npc.org !== facDef(P.member.fid).n && P.R() < 0.35) ruleBreak(P, '전수', '사문 밖 사람에게 사문의 무공을 가르쳤다'); }
 }
 function giveArt(P, g, npc, how) {
   let gi = g === '다음 등급' ? Math.min(5, (mainArt(P) ? gIdx(mainArt(P).def.g) : 0) + 1) : g === '견식' ? -1 : gIdx(g);
@@ -825,7 +826,7 @@ function giveArt(P, g, npc, how) {
   if (!a || gIdx(a.g) < gi - 1) { const pool = LIFE.ARTS_BY_G[gi].filter(x => !P.arts.some(b => b.def.n === x.n)); a = pk(P, pool.filter(x => x.f === 'free').length && P.R() < 0.5 ? pool.filter(x => x.f === 'free') : pool); }
   learn(P, a, how);
 }
-function givePill(P, g) {
+function givePill(P, g) { P.cnt = P.cnt || {}; P.cnt.영약 = (P.cnt.영약 || 0) + 1;
   const lv = { 하품: 5, 중품: 15, 상품: 30, 극품: 60, 내단: 40 }[g] || 10;
   P.pqi += lv; P.pillYear = P.year;
   say(P, `영약(${g})을 먹었다. 약기 ${lv}년이 몸에 들었다.`, 'big');
@@ -1025,7 +1026,7 @@ function trainYear(P, cnt) {
       const brk = fxAll(P, 'break').reduce((a, v) => a + v, 0);
       const r = check(P, null, dc, (P.apt.오성 - 50) / 2 + (P.trigger ? 15 : 0) + (P.pillYear === P.year ? 10 : 0) + brk);
       if (r.ok) {
-        P.realm++; P.stage = r.crit ? 1 : 0; P.capa = Math.max(P.capa, CAPA[P.realm] * mulOf(P, 'capa'));
+        P.realm++; if (P.age >= 40 && P.realm >= 3) P.flags.lateBloom = 1; P.stage = r.crit ? 1 : 0; P.capa = Math.max(P.capa, CAPA[P.realm] * mulOf(P, 'capa'));
         say(P, `<b>${REALMS[P.realm]}</b>의 경지에 올랐다!`, 'realm');
         P.events.push(`${P.age}세에 ${REALMS[P.realm]}에 올랐다`);
         if (P.realm > P.peak) P.peak = P.realm;
@@ -2369,7 +2370,7 @@ function acqYear(P, sch) {
   // 살아온 길(9-26)
   const T = n => P.traits.some(t => t.n === n);
   const masters = relPeople(P, ['스승']);
-  if (masters.some(b => b.alive && b.bond >= 40 && P.year - (b.since || b.met || P.year) >= 5)) gainTrait(P, '스승의 그늘', '스승을 모신 지 다섯 해, 스승의 그림자가 몸에 배었다.');
+  if (masters.some(b => b.alive && b.bond >= 60 && P.year - (b.since || b.met || P.year) >= 5)) gainTrait(P, '스승의 그늘', '스승을 모신 지 다섯 해, 스승의 그림자가 몸에 배었다.');
   if (T('스승의 그늘') && !masters.some(b => b.alive)) { loseTrait(P, '스승의 그늘', '스승이 세상을 떠났다.'); gainTrait(P, '스승의 유지', '스승의 뜻을 이어 가기로 했다.'); }
   if (P.member && P.member.kind === '정식') { c.사문 = (c.사문 || 0) + 1; if (c.사문 >= 10) gainTrait(P, '사문의 긍지', '사문에서 십 년을 보냈다.'); } else { c.사문 = 0; if (T('사문의 긍지')) loseTrait(P, '사문의 긍지', '사문을 떠났다.'); }
   if (!P.member && (sch.cnt.유람 || sch.cnt.탐색)) { c.떠돌이 = (c.떠돌이 || 0) + 1; if (c.떠돌이 >= 6) gainTrait(P, '떠돌이 근성', '어디에도 매이지 않고 여섯 해를 떠돌았다.'); }
@@ -2401,6 +2402,59 @@ function acqYear(P, sch) {
   if (relPeople(P, ['제자']).length >= 3) gainTrait(P, '가르치는 기쁨', '제자가 셋이 되었다.');
   if (c.위중 === P.year && P.hurt >= 2 && P.R() < 0.35 && !check(P, '회복', 60).ok) gainTrait(P, '묵은 내상', '위중한 상처가 끝내 다 낫지 않았다.');
   if (T('묵은 내상') && (P.pillYear === P.year || P.traits.some(t => /환골탈태/.test(t.n)))) loseTrait(P, '묵은 내상', '묵은 내상이 씻겨 나갔다.');
+  // 소속과 직업(9-34)
+  const ld = ladOf(P), yrs = k => (c[k] = (c[k] || 0) + 1);
+  for (const k of ['bandit', 'assassin', 'info', 'demon', 'shadow', 'escort', 'beggar', 'guard', 'clan']) if (ld !== k) c['소속:' + k + ':밖'] = (c['소속:' + k + ':밖'] || 0) + 1;
+  if (ld) { yrs('소속:' + ld); c['소속:' + ld + ':밖'] = 0; }
+  if (ld === 'bandit' && c['소속:bandit'] >= 5) gainTrait(P, WATER.includes(P.member.fid) ? '물길의 사내' : '녹림의 의리', '산채의 밥을 먹은 지 다섯 해다.');
+  if (T('녹림의 의리') && (c['소속:bandit:밖'] || 0) >= 10) loseTrait(P, '녹림의 의리', '산채를 떠난 지 십 년, 녹림의 물이 빠졌다.');
+  if ((P.deeds.청부 || 0) >= 5) gainTrait(P, '살수의 눈', '청부를 다섯 번 끝냈다.');
+  if (ld === 'info' && c['소속:info'] >= 5) gainTrait(P, '열린 귀', '다섯 해를 남의 말 속에서 살았다.');
+  if ((ld === 'demon' || ld === 'shadow') && (c['소속:' + ld] || 0) >= 3) gainTrait(P, '교의 낙인', '교의 표식이 몸과 이름에 남았다.');
+  if (T('교의 낙인') && (c['소속:demon:밖'] || 0) >= 10 && (c['소속:shadow:밖'] || 0) >= 10) loseTrait(P, '교의 낙인', '교를 떠난 지 십 년, 낙인이 흐려졌다.');
+  if ((ld === 'demon' || ld === 'shadow') && P.align <= -40) gainTrait(P, '광신', '교의 가르침이 피가 되었다.');
+  if (T('광신') && ld !== 'demon' && ld !== 'shadow') loseTrait(P, '광신', '교를 떠나자 열기가 식었다.');
+  if ((P.deeds.표행 || 0) >= 20) gainTrait(P, '표사의 어깨', '스무 번 표물을 지고 길을 걸었다.');
+  if (ld === 'beggar' && c['소속:beggar'] >= 5) gainTrait(P, '거지의 넉살', '다섯 해를 거지들과 섞여 살았다.');
+  if (ld === 'guard' && c['소속:guard'] >= 5) gainTrait(P, '관복의 무게', '다섯 해 관복을 입었다.');
+  if (T('관복의 무게') && (c['소속:guard:밖'] || 0) >= 5) loseTrait(P, '관복의 무게', '관복을 벗은 지 다섯 해다.');
+  if (ld === 'sect' && P.member.rank >= 6) gainTrait(P, '사문의 기둥', '사문의 한 축을 맡았다.');
+  if (T('사문의 기둥') && ld !== 'sect') loseTrait(P, '사문의 기둥', '사문을 떠났다.');
+  if (ld === 'clan' && P.member.kind === '방계') { if (c['소속:clan'] >= 10) gainTrait(P, '방계의 설움', '방계로 십 년, 본가의 문턱은 높았다.'); if (P.member.rank >= 5) loseTrait(P, '방계의 설움', '총관에 올라 설움을 씻었다.'); }
+  if ((P.men || 0) + (P.force ? P.force.men : 0) >= 30) gainTrait(P, '무리를 이끄는 자', '따르는 사람이 서른을 넘었다.');
+  if ((P.men || 0) + (P.force ? P.force.men : 0) >= 100) gainTrait(P, '백인장의 위엄', '따르는 사람이 백을 넘었다.');
+  if (P.flags.expelled && !P.flags.expelHealed) { gainTrait(P, '파문의 상처', '파문당한 날을 잊지 못한다.'); if (P.member && P.member.rank >= 3) { P.flags.expelHealed = 1; loseTrait(P, '파문의 상처', '새 자리에서 이름을 다시 세웠다.'); } }
+  if (P.flags.turncoat) { if (P.year - P.flags.turncoat < 15) gainTrait(P, '배신자의 이름', '옛 동문들이 등을 돌렸다.'); else loseTrait(P, '배신자의 이름', '세월이 흘러 배신의 이야기도 잊혔다.'); }
+  // 삶의 굴곡(9-34)
+  if (P.flags.lateBloom) gainTrait(P, '늦게 핀 꽃', '마흔을 넘겨 벽을 넘었다.');
+  if (P.realm >= 3 && P.age < 20 && !c.오만판정) { c.오만판정 = 1; if (!check(P, '성품', 55).ok) gainTrait(P, '어린 고수의 오만', '스무 살도 안 되어 일류가 되자 눈에 보이는 것이 없다.'); }
+  if (T('어린 고수의 오만') && P.age >= 30) loseTrait(P, '어린 고수의 오만', '서른이 되어 세상이 넓다는 것을 알았다.');
+  if (P.age >= 55 && P.realm >= 3) gainTrait(P, '노강호', '강호에서 늙었다.');
+  if (P.flags.parentDeathAge != null && P.flags.parentDeathAge < 15) gainTrait(P, '부모 없는 설움', '어려서 부모를 잃었다.');
+  if (T('부모 없는 설움') && P.spouse) loseTrait(P, '부모 없는 설움', '제 식구를 꾸렸다.');
+  if (P.wealth >= 10000) gainTrait(P, '부자의 여유', '재산이 만 냥을 넘었다.'); else if (T('부자의 여유') && P.wealth < 1000) loseTrait(P, '부자의 여유', '재산이 바닥났다.');
+  if ((P.deeds.도박 || 0) >= 3) { if (!T('노름꾼')) c.노름Y = P.year; gainTrait(P, '노름꾼', '노름판을 떠나지 못한다.'); }
+  if ((P.deeds.술 || 0) >= 3) gainTrait(P, '술꾼', '술 없이는 잠이 오지 않는다.');
+  if (relPeople(P, ['의형제']).length >= 2) gainTrait(P, '의리의 사나이', '의형제가 둘이 되었다.');
+  if (T('원한')) { yrs('원한년'); if (c.원한년 >= 10) gainTrait(P, '복수귀', '십 년을 원수만 생각하며 살았다.'); } else if (T('복수귀')) loseTrait(P, '복수귀', '원수가 사라지자 살아갈 까닭이 흐려졌다.');
+  if (P.region !== regionOf(P.home)) { yrs('타향'); if (c.타향 >= 15) gainTrait(P, '고향을 등진 자', '고향을 떠난 지 열다섯 해다.'); } else { c.타향 = 0; if (T('고향을 등진 자')) loseTrait(P, '고향을 등진 자', '고향 땅을 다시 밟았다.'); }
+  if (P.closed && P.age >= 50) { yrs('노폐관'); if (c.노폐관 >= 5) gainTrait(P, '은자의 마음', '늘그막에 다섯 해를 문 닫고 보냈다.'); }
+  if (P.ach.has('용병') || P.ach.has('정마대전')) gainTrait(P, '전장의 감', '전장의 피비린내를 안다.');
+  if ((P.kiyon || 0) >= 3) gainTrait(P, '기연의 아이', '하늘이 세 번 손을 내밀었다.');
+  if ((c.영약 || 0) >= 3) gainTrait(P, '영약이 밴 몸', '영약 세 알이 몸에 배었다.');
+  if ((c.위중n || 0) >= 2) gainTrait(P, '다친 손', '두 번 사경을 헤매며 손이 예전 같지 않다.');
+  if (T('다친 손') && P.traits.some(t => /환골탈태/.test(t.n))) loseTrait(P, '다친 손', '환골탈태로 손이 되살아났다.');
+  if (stageOf(P.fame) >= 2 && P.align >= 30) gainTrait(P, '이름을 아끼는 사람', '이름에 부끄럽지 않게 살았다.'); if (T('이름을 아끼는 사람') && P.align < 0) loseTrait(P, '이름을 아끼는 사람', '이름에 먹칠을 했다.');
+  if (stageOf(P.infamy) >= 3) gainTrait(P, '악명의 그림자', '이름만 들어도 아이가 울음을 그친다.'); else if (T('악명의 그림자') && stageOf(P.infamy) < 2) loseTrait(P, '악명의 그림자', '악명이 잊혔다.');
+  if (P.bonds.some(b => b.passed)) gainTrait(P, '스승을 넘은 자', '스승의 경지를 넘어섰다.');
+  if (P.bonds.filter(b => b.rels.includes('제자')).length >= 8) gainTrait(P, '문하가 넓은 사람', '제자가 여섯을 넘었다.');
+  if (P.spouse && P.spouse.alive && P.married && P.year - P.married >= 20) gainTrait(P, '오랜 해로', '혼인한 지 스무 해다.');
+  if (P.spouse && !P.spouse.alive) { loseTrait(P, '오랜 해로', '짝을 잃었다.'); gainTrait(P, '홀로 남은 사람', '짝을 먼저 보냈다.'); }
+  if (T('홀로 남은 사람') && P.spouse && P.spouse.alive) loseTrait(P, '홀로 남은 사람', '다시 짝을 만났다.');
+  if (P.age >= 40 && P.kids >= 1) gainTrait(P, '아비·어미의 이름', '자식이 커 가는 것을 본다.');
+  if (c.사경 && P.hurt < 3) { c.사경 = 0; if (P.R() < 0.4) gainTrait(P, '죽다 살아난 몸', '사경을 헤매다 돌아왔다.'); }
+  if (!P.member && P.flags.ronin) { yrs('낭인'); if (c.낭인 >= 10) gainTrait(P, '떠돌이 검', '열 해를 칼 한 자루로 떠돌았다.'); } else if (P.member) { yrs('매임2'); if (c.매임2 >= 5 && T('떠돌이 검')) loseTrait(P, '떠돌이 검', '한곳에 몸을 묶었다.'); }
+  if (baseOf(P, '학식') >= 130 && P.realm >= 3) gainTrait(P, '문무겸전', '글과 칼을 함께 닦았다.');
   // 잃기(해결)
   if (has('피에 익숙함') && c.lastKill != null && P.year - c.lastKill >= 10) loseTrait(P, '피에 익숙함', '십 년 동안 칼에 피를 묻히지 않았다.');
   if (has('세상 물정 모름') && (sch.cnt.유람 || 0) && (c.유람 || 0) >= ((c.폐관유람 = c.폐관유람 ?? c.유람) + 3)) loseTrait(P, '세상 물정 모름', '세 해를 떠돌자 세상 물정이 몸에 붙었다.');
