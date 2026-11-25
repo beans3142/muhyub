@@ -91,6 +91,8 @@ main{min-width:0}
 @keyframes pop{from{transform:translateY(-6px);opacity:.3}to{transform:none;opacity:1}}
 .choice .q{font-size:13px;color:var(--red);font-weight:700;letter-spacing:.12em}
 .choice .tx{font-size:18px;margin:6px 0 12px;line-height:1.75}
+.choice img.who{float:right;width:96px;height:96px;object-fit:contain;margin:0 0 6px 12px;background:var(--paper);border:1px solid var(--line)}
+.choice button{clear:both}
 .choice button{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 14px;background:var(--paper);border:1px solid var(--line);font-size:16.5px}
 .choice button:hover{background:var(--ink);color:var(--paper)}
 .choice button em{font-style:normal;font-size:13.5px;color:var(--ink3);margin-left:8px}
@@ -332,23 +334,84 @@ const pad = n => String(n).padStart(2, '0');
 // 세력 초상(docs/p11-cast.md 3장): 직위를 네 단(0 삼대제자, 1 일대·이대제자, 2 장로, 3 수장)으로 묶는다
 const FAC_TIER = { sect: [0, 0, 1, 1, 2, 2, 2, 3], league: [0, 0, 1, 1, 2, 2, 2, 3], clan: [0, 1, 1, 2, 3], demon: [0, 0, 1, 1, 1, 2, 2, 2, 2, 3], beggar: [0, 0, 1, 1, 1, 2, 2, 3] };
 const facTier = (lad, rank, n) => (FAC_TIER[lad] || [])[rank] ?? (rank >= n - 1 ? 3 : rank >= n - 3 ? 2 : rank <= 1 ? 0 : 1);
-function portrait(P) {
-  if (P.age >= 16 && P.member && window.FAC_ART) {
+// 그림의 성별: A는 번호, B는 짝홀(단독 생업 제외), C는 roster.json, F/N/M은 이름·데이터에서 읽는다
+const C_FEMALE = new Set([6, 11, 14, 17, 22, 24, 26, 30]);
+const hasArt = id => !!(window.FAC_ART && FAC_ART.has(id));
+function artSex(id) {
+  if (/^[CB]\d\d[mf]$/.test(id)) return id.slice(-1);
+  if (id[0] === 'F') return id.slice(-1);
+  if (id[0] === 'A') return ((+id.slice(1) - 1) % 6) >= 3 ? 'f' : 'm';
+  if (id[0] === 'B') { const n = +id.slice(1); return (n <= 20 ? n % 2 === 0 : [23, 25, 28, 30, 32].includes(n)) ? 'f' : 'm'; }
+  if (id[0] === 'C') return C_FEMALE.has(+id.slice(1)) ? 'f' : 'm';
+  const nm = (window.NAMED || []).find(n => n.id === id); return nm ? nm.sex : 'm';
+}
+// 계열 그림(C): 성별이 다르면 반대 성별 그림, 없으면 같은 계열에서 성별이 맞는 가까운 단, 그것도 없으면 무인 그림
+function catArt(cat, tier, sex) {
+  const id = n => `C${pad(cat * 3 + n + 1)}`;
+  if (artSex(id(tier)) === sex) return id(tier);
+  if (hasArt(id(tier) + sex)) return id(tier) + sex;
+  for (const t of [tier - 1, tier + 1, tier - 2, tier + 2]) if (t >= 0 && t <= 2 && artSex(id(t)) === sex) return id(t);
+  return sex === 'f' ? 'B32' : 'B31';
+}
+const careerArt = (career, sex) => {
+  const b = CAREER_B[career]; if (!b) return null;
+  if ([21, 26].includes(b)) return sex === 'f' ? (hasArt(`B${pad(b)}f`) ? `B${pad(b)}f` : null) : `B${pad(b)}`;
+  return `B${pad(b + (sex === 'f' ? 1 : 0))}`;
+};
+const civArt = (age, sex, wb) => `A${pad((age < 10 ? 0 : age < 18 ? 1 : age < 35 ? 2 : age < 55 ? 3 : 4) * 6 + (sex === 'f' ? 3 : 0) + wb + 1)}`;
+function rawPortrait(P) {
+  if (P.age >= 16 && P.member) {
     const f = L.facDef(P.member.fid), lad = LADDERS[f.lad] ? f.lad : 'sect';
     const id = `F_${f.id}_${facTier(lad, P.member.rank, LADDERS[lad].length)}${P.sex}`;
-    if (FAC_ART.has(id)) return id;
+    if (hasArt(id)) return id;
   }
   if (P.age >= 16 && (P.member || P.force)) {
     let cat, tier;
     if (P.member) { const f = L.facDef(P.member.fid), lad = LADDERS[f.lad] || LADDERS.sect, fr = P.member.rank / Math.max(1, lad.length - 1); cat = CAT_C.indexOf(f.cat); if (cat < 0) cat = 7; tier = fr >= 0.95 ? 2 : fr >= 0.4 || P.realm >= 4 ? 1 : 0; }
-    else { cat = { 문파: 0, 방회: 4, 산채: 4, 상단: 9 }[P.force.kind]; tier = P.force.men >= 50 ? 2 : 1; }
-    const c = `C${pad(cat * 3 + tier + 1)}`, alt = c + P.sex; // 반대 성별 그림(art/roster_extra.json)이 있으면 그것
-    return window.FAC_ART && FAC_ART.has(alt) ? alt : c;
+    else { cat = { 문파: 0, 방회: 4, 산채: 4, 상단: 9 }[P.force.kind] ?? 0; tier = P.force.men >= 50 ? 2 : 1; }
+    return catArt(cat, tier, P.sex);
   }
-  if (P.age >= 16 && P.career && CAREER_B[P.career]) { const b = CAREER_B[P.career]; const single = [21, 26].includes(b), alt = `B${pad(b)}f`; if (single && P.sex === 'f' && window.FAC_ART && FAC_ART.has(alt)) return alt; return `B${pad(b + (P.sex === 'f' && !single ? 1 : 0))}`; }
+  if (P.age >= 16 && P.career) { const b = careerArt(P.career, P.sex); if (b) return b; }
   if (P.age >= 16 && P.flags.ronin && P.arts.length) return P.sex === 'f' ? 'B32' : 'B31';
-  const st = P.age < 10 ? 0 : P.age < 18 ? 1 : P.age < 35 ? 2 : P.age < 55 ? 3 : 4, w = P.wealth < 30 ? 0 : P.wealth < 1000 ? 1 : 2;
-  return `A${pad(st * 6 + (P.sex === 'f' ? 3 : 0) + w + 1)}`;
+  return civArt(P.age, P.sex, P._wb ?? 0);
+}
+// 초상은 한 해에 한 번만 고친다. 재산 단계는 문턱을 넉넉히 넘어야 바뀐다(오르면 60·2000, 내리면 15·500)
+function portrait(P) {
+  const w = P.wealth, b = P._wb ?? (w < 30 ? 0 : w < 1000 ? 1 : 2);
+  P._wb = b === 0 ? (w >= 2000 ? 2 : w >= 60 ? 1 : 0) : b === 1 ? (w >= 2000 ? 2 : w < 15 ? 0 : 1) : (w < 15 ? 0 : w < 500 ? 1 : 2);
+  const key = `${P.year}|${P.member ? P.member.fid + ':' + P.member.rank : ''}|${P.force ? 1 : 0}`;
+  if (!P._face || P._face.key !== key) P._face = { key, id: rawPortrait(P) };
+  return P._face.id;
+}
+// 상대의 얼굴(사건·갈림길). 이름난 사람이면 그 사람 그림, 아니면 소속·역할·성별·나이로 고른다
+function npcFace(n, P) {
+  if (!n) return null;
+  const sex = n.sex === 'f' ? 'f' : 'm', role = n.role || '';
+  const nm = (window.NAMED || []).find(x => x.name === n.name);
+  if (nm && hasArt(nm.id)) return nm.id;
+  const age = n.age || (/아이|또래|소년|소녀|어린/.test(role) ? 12 : /노인|노파|노승|장로|늙은|할/.test(role) ? 65 : /정인|마음에 둔|배우자|혼약/.test((n.rels || []).join()) ? (P ? P.age : 25) : n.realm >= 4 ? 45 : 28);
+  if (age < 16) return civArt(age, sex, 1);
+  if (n.fid) {
+    const f = L.facDef(n.fid);
+    if (f) {
+      const lad = LADDERS[f.lad] ? f.lad : 'sect', rk = /장문|가주|교주|방주|맹주|채주/.test(role) ? LADDERS[lad].length - 1 : /장로|호법/.test(role) ? LADDERS[lad].length - 3 : n.realm >= 4 ? 3 : 1;
+      const id = `F_${f.id}_${facTier(lad, rk, LADDERS[lad].length)}${sex}`;
+      if (hasArt(id)) return id;
+      return catArt(Math.max(0, CAT_C.indexOf(f.cat)), /장문|가주|교주|방주|맹주/.test(role) ? 2 : n.realm >= 4 ? 1 : 0, sex);
+    }
+  }
+  const boss = /두목|채주|우두머리|수령|대장/.test(role) ? 2 : n.realm >= 3 ? 1 : 0;
+  if (/산적|녹림|수적|도적|왈패|패거리|흑도|채주|강도/.test(role)) return catArt(4, boss, sex);
+  if (/마교|마두|사교|혈교/.test(role)) return catArt(3, boss, sex);
+  if (/살수|자객|추살|밀정/.test(role)) return catArt(5, boss, sex);
+  if (/포쾌|포졸|관병|관리|금의위|관원|군관|현령/.test(role)) return catArt(6, boss, sex);
+  if (/스님|승려|노승|도사|비구니|사태/.test(role)) return catArt(7, boss, sex);
+  if (/왜구|낭인|새외|오랑캐/.test(role)) return catArt(8, boss, sex);
+  const CR = { 상인: 'merchant', 객잔: 'cook', 숙수: 'cook', 의원: 'doctor', 대장장이: 'smith', 사냥꾼: 'hunter', 어부: 'fisher', 농부: 'farm', 약초: 'herb', 기녀: 'artist', 악사: 'artist', 광대: 'troupe', 선비: 'scholar', 서생: 'scholar', 도둑: 'thief', 풍수: 'geomancer', 장인: 'craft' };
+  for (const k in CR) if (role.includes(k)) { const b = careerArt(CR[k], sex); if (b) return b; }
+  if (/표사|표두/.test(role)) return catArt(9, boss, sex);
+  if (n.realm >= 2 || /무사|검객|고수|관주|사범|제자/.test(role)) return sex === 'f' ? 'B32' : 'B31';
+  return civArt(age, sex, 1);
 }
 
 // ---------- 생 화면 ----------
@@ -487,7 +550,8 @@ function renderAll() { renderHero(); renderTabs(); renderLog(); fitSide(); }
 function ask(q) {
   return new Promise(res => {
     const box = $('choice'); box.classList.remove('hidden');
-    box.innerHTML = `<div class="q">${esc(q.ask)}${q.month ? ` · ${q.month}월` : ''}</div><div class="tx">${q.text}</div>` + q.options.map((o, i) => `<button data-i="${i}">${esc(o[0])}${o[1] ? `<em>${esc(o[1])}</em>` : ''}</button>`).join('');
+    const face = npcFace(q.who || q.npc, P);
+    box.innerHTML = `<div class="q">${esc(q.ask)}${q.month ? ` · ${q.month}월` : ''}</div>${face ? `<img class="who" src="art/thumbs/${face}.webp" onerror="this.onerror=null;this.src='art/chars/${face}.png'" alt="">` : ''}<div class="tx">${q.text}</div>` + q.options.map((o, i) => `<button data-i="${i}">${esc(o[0])}${o[1] ? `<em>${esc(o[1])}</em>` : ''}</button>`).join('');
     const done = i => { box.classList.add('hidden'); choiceResolve = null; res(i); };
     choiceResolve = () => done(Math.floor(Math.random() * q.options.length));
     box.querySelectorAll('button').forEach(b => b.onclick = () => done(+b.dataset.i));
