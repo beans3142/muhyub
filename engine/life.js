@@ -450,6 +450,7 @@ function makeEpithet(P, src) {
 // 특성의 bond: rate는 호감이 쌓이는 속도, start는 처음 만날 때 호감(9-26)
 function bondRate(P) { return fxAll(P, 'bond').reduce((x, b) => x * (b.rate || 1), 1); }
 function meet(P, n, rel) {
+  if (n.since == null) n.since = P.year;
   if (n.id == null) { n.id = (P.nidSeq = (P.nidSeq || 0) + 1); n.bond = (n.bond || 0) + fxAll(P, 'bond').reduce((x, b) => x + (b.start || 0), 0); }
   if (n.age == null) fleshOut(P, n);
   n.log = n.log || [];
@@ -516,7 +517,7 @@ function factionAlive(P, fid) { if (!P.world) { const f = facDef(fid); return !f
 // ---------- 장소 ----------
 function moveTo(P, id) {
   if (!G.PLACES2[id]) return;
-  if (P.place !== id) { P.place = id; P.region = regionOf(id); P.regions.add(P.region); if (P.regions.size >= 5) addAch(P, '유랑'); }
+  if (P.place !== id) { P.movedY = P.year; P.place = id; P.region = regionOf(id); P.regions.add(P.region); if (P.regions.size >= 5) addAch(P, '유랑'); }
 }
 function nearPlace(P, maxD) {
   const me = G.PLACES2[P.place]; if (!me) return P.place;
@@ -712,6 +713,12 @@ function sceneOf(P, month, atKey) {
   if (dz && P.R() < 0.2) s += dz.war >= 0.5 ? '전란 소식이 끊이지 않는다. ' : dz.bandit >= 0.5 ? '길마다 도적 이야기뿐이다. ' : dz.demon >= 0.5 ? '마교가 움직인다는 말이 돈다. ' : '';
   return s;
 }
+const OUTCOME = {
+  대성공: ['뜻밖에 크게 풀렸다.', '생각보다 훨씬 잘되었다.', '하늘이 도왔다.', '일이 술술 풀렸다. 이런 날도 있다.'],
+  성공: ['잘 풀렸다.', '해냈다.', '그럭저럭 잘 넘어갔다.', '마음먹은 대로 되었다.', '한숨 돌렸다.'],
+  실패: ['뜻대로 되지 않았다.', '일이 꼬였다.', '헛물만 켰다.', '생각처럼 되지 않았다.', '손에 쥔 것 없이 돌아섰다.'],
+  대실패: ['일이 크게 틀어졌다.', '최악으로 흘러갔다.', '하는 일마다 어긋났다.', '돌이킬 수 없이 틀어졌다.'],
+};
 function* runTpl(P, t, month, extra = {}) {
   P.used[t.id] = (P.used[t.id] || 0) + 1; P.usedYear[t.id] = P.year;
   let npc = null, per = null;
@@ -747,7 +754,7 @@ function* runTpl(P, t, month, extra = {}) {
   } else if (c.c && c.c !== '없음') {
     const r = check(P, c.c, c.dc || 50, 0, `${t.src} ${t.n} ${c.t}`);
     stage = r.stage;
-    say(P, `${r.ok ? '' : ''}${{ 대성공: '뜻밖에 크게 풀렸다.', 성공: '잘 풀렸다.', 실패: '뜻대로 되지 않았다.', 대실패: '일이 크게 틀어졌다.' }[stage]}`, r.ok ? 'ok' : 'ng', month);
+    say(P, pk(P, OUTCOME[stage]), r.ok ? 'ok' : 'ng', month);
   }
   if (!P.alive) return;
   const eff = stage === '대성공' ? (c.ok || []).concat(c.crit || []) : stage === '성공' ? c.ok || [] : stage === '실패' ? c.bad || [] : (c.bad || []).concat(c.fum || []);
@@ -1640,7 +1647,7 @@ function* doAction(P, id) {
   } else if (id === 'seclude') {
     P.flags.hidden = !P.flags.hidden; sayA(P.flags.hidden ? '산으로 들어가 은거했다.' : '세상으로 돌아왔다.'); if (P.flags.hidden) { P.plan = '폐관'; addAch(P, '은거'); }
   } else if (id === 'intel') {
-    if (P.wealth >= 5) P.wealth -= 5; yield* applyFx(P, ['rumor:any']); sayA('객잔에서 은자 몇 냥을 쓰며 소문을 모았다.'); addAch(P, '정보는 힘');
+    if (P.wealth >= 5) P.wealth -= 5; yield* applyFx(P, ['rumor:any']); sayA(pk(P, ['객잔에서 은자 몇 냥을 쓰며 소문을 모았다.', '하오문 꼬마에게 엽전을 쥐여 주고 이야기를 들었다.', '찻집 노인들 틈에 앉아 반나절 귀를 열어 두었다.', '표국 쟁자수들에게 술을 사며 길 소식을 들었다.', '거지 아이들에게 만두를 나눠 주고 소문을 얻었다.'])); addAch(P, '정보는 힘');
   } else if (id === 'dish') {
     const r = check(P, '정교', 55, ((P.skill.cook || 0) - 300) / 20);
     const food = ['동파육', '팔보오리', '용정새우', '마파두부', '불도장', '사자머리', '취계', '홍소육', '만두', '양고기탕'], adj = ['옥', '금', '비취', '천향', '홍', '설', '무림'];
@@ -1855,14 +1862,16 @@ function facIdByName(P, name) {
 function repAdd(P, fid, v) { if (!fid) return; P.rep[fid] = clamp((P.rep[fid] || 0) + v, -100, 100); }
 LIFE.repOf = (P, fid) => P.rep[fid] || 0;
 function relPeople(P, rels) { return P.bonds.filter(b => b.alive && b.rels.some(r => rels.includes(r))); }
+const TEACH_LINES = ['스승 {who}가 새벽 수련을 지켜보다 손목 각도를 고쳐 주었다.', '{who}가 차를 따르며 옛 싸움 이야기를 들려주었다.', '{who}에게 초식 하나를 열 번 넘게 퇴짜 맞았다.', '{who}가 말없이 나뭇가지로 땅에 검로를 그려 보였다.', '{who}와 밤새 운기의 이치를 두고 이야기를 나눴다.', '{who}가 처음으로 술 한 잔을 따라 주었다.', '{who}에게 꾸지람을 들었다. 마음이 들떠 있다고.', '{who}의 심부름으로 산 아래 마을에 다녀왔다.', '{who}가 내 칼을 받아 들고 한참을 들여다보았다.', '{who}가 아프다. 탕약을 달여 올렸다.'];
 // 관계별 발전(칸을 쓴 달에 한 번)
 function* bondStep(P, sch) {
   const c = sch.cnt;
   // 스승
   const T = relPeople(P, ['스승'])[0];
   if (T && P.R() < ((c.스승 || 0) ? 0.3 : P.member ? 0.06 : 0.03)) {
-    T.met = P.year; T.bond += 3 + Math.floor(P.R() * 4); know(P, T);
-    say(P, `스승 ${J(T.name, '을를')} 모시며 가르침을 받았다.`, 'bond', P.month);
+    T.bond += Math.round((3 + Math.floor(P.R() * 4)) * bondRate(P)); know(P, T);
+    // 해마다 같은 줄이 반복되지 않게: 열 가지 장면 가운데 하나, 그것도 절반만 적는다
+    if (P.R() < 0.5) say(P, fill(pk(P, TEACH_LINES), T.name, ''), 'bond', P.month);
     if (T.bond >= 30 && !T.taught1) { T.taught1 = 1; giveArt(P, GRADES[Math.min(5, COMMON_GRADE[T.realm] || 0)], T, `스승 ${T.name}에게서 전수받았다`); }
     if (T.bond >= 85 && T.realm > P.realm && !T.taught2) { T.taught2 = 1; giveArt(P, GRADES[Math.min(5, (COMMON_GRADE[T.realm] || 0) + 1)], T, `스승 ${T.name}의 비전으로 받았다`); addAch(P, '비전을 잇다'); }
   }
@@ -1943,12 +1952,12 @@ function worldNews(P) {
     const f1 = pk(P, fs), f2 = pk(P, fs.filter(f => f !== f1)) || f1, pl = near.length ? pk(P, near)[0] : P.place;
     const nm = npcName(P, P.R() < 0.2 ? 'f' : 'm');
     const ep = pk(P, ['일검', '철장', '비연', '광풍', '청운', '흑수', '백의', '쾌도', '무영', '독행', '혈수', '천수']) + pk(P, ['객', '검', '수', '도', '신룡', '호', '랑', '서생']);
-    const PJ = { 이: '이가', 과: '과와', 을: '을를', 로: '으로' };
+    const PJ = { 이: '이가', 가: '이가', 과: '과와', 와: '과와', 을: '을를', 를: '을를', 은: '은는', 는: '은는', 로: '으로' };
     const sub = (w, p) => !p ? w : PJ[p] ? J(w, PJ[p]) : w + p;
     const sects = fs.filter(f => f.lad === 'sect'), clans = fs.filter(f => f.lad === 'clan');
     const s1 = pk(P, sects) || f1, s2 = pk(P, sects.filter(f => f !== s1)) || s1, c1 = pk(P, clans) || f1;
-    let t = pk(P, NEWS).replace(/\{s1\}(이|과|을|의|에|로)?/g, (_, p) => sub(s1.n, p)).replace(/\{s2\}(이|과|을|의|에|로)?/g, (_, p) => sub(s2.n, p)).replace(/\{c1\}(이|과|을|의|에|로)?/g, (_, p) => sub(c1.n, p)).replace(/\{f1\}(이|과|을|의|에|로)?/g, (_, p) => sub(f1.n, p)).replace(/\{f2\}(이|과|을|의|에|로)?/g, (_, p) => sub(f2.n, p))
-      .replace(/\{n\}(이|을)?/g, (_, p) => sub(nm, p)).replace(/\{ep\}/g, ep).replace(/\{p\}/g, atText({ place: pl }));
+    let t = pk(P, NEWS).replace(/\{s1\}(이|가|과|와|을|를|은|는|의|에|로)?/g, (_, p) => sub(s1.n, p)).replace(/\{s2\}(이|가|과|와|을|를|은|는|의|에|로)?/g, (_, p) => sub(s2.n, p)).replace(/\{c1\}(이|가|과|와|을|를|은|는|의|에|로)?/g, (_, p) => sub(c1.n, p)).replace(/\{f1\}(이|가|과|와|을|를|은|는|의|에|로)?/g, (_, p) => sub(f1.n, p)).replace(/\{f2\}(이|가|과|와|을|를|은|는|의|에|로)?/g, (_, p) => sub(f2.n, p))
+      .replace(/\{n\}(이|가|을|를|은|는)?/g, (_, p) => sub(nm, p)).replace(/\{ep\}/g, ep).replace(/\{p\}/g, atText({ place: pl }));
     say(P, `강호 소문: ${t}`, 'world', 1 + Math.floor(P.R() * 12));
   }
 }
@@ -2147,7 +2156,7 @@ function travelOffers(P) {
   const th = P.threads.find(t => t.place); if (th) add(th.place, `쫓던 「${th.kind || th.k}」의 자취`);
   const cities = placesInRange(P, ['성']);
   if (cities.length) { const [pid] = pk(P, cities); add(pid, P.realm >= 1 ? '무림대회가 열린다는 도시' : '일거리가 많다는 큰 도시'); }
-  const fr = relPeople(P, ['스승', '벗', '의형제', '정인']).find(b => b.home && b.home !== P.place); if (fr) add(fr.home, `${fr.name}이 있는 곳`);
+  const fr = relPeople(P, ['스승', '벗', '의형제', '정인']).find(b => b.home && b.home !== P.place); if (fr) add(fr.home, `${J(fr.name, '이가')} 있는 곳`);
   if (P.era.dz.war >= 0.5 || P.era.dz.bandit >= 0.6) { const far = placesInRange(P, ['성', '진']).sort(() => P.R() - 0.5)[0]; if (far) add(far[0], '난리를 피할 곳'); }
   if (P.career) { const c = placesInRange(P, ['성', '진']).sort(() => P.R() - 0.5)[0]; if (c) add(c[0], `${careerDef(P.career).n} 일이 잘된다는 고을`); }
   return out;
@@ -2158,8 +2167,10 @@ const OPP_LEAD = ['몇 가지 일이 눈에 들어온다.', '머무는 사이 �
 const OPP_TRAVEL = ['떠날 까닭도 생겼다.', '다른 고을 소식도 들린다.', '길이 부른다.'];
 function* opportunity(P, withTravel) {
   if (P.age < 10) return;
-  const acts = LIFE.actions(P).filter(a => a.ok && !OPP_SKIP.has(a.id) && !(a.id === 'shop' && P.wealth < 30)).map(a => ({ n: a.n, hint: a.desc, go: function* () { yield* doAction(P, a.id); } }));
-  const recs = recruitOffers(P), trav = withTravel ? travelOffers(P) : [];
+  P.actUsed = P.actUsed || {};
+  const acts = LIFE.actions(P).filter(a => a.ok && !OPP_SKIP.has(a.id) && !(a.id === 'shop' && P.wealth < 30) && !(P.actUsed[a.id] >= P.year - 2)).map(a => ({ n: a.n, hint: a.desc, go: function* () { P.actUsed[a.id] = P.year; yield* doAction(P, a.id); } }));
+  // 옮긴 지 두 해가 안 됐으면 떠날 곳은 덜 나온다
+  const recs = recruitOffers(P), trav = withTravel && (P.year - (P.movedY || -99) >= 2 || P.R() < 0.25) ? travelOffers(P) : [];
   const pool = [];
   const take = (l, n) => { for (const x of l.sort(() => P.R() - 0.5).slice(0, n)) pool.push(x); };
   take(recs, 2); take(bondOffers(P), 1); take(forceOffers(P), 2); take(trav, withTravel ? 2 : 0); take(acts, 4 - Math.min(3, pool.length));
@@ -2184,7 +2195,8 @@ function* oath(P, n) {
 
 // 세력이 있을 때의 기회: 제자 모집, 토벌·습격으로 하위 세력 거두기(사용자 검토 2026-11-25)
 function forceOffers(P) {
-  const f = P.force, out = []; if (!f) return out;
+  const f = P.force, out = []; if (!f || P.year - (P.forceOfferY || -9) < 2) return out;
+  P.forceOfferY = P.year;
   out.push({ n: f.kind === '문파' ? '제자를 모집한다' : f.kind === '상단' ? '사람을 모은다' : '수하를 모은다', hint: `${f.name}의 문을 연다`, go: function* () {
     const r = check(P, '풍모', 45, stageOf(P.fame) * 8); const n = r.crit ? 15 : r.ok ? 6 + Math.floor(P.R() * 6) : 2;
     f.men += n; say(P, `${f.name}에 ${n}명이 새로 들었다.`, 'act', P.month);
@@ -2257,7 +2269,7 @@ function acqYear(P, sch) {
   // 살아온 길(9-26)
   const T = n => P.traits.some(t => t.n === n);
   const masters = relPeople(P, ['스승']);
-  if (masters.some(b => b.alive && b.bond >= 40 && P.year - (b.met || P.year) >= 5)) gainTrait(P, '스승의 그늘', '스승을 모신 지 다섯 해, 스승의 그림자가 몸에 배었다.');
+  if (masters.some(b => b.alive && b.bond >= 40 && P.year - (b.since || b.met || P.year) >= 5)) gainTrait(P, '스승의 그늘', '스승을 모신 지 다섯 해, 스승의 그림자가 몸에 배었다.');
   if (T('스승의 그늘') && !masters.some(b => b.alive)) { loseTrait(P, '스승의 그늘', '스승이 세상을 떠났다.'); gainTrait(P, '스승의 유지', '스승의 뜻을 이어 가기로 했다.'); }
   if (P.member && P.member.kind === '정식') { c.사문 = (c.사문 || 0) + 1; if (c.사문 >= 10) gainTrait(P, '사문의 긍지', '사문에서 십 년을 보냈다.'); } else { c.사문 = 0; if (T('사문의 긍지')) loseTrait(P, '사문의 긍지', '사문을 떠났다.'); }
   if (!P.member && (sch.cnt.유람 || sch.cnt.탐색)) { c.떠돌이 = (c.떠돌이 || 0) + 1; if (c.떠돌이 >= 6) gainTrait(P, '떠돌이 근성', '어디에도 매이지 않고 여섯 해를 떠돌았다.'); }
@@ -2412,6 +2424,10 @@ function* year(P) {
 function yearLine(P, sch) {
   if (P.age < 6) return null;
   const top = Object.entries(sch.cnt).sort((a, b) => b[1] - a[1])[0]; if (!top) return null;
+  // 하던 일이 그대로면 다섯 해에 한 번만 적는다(같은 줄이 해마다 반복되지 않게)
+  const key = top[0] + (mainArt(P) ? mainArt(P).def.n : '');
+  if (P.lastYearLine === key && P.year - (P.lastYearLineY || 0) < 5) return null;
+  P.lastYearLine = key; P.lastYearLineY = P.year;
   const m = mainArt(P), c = P.career && careerDef(P.career);
   const t = { 수련: m ? `이해에는 「${m.def.n}」 수련에 매달렸다.` : '이해에는 몸을 단련했다.', 운기: '이해에는 운기조식으로 기를 다스렸다.', 폐관: '문을 걸어 잠그고 폐관했다.', 생업: c ? `이해에는 ${c.n} 일에 힘썼다.` : null, 유람: '이해에는 강호를 떠돌았다.', 협행: '이해에는 어려운 사람들을 도우며 다녔다.', 의뢰: '이해에는 의뢰를 맡아 길 위에서 보냈다.', 글공부: '이해에는 글을 읽었다.', 가족: P.age < 15 ? null : '이해에는 가족과 함께 지냈다.', 놀이: null, 세력: P.force ? `이해에는 ${J(P.force.name, '을를')} 돌보았다.` : null }[top[0]];
   return t || null;
