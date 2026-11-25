@@ -2,6 +2,10 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<script>
+// /muhyub 처럼 끝에 /가 없으면 data/·engine/ 상대 경로가 사이트 뿌리로 잡힌다. /muhyub/ 로 옮긴다
+if (!location.pathname.endsWith('/') && !/\.[a-z]+$/i.test(location.pathname)) location.replace(location.pathname + '/' + location.search + location.hash);
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>강호 천만 분의 일 · 단 한 번의 무림 일생</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
