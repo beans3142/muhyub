@@ -60,7 +60,7 @@ function activate(ctx, f, year, how) {
 }
 function newLeader(ctx, f, year, founder) {
   const R = ctx.R; f.gen += 1;
-  const fixed = ctx.opts.founders && founder && ctx.opts.founders[f.id];
+  const fixed = founder && ((ctx.opts.founders && ctx.opts.founders[f.id]) || f.def.founder);
   const name = fixed || makeName(ctx, f);
   f.leader = { name, age: Math.floor(35 + R() * 25), from: year, gen: f.gen };
   (ctx.leaders[f.id] = ctx.leaders[f.id] || []).push({ gen: f.gen, name, from: year, to: null });
@@ -424,7 +424,7 @@ WS.create = function (opts) {
   for (const a of G.ANCHORS) for (const o of a.out) { for (const x of o.fx || []) for (const k of ['found', 'split', 'merge', 'promote']) { const v = x[k]; if (!v) continue; if (k === 'found') anchorFound.add(v); if (k === 'split') anchorFound.add(v[1]); if (k === 'merge') anchorFound.add(v[1]); if (k === 'promote') anchorFound.add(x.as); } for (const id of o.open || []) ctx.gated.add(id); }
   for (const a of G.ANCHORS) if (a.alt) ctx.gated.add(a.alt);
   const R = ctx.R;
-  for (const def of G.FACTIONS) {
+  for (const def of G.FACTIONS.concat(opts.extra || [])) {
     const f = newFaction(ctx, def); f.rels = {}; ctx.F[f.id] = f; ctx.list.push(f);
     if (def.at) (ctx.homeOf[def.at] = ctx.homeOf[def.at] || []).push(f);
     const [lo, hi] = def.from || [START, START];
@@ -438,6 +438,12 @@ WS.step = function (ctx) { CTX = ctx; const y = ctx.year; stepAnchors(ctx, y); s
 WS.runTo = function (ctx, year) { while (ctx.year <= year) WS.step(ctx); return ctx; };
 WS.snapshot = function (ctx) {
   return alive(ctx).map(f => ({ id: f.id, n: f.n, t: f.t, state: f.state, pow: Math.round(power(ctx, f)), land: +f.land.toFixed(2), home: f.home, places: f.places.slice(), coh: Math.round(f.coh), fame: Math.round(f.fame), leader: f.leader && `${f.gen}대 ${f.leader.name}`, war: f.war && f.war.with }));
+};
+// 생 도중에 세력을 더한다(주인공이 세운 세력, docs/p10-engine.md 9-5)
+WS.addFaction = function (ctx, def, year) {
+  const d = Object.assign({ id: 'pf' + (ctx.list.length + 1), cat: '신생', rel: '없음', fall: 30, prestige: 1, size: 60 }, def);
+  const f = newFaction(ctx, d, year); f.rels = {}; f.generated = true; ctx.F[f.id] = f; ctx.list.push(f);
+  activate(ctx, f, year); return f.id;
 };
 WS.START = START; WS.END = END;
 G.WORLDSIM = WS;

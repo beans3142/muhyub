@@ -9,118 +9,143 @@ if (!location.pathname.endsWith('/') && !/\.[a-z]+$/i.test(location.pathname)) l
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>강호 천만 분의 일 · 단 한 번의 무림 일생</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-  :root{--paper:#f4ecdb;--paper2:#ebdfc6;--card:#fbf6ea;--ink:#1f1a14;--ink2:#5d5244;--ink3:#8a7d6a;--line:#d6c6a3;--red:#a3261b;--red2:#c8473a;--jade:#2f6b57;--gold:#9a7418;--blue:#33577a}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Serif KR",serif;font-size:16px;line-height:1.7}
-  button,select{font-family:inherit;font-size:15px;cursor:pointer}
-  .wrap{max-width:1240px;margin:0 auto;padding:22px 18px 60px}
-  .hidden{display:none!important}
-  h1{font-weight:900;font-size:clamp(32px,5vw,52px);margin:0;letter-spacing:.04em}
-  h1 small{display:block;font-size:15px;font-weight:400;color:var(--ink2);letter-spacing:.3em}
-  h2{font-size:19px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
-  h3{font-size:15px;margin:0 0 6px;color:var(--ink2);font-weight:600;letter-spacing:.05em}
-  .seal{display:inline-block;border:2px solid var(--red);color:var(--red);padding:1px 8px;font-weight:900;transform:rotate(-4deg);font-size:13px}
-  .lead{font-size:17px;max-width:720px;color:var(--ink2)}
-  .muted{color:var(--ink3);font-size:14px}
-  .btn{background:var(--ink);color:var(--paper);border:0;padding:11px 24px;font-size:17px;font-weight:600;letter-spacing:.08em}
-  .btn:hover{background:var(--red)}
-  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
-  .btn.ghost:hover{background:var(--ink);color:var(--paper)}
-  .btn.sm{padding:4px 12px;font-size:14px;letter-spacing:0}
-  .btn.on{background:var(--ink);color:var(--paper)}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media(max-width:860px){.grid2{grid-template-columns:1fr}}
-  .box{background:var(--card);border:1px solid var(--line);padding:14px 16px}
-  /* 윤회 점수 */
-  .shop .item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dotted var(--line)}
-  .shop .item.locked{color:var(--ink3)}
-  .shop .item b{font-weight:600}
-  .pts{font-size:22px;font-weight:900;color:var(--gold)}
-  .achs{display:flex;flex-wrap:wrap;gap:5px}
-  .ach{font-size:13px;padding:1px 8px;border:1px solid var(--line);background:var(--card)}
-  .ach.off{color:var(--ink3);border-style:dashed}
-  .ach.new{border-color:var(--gold);color:var(--gold);font-weight:700}
-  .memorial{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
-  .memorial div{border:1px solid var(--line);padding:10px;background:var(--card);font-size:14px}
-  .gradeTag{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;font-weight:900;color:#fff;margin-right:6px}
-  .g神{background:#5b2a86}.g天{background:var(--red)}.g地{background:var(--gold)}.g玄{background:var(--blue)}.g黃{background:#9b8b6b}
-  /* 생 */
-  .topbar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:2px solid var(--ink);padding:10px 0;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
-  .who{font-size:22px;font-weight:900}
-  .who .ep{color:var(--red);font-size:17px;margin-left:6px}
-  .who .sub{font-size:15px;font-weight:400;color:var(--ink2);margin-left:8px}
-  .ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-  .ctrl select{padding:4px 6px;border:1px solid var(--ink);background:var(--card)}
-  .life{display:grid;grid-template-columns:360px 1fr;gap:18px;margin-top:14px;align-items:start}
-  @media(max-width:900px){.life{grid-template-columns:1fr}}
-  .sheet{display:flex;flex-direction:column;gap:10px}
-  .realm{font-size:26px;font-weight:900}
-  .realm small{font-size:15px;font-weight:600;color:var(--ink2);margin-left:6px}
-  .ww{font-size:15px;color:var(--ink2)}
-  .ww b{font-size:20px;color:var(--ink)}
-  .axis{display:grid;grid-template-columns:52px 1fr;gap:6px;align-items:center;font-size:13.5px;margin:3px 0}
-  .bar{height:8px;background:#e3d6b8;position:relative}
-  .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--jade)}
-  .bar i.done{background:var(--gold)}
-  .bar em{position:absolute;top:-3px;width:2px;height:14px;background:var(--red)}
-  .axis .t{font-size:12.5px;color:var(--ink2);grid-column:2}
-  .art{padding:5px 0;border-bottom:1px dotted var(--line);font-size:14.5px}
-  .art .nm{font-weight:600}
-  .art .gr{font-size:12px;padding:0 6px;margin-left:6px;border:1px solid var(--line)}
-  .art .sg{float:right;font-size:13px;color:var(--ink2)}
-  .art.main .nm{color:var(--red)}
-  .kv{display:grid;grid-template-columns:62px 1fr;gap:2px 8px;font-size:14.5px}
-  .kv span{color:var(--ink2)}
-  .br{display:grid;grid-template-columns:38px 1fr 70px;gap:6px;align-items:center;font-size:14px;margin:3px 0}
-  .br .v{text-align:right;color:var(--ink2);font-size:13px}
-  details summary{cursor:pointer;font-size:13.5px;color:var(--ink2)}
-  .st18{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px 10px;font-size:13px;margin-top:6px}
-  .chips{display:flex;flex-wrap:wrap;gap:4px}
-  .chip{font-size:13px;padding:1px 7px;border:1px solid var(--line);background:var(--paper);cursor:help}
-  .chip.bad{border-color:var(--red2);color:var(--red)}
-  .chip.unk{border-style:dashed;color:var(--ink3)}
-  .chip.t중품{border-color:var(--jade);color:var(--jade);font-weight:600}
-  .chip.t상품{background:var(--jade);color:#fff;border-color:var(--jade)}
-  .chip.t극품{background:var(--gold);color:#fff;border-color:var(--gold);font-weight:700}
-  .chip.t천품{background:var(--red);color:#fff;border-color:var(--red);font-weight:900}
-  .bond{font-size:14px;padding:2px 0}
-  .bond i{font-style:normal;color:var(--ink3);font-size:12.5px}
-  /* 기록 */
-  .logwrap{position:relative}
-  .choice{position:sticky;top:64px;z-index:4;border:2px solid var(--ink);background:var(--card);padding:14px 16px;margin-bottom:12px;box-shadow:0 4px 0 rgba(0,0,0,.08)}
-  .choice .q{font-size:13px;color:var(--red);font-weight:700;letter-spacing:.1em}
-  .choice .tx{font-size:17px;margin:4px 0 10px}
-  .choice button{display:block;width:100%;text-align:left;margin:6px 0;padding:9px 13px;background:var(--paper);border:1px solid var(--line);font-size:16px}
-  .choice button:hover{background:var(--ink);color:var(--paper)}
-  .choice button em{font-style:normal;font-size:13px;color:var(--ink3);margin-left:8px}
-  .choice button:hover em{color:#e9d9b5}
-  .log{max-width:760px}
-  .yc{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);padding:9px 14px;margin:0 0 8px}
-  .yc.hot{border-left-color:var(--red)}
-  .yc .hd{font-size:13.5px;color:var(--ink2);font-weight:600;margin-bottom:2px}
-  .yc .hd b{color:var(--ink);font-size:15px;margin-right:6px}
-  .yc p{margin:2px 0}
-  .yc .mo{display:inline-block;min-width:30px;font-size:12px;color:var(--ink3)}
-  .quiet{font-size:14px;color:var(--ink3);margin:0 0 8px 6px}
-  .l-big{font-weight:700}
-  .l-realm{font-weight:900;color:var(--red);font-size:17px}
-  .l-art{color:var(--blue)}
-  .l-ok{color:var(--jade)}
-  .l-ng{color:var(--red)}
-  .l-pick{color:var(--ink2);font-size:15px}
-  .l-world{color:var(--ink3);font-size:14.5px}
-  .l-path{font-weight:600}
-  .l-thread{color:var(--gold);font-weight:600}
-  .l-muted{color:var(--ink3);font-size:14px}
-  /* 묘비 */
-  .tomb{max-width:720px;margin:20px auto;border:3px double var(--ink);padding:24px 28px;background:var(--card)}
-  .tomb .gr{font-size:56px;font-weight:900;line-height:1;text-align:center}
-  .tomb .en{text-align:center;font-size:24px;font-weight:900;margin:6px 0}
-  .tomb .nm{text-align:center;font-size:18px}
-  .tomb .bio{font-size:16px;margin:16px 0}
-  .tomb textarea{width:100%;font-family:inherit;font-size:15px;padding:8px;border:1px solid var(--line);background:var(--paper)}
+:root{--paper:#f3ead6;--paper2:#e8dcc0;--card:#fbf6ea;--ink:#1d1812;--ink2:#5a4f40;--ink3:#8b7e69;--line:#d8c8a4;--red:#a3261b;--red2:#c8473a;--jade:#2f6b57;--gold:#a07a1c;--blue:#33577a;--band:#5a4f40}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:"Noto Serif KR",serif;font-size:16px;line-height:1.7;background:var(--paper);transition:background .8s}
+/* 경지가 오를수록 배경이 바뀐다(10단계 9-11) */
+body.t1{background:linear-gradient(180deg,#efe5cf 0%,#e9dfc7 60%,#ddd0b2 100%)}
+body.t1::before,body.t2::before,body.t3::before{content:"";position:fixed;inset:auto 0 0 0;height:46vh;z-index:-1;pointer-events:none;background-repeat:repeat-x;background-position:bottom;opacity:.5;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='300' viewBox='0 0 900 300'><path d='M0 300 L0 210 Q60 150 120 190 T240 150 Q300 80 360 140 T480 120 Q540 60 600 130 T720 110 Q800 70 900 150 L900 300 Z' fill='%23a89a7c' opacity='.35'/><path d='M0 300 L0 240 Q90 200 180 230 T360 210 Q450 170 540 220 T720 200 Q810 180 900 230 L900 300 Z' fill='%23857659' opacity='.35'/></svg>")}
+body.t2{background:linear-gradient(180deg,#e4dbc6 0%,#d6cbb1 100%)}
+body.t2::before{opacity:.8}
+body.t3{background:radial-gradient(circle at 70% 0%,#f6e7b8 0%,#e9d79f 35%,#d9c487 100%)}
+body.t3::before{opacity:.6;filter:sepia(1) saturate(2)}
+button,select{font-family:inherit;cursor:pointer}
+.wrap{max-width:1280px;margin:0 auto;padding:18px 18px 80px}
+.hidden{display:none!important}
+.muted{color:var(--ink3);font-size:14px}
+.btn{background:var(--ink);color:var(--paper);border:0;padding:11px 26px;font-size:17px;font-weight:700;letter-spacing:.08em}
+.btn:hover{background:var(--red)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--paper)}
+.btn.sm{padding:4px 12px;font-size:14px;letter-spacing:0;font-weight:600}
+.btn.on{background:var(--ink);color:var(--paper)}
+.box{background:var(--card);border:1px solid var(--line);padding:14px 16px}
+h1{font-weight:900;font-size:clamp(32px,5vw,54px);margin:0;letter-spacing:.04em}
+h1 small{display:block;font-size:15px;font-weight:400;color:var(--ink2);letter-spacing:.3em}
+h2{font-size:19px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+h3{font-size:14px;margin:0 0 8px;color:var(--ink2);font-weight:700;letter-spacing:.08em}
+.seal{display:inline-block;border:2px solid var(--red);color:var(--red);padding:1px 8px;font-weight:900;transform:rotate(-4deg);font-size:13px}
+.grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.unl{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dotted var(--line)}
+.unl.locked{color:var(--ink3)}
+.unl b{font-weight:700}
+.sw{position:relative;width:42px;height:22px;background:#cbbd9c;border-radius:11px;flex:none;transition:.2s;cursor:pointer}
+.sw.on{background:var(--jade)}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on::after{left:23px}
+.unl select{max-width:200px;padding:3px;border:1px solid var(--line);background:var(--paper)}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:13px;padding:1px 8px;border:1px solid var(--line);background:var(--card)}
+.tag.off{color:var(--ink3);border-style:dashed}
+.tag.new{border-color:var(--gold);color:var(--gold);font-weight:700}
+.gt{display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;font-weight:900;color:#fff;margin-right:6px;font-size:13px}
+.g神{background:#5b2a86}.g天{background:var(--red)}.g地{background:var(--gold)}.g玄{background:var(--blue)}.g黃{background:#9b8b6b}
+.chron{max-height:420px;overflow:auto}
+.chron div{padding:7px 0;border-bottom:1px dotted var(--line);font-size:15px}
+.chron .yr{display:inline-block;min-width:120px;color:var(--ink2);font-size:13.5px}
+.hero{position:sticky;top:0;z-index:6;background:linear-gradient(180deg,rgba(251,246,234,.97),rgba(251,246,234,.93));border-bottom:3px solid var(--band);box-shadow:0 4px 14px rgba(0,0,0,.08);display:grid;grid-template-columns:118px 1fr auto;gap:16px;padding:10px 16px;align-items:center}
+.hero .pt{width:118px;height:150px;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(circle at 50% 70%,#fff8e6,#e8dcc0);border:1px solid var(--line)}
+.hero .pt img{height:146px;object-fit:contain}
+.hn{font-size:30px;font-weight:900;line-height:1.15}
+.hn .ep{display:inline-block;background:var(--red);color:#fff;font-size:15px;padding:1px 9px;margin-left:8px;vertical-align:middle;font-weight:700}
+.hsub{color:var(--ink2);font-size:15px;margin:2px 0 6px}
+.hchips{display:flex;flex-wrap:wrap;gap:6px}
+.hc{background:var(--paper);border:1px solid var(--line);padding:2px 10px;font-size:14.5px}
+.hc b{font-weight:700}
+.hc.realm{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:700}
+.hc.warn{border-color:var(--red2);color:var(--red)}
+.items{display:flex;gap:6px;margin-top:6px}
+.it{width:30px;height:30px;border:2px solid var(--red);color:var(--red);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:16px;background:#fff8ee;transform:rotate(-3deg);cursor:help}
+.it.g{border-color:var(--gold);color:var(--gold)}
+.it.j{border-color:var(--jade);color:var(--jade)}
+.ctrl{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.ctrl .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.ctrl select{padding:4px 6px;border:1px solid var(--ink);background:var(--card);font-size:14px}
+@media(max-width:820px){.hero{grid-template-columns:80px 1fr}.hero .pt{width:80px;height:104px}.hero .pt img{height:100px}.ctrl{grid-column:1/3;align-items:flex-start}.ctrl .row{justify-content:flex-start}.hn{font-size:24px}}
+.life{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:16px;align-items:start}
+@media(max-width:1000px){.life{grid-template-columns:1fr}}
+.choice{border:2px solid var(--ink);background:var(--card);padding:16px 18px;margin-bottom:14px;box-shadow:0 5px 0 rgba(0,0,0,.08);animation:pop .25s}
+@keyframes pop{from{transform:translateY(-6px);opacity:.3}to{transform:none;opacity:1}}
+.choice .q{font-size:13px;color:var(--red);font-weight:700;letter-spacing:.12em}
+.choice .tx{font-size:18px;margin:6px 0 12px;line-height:1.75}
+.choice button{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 14px;background:var(--paper);border:1px solid var(--line);font-size:16.5px}
+.choice button:hover{background:var(--ink);color:var(--paper)}
+.choice button em{font-style:normal;font-size:13.5px;color:var(--ink3);margin-left:8px}
+.choice button:hover em{color:#e9d9b5}
+.yc{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--line);padding:12px 18px;margin:0 0 10px}
+.yc.now{border-left-color:var(--ink)}
+.yc.hot{border-left-color:var(--red)}
+.yc .hd{font-size:14px;color:var(--ink2);margin-bottom:4px;display:flex;justify-content:space-between;gap:10px}
+.yc .hd b{color:var(--ink);font-size:17px;margin-right:8px}
+.yc p{margin:3px 0;font-size:16.5px}
+.yc .mo{display:inline-block;min-width:34px;font-size:12.5px;color:var(--ink3)}
+.quiet{font-size:14px;color:var(--ink3);margin:0 0 10px 8px}
+.l-big{font-weight:700}
+.l-realm{font-weight:900;color:var(--red);font-size:18px}
+.l-art{color:var(--blue)}
+.l-ok{color:var(--jade)}
+.l-ng{color:var(--red)}
+.l-pick{color:var(--ink2);font-size:15px}
+.l-world{color:var(--ink3);font-size:15px}
+.l-path{font-weight:700}
+.l-thread{color:var(--gold);font-weight:700}
+.l-rumor{color:#7a4f9a;font-weight:600}
+.l-act{color:var(--ink);font-weight:700;border-left:3px solid var(--gold);padding-left:8px}
+.l-muted{color:var(--ink3);font-size:14.5px}
+.side{position:sticky;top:186px;max-height:calc(100vh - 200px);overflow:auto}
+.tabs{display:flex;flex-wrap:wrap;border-bottom:2px solid var(--ink)}
+.tabs button{border:0;background:transparent;padding:7px 12px;font-size:15px;font-weight:600;color:var(--ink2)}
+.tabs button.on{background:var(--ink);color:var(--paper)}
+.tabbody{background:var(--card);border:1px solid var(--line);border-top:0;padding:12px 14px}
+.kv{display:grid;grid-template-columns:70px 1fr;gap:3px 10px;font-size:15px}
+.kv span{color:var(--ink2)}
+.art{padding:6px 0;border-bottom:1px dotted var(--line)}
+.art .nm{font-weight:700}
+.art .gr{font-size:12px;padding:0 6px;margin-left:6px;border:1px solid var(--line)}
+.art .sg{float:right;font-size:13.5px;color:var(--ink2)}
+.art.main .nm{color:var(--red)}
+.bar{height:7px;background:#e3d6b8;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--jade)}
+.br{display:grid;grid-template-columns:40px 1fr 44px;gap:8px;align-items:center;font-size:14.5px;margin:4px 0}
+.br .v{text-align:right;color:var(--ink2);font-size:13px}
+.st18{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px 10px;font-size:13px;margin-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:13.5px;padding:1px 8px;border:1px solid var(--line);background:var(--paper);cursor:help}
+.chip.bad{border-color:var(--red2);color:var(--red)}
+.chip.unk{border-style:dashed;color:var(--ink3)}
+.chip.t중품{border-color:var(--jade);color:var(--jade);font-weight:600}
+.chip.t상품{background:var(--jade);color:#fff;border-color:var(--jade)}
+.chip.t극품{background:var(--gold);color:#fff;border-color:var(--gold);font-weight:700}
+.chip.t천품{background:var(--red);color:#fff;border-color:var(--red);font-weight:900}
+.bond{font-size:15px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.bond i{font-style:normal;color:var(--ink3);font-size:13px;margin-left:6px}
+.feel{margin-top:6px;font-size:15px;color:var(--ink2)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.acts button{text-align:left;padding:8px 10px;border:1px solid var(--line);background:var(--paper);font-size:14.5px}
+.acts button:hover:not([disabled]){background:var(--ink);color:var(--paper)}
+.acts button[disabled]{opacity:.45;cursor:not-allowed}
+.acts button small{display:block;font-size:12px;color:var(--ink3)}
+.acts button.queued{border-color:var(--gold);background:#fff4d6}
+.tomb{max-width:760px;margin:24px auto;border:3px double var(--ink);padding:26px 30px;background:var(--card)}
+.tomb .top{display:flex;gap:20px;align-items:center}
+.tomb .top img{height:180px}
+.tomb .gr{font-size:58px;font-weight:900;line-height:1}
+.tomb .en{font-size:26px;font-weight:900;margin:4px 0}
+.tomb .bio{font-size:16.5px;margin:16px 0;line-height:1.85}
 </style>
 </head>
 <body>
@@ -129,51 +154,58 @@ if (!location.pathname.endsWith('/') && !/\.[a-z]+$/i.test(location.pathname)) l
 <section id="intro">
   <span class="seal">江湖千萬分之一</span>
   <h1>강호 천만 분의 일<small>단 한 번의 무림 일생</small></h1>
-  <p class="lead">강호에서는 오늘도 아이가 태어난다. 대부분은 논밭에서 나고 논밭에서 죽는다. 무공을 배우는 자는 몇 안 되고, 절정에 이르면 고수 대접을 받는다. 어디서 무엇을 타고날지는 하늘이 정한다. 당신은 갈림길에서 고르고, 한 해를 어떻게 보낼지 정할 수 있다.</p>
-  <p class="muted">판정은 보이지 않는 곳에서 굴러가고 결과만 남는다. 생이 끝나면 엔딩과 업적으로 윤회 점수가 쌓이고, 다음 생에 고를 수 있는 것이 늘어난다.</p>
+  <p class="muted" style="max-width:760px;font-size:16px">강호에서는 오늘도 아이가 태어난다. 대부분은 논밭에서 나고 논밭에서 죽는다. 무공을 배우는 자는 몇 안 되고, 절정에 이르면 고수 대접을 받는다. 당신은 갈림길에서 고르고, 한 해를 어떻게 보낼지 정하고, 때로 스스로 길을 낸다. 지난 생들은 강호의 이야기로 남는다.</p>
   <p><button class="btn" id="startBtn">태어나기</button>
      <label class="muted" style="margin-left:12px"><input type="checkbox" id="autoStart"> 갈림길도 운명에 맡기기</label></p>
   <div class="grid2">
-    <div class="box shop"><h3>윤회 점수 <span class="pts" id="pts">0</span>점</h3><div id="shop"></div></div>
-    <div class="box"><h3>지난 생들</h3><div id="stats" class="muted"></div><h3 style="margin-top:12px">엔딩</h3><div id="endBoard" class="achs"></div></div>
+    <div class="box"><h3>이번 생에 켤 것 <span class="muted" id="unlCount"></span></h3><div id="unlocks"></div></div>
+    <div class="box"><h3>강호 연대기 · 지난 생들</h3><div class="chron" id="chron"></div></div>
   </div>
+  <h2>엔딩 <span class="muted" id="endCount"></span></h2>
+  <div class="tags" id="endBoard"></div>
   <h2>업적 <span class="muted" id="achCount"></span></h2>
-  <div class="achs" id="achBoard"></div>
-  <h2>추모관</h2>
-  <div class="memorial" id="memorial"></div>
+  <div class="tags" id="achBoard"></div>
 </section>
 
 <section id="lifeScreen" class="hidden">
-  <div class="topbar">
-    <div class="who" id="who"></div>
+  <div class="hero" id="hero">
+    <div class="pt"><img id="portrait" alt=""></div>
+    <div>
+      <div class="hn" id="hName"></div>
+      <div class="hsub" id="hSub"></div>
+      <div class="hchips" id="hChips"></div>
+      <div class="items" id="hItems"></div>
+    </div>
     <div class="ctrl">
-      <label class="muted">한 해 방침 <select id="plan"></select></label>
-      <button class="btn sm ghost" id="pauseBtn">멈춤</button>
-      <button class="btn sm ghost spd on" data-s="1">1배</button>
-      <button class="btn sm ghost spd" data-s="3">3배</button>
-      <button class="btn sm ghost spd" data-s="10">10배</button>
-      <label class="muted"><input type="checkbox" id="autoChk"> 운명에 맡기기</label>
+      <div class="row"><label class="muted">한 해 방침 <select id="plan"></select></label></div>
+      <div class="row">
+        <button class="btn sm ghost" id="pauseBtn">멈춤</button>
+        <button class="btn sm ghost spd on" data-s="1">1배</button>
+        <button class="btn sm ghost spd" data-s="3">3배</button>
+        <button class="btn sm ghost spd" data-s="10">10배</button>
+      </div>
+      <div class="row"><label class="muted"><input type="checkbox" id="autoChk"> 운명에 맡기기</label></div>
     </div>
   </div>
   <div class="life">
-    <aside class="sheet" id="sheet"></aside>
-    <main class="logwrap">
+    <main>
       <div id="choice" class="choice hidden"></div>
-      <div class="log" id="log"></div>
+      <div id="log"></div>
     </main>
+    <aside class="side">
+      <div class="tabs" id="tabs"></div>
+      <div class="tabbody" id="tabbody"></div>
+    </aside>
   </div>
 </section>
 
 <section id="endScreen" class="hidden">
   <div class="tomb">
-    <div class="gr" id="eGrade"></div>
-    <div class="en" id="eName"></div>
-    <div class="nm" id="eWho"></div>
+    <div class="top"><img id="eImg" alt=""><div><div class="gr" id="eGrade"></div><div class="en" id="eName"></div><div id="eWho" class="muted" style="font-size:16px"></div></div></div>
     <div class="bio" id="eBio"></div>
-    <h3>이번 생의 업적</h3><div class="achs" id="eAch"></div>
-    <p id="ePts" class="muted"></p>
-    <textarea id="eEpitaph" rows="2" maxlength="120" placeholder="이 삶에 남길 한마디 (비워 둬도 된다)"></textarea>
-    <p style="text-align:center"><button class="btn" id="againBtn">다음 생으로</button></p>
+    <h3>이번 생의 업적</h3><div class="tags" id="eAch"></div>
+    <p id="eUnl" class="muted" style="margin-top:12px"></p>
+    <p style="text-align:center;margin-top:18px"><button class="btn" id="againBtn">다음 생으로</button></p>
   </div>
 </section>
 </div>
@@ -189,6 +221,7 @@ if (!location.pathname.endsWith('/') && !/\.[a-z]+$/i.test(location.pathname)) l
 <script src="data/origins.js"></script>
 <script src="data/items.js"></script>
 <script src="data/eventbook.js"></script>
+<script src="data/lifebook.js"></script>
 <script src="data/events.js"></script>
 <script src="data/starts.js"></script>
 <script src="data/canon.js"></script>
@@ -197,153 +230,191 @@ if (!location.pathname.endsWith('/') && !/\.[a-z]+$/i.test(location.pathname)) l
 <script>
 const L = LIFE; L.init();
 const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const GPT = { 黃: 1, 玄: 2, 地: 4, 天: 8, 神: 16 };
-const GORDER = ['神', '天', '地', '玄', '黃'];
+const R = L.REALMS, GORDER = ['神', '天', '地', '玄', '黃'];
+const yr = y => (y < 0 ? '기원전 ' + -y : y) + '년';
 
-// ---------- 기록(localStorage) ----------
-const KEY = 'gangho_v2';
-const rec = Object.assign({ lives: 0, points: 0, endings: {}, achs: {}, origins: [], traits: [], memorial: [] }, JSON.parse(localStorage.getItem(KEY) || '{}'));
+// ---------- 기록 ----------
+const KEY = 'gangho_v3';
+const old = JSON.parse(localStorage.getItem('gangho_v2') || '{}');
+const rec = Object.assign({ lives: 0, endings: {}, achs: {}, origins: [], traits: [], legends: [], on: {}, pick: {} }, old.endings ? { lives: old.lives || 0, endings: old.endings, achs: old.achs || {}, origins: old.origins || [], traits: old.traits || [] } : {}, JSON.parse(localStorage.getItem(KEY) || '{}'));
 const save = () => localStorage.setItem(KEY, JSON.stringify(rec));
 const endCount = () => Object.values(rec.endings).reduce((a, e) => a + e.c, 0);
-const hasGrade = gs => Object.values(rec.endings).some(e => gs.includes(e.g));
-const hasEnd = ns => ns.some(n => rec.endings[n]);
+const endKinds = g => Object.values(rec.endings).filter(e => !g || g.includes(e.g)).length;
+const has = n => !!rec.achs[n];
 
-// ---------- 윤회 점수 상점(9단계 5-1) ----------
-let cart = {};
-const SHOP = [
-  { id: 'apt', n: '자질 하나 +5', cost: 2, open: () => true, why: '처음부터', multi: ['근골', '오성', '심성', '기연', '풍모'], max: 3 },
-  { id: 'reveal', n: '타고난 것 보기', cost: 2, open: () => endCount() >= 3, why: '엔딩 3번' },
-  { id: 'martial', n: '무가 출신', cost: 4, open: () => !!rec.achs['첫걸음'], why: '업적 「첫걸음」' },
-  { id: 'extra', n: '큰 특성 한 번 더', cost: 3, open: () => hasGrade(['玄', '地', '天', '神']), why: '玄 이상 엔딩' },
-  { id: 'noble', n: '명문 출신', cost: 8, open: () => hasEnd(['장로', '절정 고수']) || hasGrade(['地', '天', '神']), why: '엔딩 「장로」·「절정 고수」 이상' },
-  { id: 'origin', n: '출신 고르기', cost: 6, open: () => endCount() >= 10, why: '엔딩 10번', pickFrom: () => rec.origins.map(id => ORIGINS.find(o => o.id === id)).filter(Boolean).map(o => [o.id, o.n]) },
-  { id: 'trait', n: '특성 고르기', cost: 0, open: () => hasGrade(['地', '天', '神']), why: '地 이상 엔딩', pickFrom: () => rec.traits.map(id => TRAITS.find(t => t.id === id)).filter(t => t && t.tier !== '천품').map(t => [t.id, `${t.n} (${t.tier})`]) },
-  { id: 'chapter', n: '시대 고르기', cost: 0, open: () => hasGrade(['天', '神']), why: '天 이상 엔딩', pickFrom: () => CHAPTERS.map((c, i) => [i, `${c[2]} (${c[0]}~${c[1]})`]) },
+// ---------- 해금(켜고 끄기, 10단계 9-10) ----------
+const CH = [[-500, -222, '검의 시대'], [-221, 219, '제국과 유협'], [220, 588, '산문의 시작'], [589, 906, '승병과 이교'], [907, 1126, '문파의 태동'], [1127, 1278, '구파 정립'], [1279, 1367, '명교와 홍건'], [1368, 1449, '마교의 굴기'], [1450, 1549, '강호의 전성기'], [1550, 1643, '왜구와 동영'], [1644, 1779, '반청'], [1780, 1840, '황혼']];
+const UNLOCKS = [
+  { id: 'bestOf4', n: '자질 4d6 중 높은 셋', open: () => endKinds(['黃']) >= 5, why: '黃 엔딩 5종' },
+  { id: 'reveal', n: '타고난 것 처음부터 보기', open: () => endCount() >= 3, why: '엔딩 3번' },
+  { id: 'sex', n: '성별 고르기', open: () => endCount() >= 5, why: '엔딩 5번', pick: () => [['m', '남'], ['f', '여']] },
+  { id: 'martial', n: '무가 출신', open: () => has('첫걸음'), why: '업적 「첫걸음」' },
+  { id: 'region', n: '고향 고르기', open: () => has('유랑'), why: '업적 「유랑」', pick: () => Object.keys(REGIONS).filter(r => REGIONS[r].zone === '중원').map(r => [r, r]) },
+  { id: 'apt', n: '자질 하나 +10', open: () => Object.keys(rec.achs).length >= 15, why: '업적 15개', pick: () => ['근골', '오성', '심성', '기연', '풍모'].map(k => [k, k]) },
+  { id: 'kiyon', n: '기연이 따르는 몸(기연 +15)', open: () => has('세 번의 기연'), why: '업적 「세 번의 기연」' },
+  { id: 'extra', n: '큰 특성 한 번 더', open: () => endKinds(['玄', '地', '天', '神']) >= 1, why: '玄 이상 엔딩' },
+  { id: 'noble', n: '명문 출신', open: () => endKinds(['地', '天', '神']) >= 1 || !!rec.endings['장로'] || !!rec.endings['절정 고수'], why: '엔딩 「장로」·「절정 고수」 또는 地 이상' },
+  { id: 'traitX2', n: '큰 특성 확률 두 배', open: () => endKinds(['地', '天', '神']) >= 3, why: '地 이상 엔딩 3종' },
+  { id: 'origin', n: '출신 고르기', open: () => endCount() >= 10, why: '엔딩 10번', pick: () => rec.origins.map(id => ORIGINS.find(o => o.id === id)).filter(Boolean).map(o => [o.id, o.n]) },
+  { id: 'trait', n: '특성 하나 고르기', open: () => endKinds(['地', '天', '神']) >= 1, why: '地 이상 엔딩', pick: () => rec.traits.map(id => TRAITS.find(t => t.id === id)).filter(t => t && t.tier !== '천품').map(t => [t.id, `${t.n} (${t.tier})`]) },
+  { id: 'memory', n: '전생의 무공', open: () => rec.legends.some(l => l.art), why: '무공을 익힌 채 죽은 생', pick: () => rec.legends.filter(l => l.art).slice(-12).map(l => [l.art, `${l.art} — ${l.name}`]) },
+  { id: 'chapter', n: '시대 고르기', open: () => endKinds(['天', '神']) >= 1, why: '天 이상 엔딩', pick: () => CH.map((c, i) => [i, `${c[2]} (${c[0]}~${c[1]})`]) },
 ];
-const CHAPTERS = [[-500, -222, '검의 시대'], [-221, 219, '제국과 유협'], [220, 588, '산문의 시작'], [589, 906, '승병과 이교'], [907, 1126, '문파의 태동'], [1127, 1278, '구파 정립'], [1279, 1367, '명교와 홍건'], [1368, 1449, '마교의 굴기'], [1450, 1549, '강호의 전성기'], [1550, 1643, '왜구와 동영'], [1644, 1779, '반청'], [1780, 1840, '황혼']];
-const TIER_COST = { 범품: 1, 하품: 2, 중품: 4, 상품: 8, 극품: 16 };
-function cartCost() {
-  let c = 0;
-  for (const [k, v] of Object.entries(cart)) {
-    if (k.startsWith('apt:')) c += 2 * v;
-    else if (k === 'trait') c += v ? TIER_COST[(TRAITS.find(t => t.id === v) || {}).tier] || 0 : 0;
-    else if (v != null && v !== false && v !== '') c += SHOP.find(s => s.id === k).cost;
-  }
-  return c;
-}
-function renderShop() {
-  $('pts').textContent = rec.points - cartCost();
-  $('shop').innerHTML = SHOP.map(s => {
-    if (!s.open()) return `<div class="item locked"><span>🔒 ${s.n}</span><span class="muted">${s.why}</span></div>`;
-    if (s.multi) return `<div class="item"><span><b>${s.n}</b> <span class="muted">${s.cost}점씩</span></span><span>${s.multi.map(k => `<button class="btn sm ghost" data-apt="${k}">${k} ${cart['apt:' + k] ? '+' + cart['apt:' + k] * 5 : ''}</button>`).join(' ')}</span></div>`;
-    if (s.pickFrom) { const opts = s.pickFrom(); return `<div class="item"><span><b>${s.n}</b> <span class="muted">${s.cost ? s.cost + '점' : s.id === 'trait' ? '등급값' : '무료'}</span></span><select data-pick="${s.id}"><option value="">${opts.length ? '고르지 않음' : '아직 없음'}</option>${opts.map(([v, n]) => `<option value="${v}" ${String(cart[s.id]) === String(v) ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></div>`; }
-    return `<div class="item"><span><b>${s.n}</b> <span class="muted">${s.cost}점</span></span><label><input type="checkbox" data-buy="${s.id}" ${cart[s.id] ? 'checked' : ''}> 쓴다</label></div>`;
+function renderUnlocks() {
+  $('unlCount').textContent = `${UNLOCKS.filter(u => u.open()).length} / ${UNLOCKS.length}`;
+  $('unlocks').innerHTML = UNLOCKS.map(u => {
+    if (!u.open()) return `<div class="unl locked"><span>🔒 ${u.n}</span><span class="muted">${u.why}</span></div>`;
+    const on = !!rec.on[u.id];
+    const opts = u.pick ? u.pick() : null;
+    const sel = opts ? `<select data-pick="${u.id}" ${on ? '' : 'disabled'}>${opts.map(([v, n]) => `<option value="${esc(v)}" ${String(rec.pick[u.id]) === String(v) ? 'selected' : ''}>${esc(n)}</option>`).join('') || '<option>아직 없음</option>'}</select>` : '';
+    return `<div class="unl"><span><b>${u.n}</b></span><span style="display:flex;gap:8px;align-items:center">${sel}<span class="sw ${on ? 'on' : ''}" data-sw="${u.id}"></span></span></div>`;
   }).join('');
-  $('shop').querySelectorAll('[data-apt]').forEach(b => b.onclick = () => { const k = 'apt:' + b.dataset.apt; const n = ((cart[k] || 0) + 1) % 4; if (n > (cart[k] || 0) && cartCost() + 2 > rec.points) return; cart[k] = n; renderShop(); });
-  $('shop').querySelectorAll('[data-buy]').forEach(b => b.onchange = () => { const s = SHOP.find(x => x.id === b.dataset.buy); if (b.checked && cartCost() + s.cost > rec.points) { b.checked = false; return; } cart[s.id] = b.checked; renderShop(); });
-  $('shop').querySelectorAll('[data-pick]').forEach(b => b.onchange = () => { const id = b.dataset.pick, prev = cart[id]; cart[id] = b.value === '' ? null : b.value; if (cartCost() > rec.points) cart[id] = prev; renderShop(); });
+  $('unlocks').querySelectorAll('[data-sw]').forEach(el => el.onclick = () => { const id = el.dataset.sw; rec.on[id] = !rec.on[id]; const u = UNLOCKS.find(x => x.id === id); if (u.pick && rec.pick[id] == null) { const p = u.pick()[0]; if (p) rec.pick[id] = p[0]; } save(); renderUnlocks(); });
+  $('unlocks').querySelectorAll('[data-pick]').forEach(el => el.onchange = () => { rec.pick[el.dataset.pick] = el.value; save(); });
 }
 function buildOpts() {
-  const o = { aptBonus: {} };
-  for (const [k, v] of Object.entries(cart)) if (k.startsWith('apt:') && v) o.aptBonus[k.slice(4)] = v * 5;
-  if (cart.reveal) o.revealTraits = true;
-  if (cart.martial) o.martial = true;
-  if (cart.extra) o.extraBig = true;
-  if (cart.noble) o.noble = true;
-  if (cart.origin) o.originId = cart.origin;
-  if (cart.trait) o.buyTraits = [cart.trait];
-  if (cart.chapter != null && cart.chapter !== '') { const c = CHAPTERS[+cart.chapter]; o.chapter = [c[0], c[1]]; o.minYear = -9999; }
+  const o = { legends: rec.legends.slice(-60), aptBonus: {} }, on = id => rec.on[id] && UNLOCKS.find(u => u.id === id).open();
+  if (on('bestOf4')) o.bestOf4 = true;
+  if (on('reveal')) o.revealTraits = true;
+  if (on('sex') && rec.pick.sex) o.sex = rec.pick.sex;
+  if (on('martial')) o.martial = true;
+  if (on('region') && rec.pick.region) o.region = rec.pick.region;
+  if (on('apt') && rec.pick.apt) o.aptBonus[rec.pick.apt] = 10;
+  if (on('kiyon')) o.aptBonus.기연 = (o.aptBonus.기연 || 0) + 15;
+  if (on('extra')) o.extraBig = true;
+  if (on('noble')) o.noble = true;
+  if (on('traitX2')) o.traitX2 = true;
+  if (on('origin') && rec.pick.origin) o.originId = rec.pick.origin;
+  if (on('trait') && rec.pick.trait) o.buyTraits = [rec.pick.trait];
+  if (on('memory') && rec.pick.memory) { o.startArt = rec.pick.memory; const l = rec.legends.find(x => x.art === rec.pick.memory); if (l && l.artDef) o.startArtDef = l.artDef; }
+  if (on('chapter') && rec.pick.chapter != null) { const c = CH[+rec.pick.chapter]; o.chapter = [c[0], c[1]]; o.minYear = -9999; }
   return o;
 }
-
 function renderIntro() {
-  renderShop();
+  renderUnlocks();
   const ends = Object.entries(rec.endings).sort((a, b) => GORDER.indexOf(a[1].g) - GORDER.indexOf(b[1].g));
-  $('endBoard').innerHTML = ends.map(([n, e]) => `<span class="ach"><span class="gradeTag g${e.g}" style="width:18px;height:18px;line-height:18px;font-size:12px">${e.g}</span>${n} ×${e.c}</span>`).join('') || '<span class="muted">아직 없다.</span>';
-  const gs = {}; for (const e of Object.values(rec.endings)) gs[e.g] = (gs[e.g] || 0) + e.c;
-  $('stats').textContent = rec.lives ? `${rec.lives}번의 생 · ` + GORDER.filter(g => gs[g]).map(g => `${g} ${gs[g]}`).join(' / ') : '아직 살아 본 생이 없다.';
+  $('endCount').textContent = `${ends.length}종 / 약 ${L.ENDING_COUNT}종 · ${rec.lives}번의 생`;
+  $('endBoard').innerHTML = ends.map(([n, e]) => `<span class="tag"><span class="gt g${e.g}">${e.g}</span>${esc(n)} ×${e.c}</span>`).join('') || '<span class="muted">아직 없다.</span>';
   $('achCount').textContent = `${Object.keys(rec.achs).length} / ${L.ACHS.length}`;
-  $('achBoard').innerHTML = L.ACHS.map(a => rec.achs[a] ? `<span class="ach">${a}${rec.achs[a] > 1 ? ' ×' + rec.achs[a] : ''}</span>` : '<span class="ach off">?</span>').join('');
-  $('memorial').innerHTML = rec.memorial.slice().reverse().slice(0, 24).map(x => `<div><span class="gradeTag g${x.g}">${x.g}</span><b>${esc(x.name)}</b>${x.ep ? ` 「${esc(x.ep)}」` : ''}<br><span class="muted">${esc(x.end)} · ${esc(x.realm)} · 향년 ${x.age}세 · ${x.year}년생</span>${x.epitaph ? `<br><i>“${esc(x.epitaph)}”</i>` : ''}</div>`).join('') || '<p class="muted">아직 아무도 없다.</p>';
+  $('achBoard').innerHTML = L.ACHS.map(a => rec.achs[a] ? `<span class="tag">${esc(a)}</span>` : '<span class="tag off">?</span>').join('');
+  $('chron').innerHTML = rec.legends.slice().sort((a, b) => a.born - b.born).map(l => `<div><span class="yr">${yr(l.born)}~${yr(l.died)}</span><span class="gt g${l.grade}">${l.grade}</span><b>${esc(l.name)}</b>${l.ep ? ` 「${esc(l.ep)}」` : ''} · ${esc(l.end)} · ${R[l.realm]}${l.force ? ` · ${esc(l.force.n)} 창건` : ''}</div>`).join('') || '<p class="muted">아직 강호에 남은 이름이 없다.</p>';
+}
+
+// ---------- 초상(10단계 9-11) ----------
+const CAREER_B = { farm: 1, fisher: 3, hunter: 5, herb: 7, smith: 9, merchant: 11, cook: 13, craft: 15, artist: 17, troupe: 19, geomancer: 21, scholar: 22, military: 24, eunuch: 26, doctor: 27, thief: 29 };
+const CAT_C = ['구파일방', '세가', '연합', '사교', '흑도', '암중', '관부', '오악도불', '새외', '생업'];
+const pad = n => String(n).padStart(2, '0');
+function portrait(P) {
+  if (P.age >= 16 && (P.member || P.force)) {
+    let cat, tier;
+    if (P.member) { const f = L.facDef(P.member.fid), lad = LADDERS[f.lad] || LADDERS.sect, fr = P.member.rank / Math.max(1, lad.length - 1); cat = CAT_C.indexOf(f.cat); if (cat < 0) cat = 7; tier = fr >= 0.95 ? 2 : fr >= 0.4 || P.realm >= 4 ? 1 : 0; }
+    else { cat = { 문파: 0, 방회: 4, 산채: 4, 상단: 9 }[P.force.kind]; tier = P.force.men >= 50 ? 2 : 1; }
+    return `C${pad(cat * 3 + tier + 1)}`;
+  }
+  if (P.age >= 16 && P.career && CAREER_B[P.career]) { const b = CAREER_B[P.career]; const single = [21, 26].includes(b); return `B${pad(b + (P.sex === 'f' && !single ? 1 : 0))}`; }
+  if (P.age >= 16 && P.flags.ronin && P.arts.length) return P.sex === 'f' ? 'B32' : 'B31';
+  const st = P.age < 10 ? 0 : P.age < 18 ? 1 : P.age < 35 ? 2 : P.age < 55 ? 3 : 4, w = P.wealth < 30 ? 0 : P.wealth < 1000 ? 1 : 2;
+  return `A${pad(st * 6 + (P.sex === 'f' ? 3 : 0) + w + 1)}`;
 }
 
 // ---------- 생 화면 ----------
-let P = null, speed = 1, paused = false, auto = false, choiceResolve = null, follow = true;
+let P = null, speed = 1, paused = false, auto = false, choiceResolve = null, tab = '무공';
 L.PLANS.forEach(p => { const o = document.createElement('option'); o.textContent = p; $('plan').appendChild(o); });
 $('plan').onchange = e => { if (P) P.plan = e.target.value; };
 $('pauseBtn').onclick = () => { paused = !paused; $('pauseBtn').textContent = paused ? '이어 살기' : '멈춤'; };
-$('autoChk').onchange = e => { auto = e.target.checked; if (P) P.auto = auto; if (auto && choiceResolve) choiceResolve(null); };
+$('autoChk').onchange = e => { auto = e.target.checked; if (P) P.auto = auto; if (auto && choiceResolve) choiceResolve(); };
 document.querySelectorAll('.spd').forEach(b => b.onclick = () => { speed = +b.dataset.s; document.querySelectorAll('.spd').forEach(x => x.classList.toggle('on', x === b)); });
-window.addEventListener('scroll', () => { follow = window.innerHeight + window.scrollY >= document.body.scrollHeight - 80; });
+const FXW = { train: '수련', enlight: '깨달음', ng: '축기', cap: '상한', grow: '성장', check: '판정', mastery: '성취', capa: '단전', inner: '내공', real: '실전', life: '수명', death: '요절 위험', flow: '운용', mind: '상단전', mul: '배율', start: '시작', max: '최대', fiber: '근섬유', luck: '운', deviate: '주화입마', break: '돌파', resolve: '결단', career: '생업', bond: '인연', align: '성향', aging: '노화', stat: '자질' };
+const clean = e => String(e || '').replace(/`/g, '').replace(/\b([a-zA-Z]+)\b/g, w => FXW[w] || w);
+const BAND = { 정: '#2f6b57', 사: '#7a1f1a', 마: '#3d1f4d', 관: '#2a3d5c', 중: '#7a6a3a', 암: '#2b2b2b' };
 
-const R = L.REALMS;
-function bar(f, cls = '', mark) { return `<div class="bar"><i class="${cls}" style="width:${Math.max(0, Math.min(100, f * 100)).toFixed(1)}%"></i>${mark != null ? `<em style="left:${(mark * 100).toFixed(1)}%"></em>` : ''}</div>`; }
-const FXW = { train: '수련', enlight: '깨달음', ng: '축기', cap: '상한', grow: '성장', check: '판정', mastery: '성취', capa: '단전', inner: '내공', real: '실전', life: '수명', death: '요절 위험', flow: '운용', mind: '상단전', fiber: '근섬유', luck: '운', deviate: '주화입마', break: '돌파', resolve: '결단', career: '생업', bond: '인연', align: '성향', aging: '노화', curve: '성장 곡선', outer: '외물', stat: '자질', immune: '면역', eventRate: '사건', event: '사건', ban: '금기', special: '특수', mul: '배율', start: '시작', gain: '얻는 양', max: '최대', reroll: '다시 굴림', crit: '대실패' };
-const clean = e => String(e || '').replace(/`/g, '').replace(/([a-zA-Z]+)/g, w => FXW[w] || w);
-function renderSheet() {
-  const fam = L.fameName(P), m = L.mainArt(P), ax = L.nextAxes(P);
-  $('who').innerHTML = `${esc(P.dharma || P.name)}${P.epithet ? `<span class="ep">「${esc(P.epithet)}」</span>` : ''}<span class="sub">${P.sex === 'm' ? '남' : '여'} · ${P.age}세 · ${P.year < 0 ? '기원전 ' + -P.year : P.year}년 · ${esc(L.atText(P))}</span>`;
+function renderHero() {
+  const fam = L.fameName(P), f = P.member && L.facDef(P.member.fid), c = P.career && L.careerDef(P.career), ww = L.wuwei(P);
+  document.body.className = P.realm >= 5 ? 't3' : P.realm >= 3 ? 't2' : P.realm >= 1 ? 't1' : '';
+  document.documentElement.style.setProperty('--band', f ? BAND[f.t] || '#5a4f40' : P.force ? '#7a4f1a' : '#5a4f40');
+  const pid = portrait(P), img = $('portrait');
+  if (img.dataset.id !== pid) { img.dataset.id = pid; img.onerror = () => { img.onerror = null; img.src = `art/chars/${pid}.png`; }; img.src = `art/thumbs/${pid}.webp`; }
+  $('hName').innerHTML = `${esc(P.dharma || P.name || '')}${P.epithet ? `<span class="ep">${esc(P.epithet)}</span>` : ''}`;
+  const era = P.era;
+  $('hSub').textContent = `${P.sex === 'm' ? '남' : '여'} · ${P.age}세 · ${yr(P.year)} ${P.month || 1}월 · ${L.atText(P)}${era ? ' · ' + era.label : ''}`;
+  const ax = L.nextAxes(P), wall = ax && !ax.ok.every(Boolean) && ax.ok.filter(Boolean).length === ax.ok.length - 1;
+  const chips = [`<span class="hc realm">${R[P.realm]}${P.realm ? ' ' + L.STAGES[P.stage] : ''}${wall ? ' · 벽' : ''}</span>`, `<span class="hc">무위 <b>${ww >= 100 ? Math.round(ww).toLocaleString() : ww.toFixed(1)}</b></span>`];
+  if (f) chips.push(`<span class="hc">${esc(f.n)} · <b>${esc(L.rankName(P))}</b></span>`); else if (P.flags.ronin) chips.push('<span class="hc">낭인</span>');
+  if (P.force) chips.push(`<span class="hc"><b>${esc(P.force.name)}</b> ${P.force.men}명</span>`);
+  if (c) chips.push(`<span class="hc">${c.n} · ${c.lad[P.rung]}</span>`);
+  chips.push(`<span class="hc">${fam.fame}</span>`);
+  if (P.infamy >= 1000) chips.push(`<span class="hc warn">${fam.infamy}</span>`);
+  chips.push(`<span class="hc">${Math.round(P.wealth).toLocaleString()}냥</span>`);
+  if (P.hurt) chips.push(`<span class="hc warn">${['', '경상', '중상', '위중'][P.hurt]}</span>`);
+  $('hChips').innerHTML = chips.join('');
+  const items = [];
+  if (P.weapon) items.push(`<span class="it" title="${['', '명병', '보검', '신병이기'][P.weapon]}">${['', '劍', '劍', '神'][P.weapon]}</span>`);
+  if (P.pqi > 1) items.push(`<span class="it g" title="몸에 든 약기 ${Math.round(P.pqi)}년">丹</span>`);
+  const manuals = P.arts.filter(a => /비급/.test(a.from)).length; if (manuals) items.push(`<span class="it j" title="비급으로 익힌 무공 ${manuals}">書</span>`);
+  if (P.force) items.push(`<span class="it" title="${esc(P.force.name)}의 인장">印</span>`);
+  if ((P.dishes || []).length) items.push(`<span class="it g" title="이름난 요리: ${esc(P.dishes.join(', '))}">食</span>`);
+  if ((P.forged || []).length) items.push(`<span class="it" title="벼린 병기: ${esc(P.forged.join(', '))}">鐵</span>`);
+  if (L.myMen(P)) items.push(`<span class="it j" title="따르는 사람 ${L.myMen(P)}명">衆</span>`);
+  $('hItems').innerHTML = items.join('');
   if ($('plan').value !== P.plan) $('plan').value = P.plan;
   $('plan').disabled = P.age < 15;
-  const ww = L.wuwei(P);
-  const era = P.era;
-  let h = era ? `<div class="box"><h3>시대</h3><b>${esc(era.chapter)}</b> · ${esc(era.label)}${era.local.length ? `<div class="muted">${era.local.map(esc).join(' · ')}</div>` : ''}</div>` : '';
-  h += `<div class="box"><div class="realm">${R[P.realm]}<small>${P.realm ? L.STAGES[P.stage] : ''}${ax && !ax.ok.every(Boolean) && ax.ok.filter(Boolean).length === ax.ok.length - 1 ? ' · 벽(' + ax.rows[ax.ok.indexOf(false)][0] + ')' : ''}</small></div>
-    <div class="ww">무위 <b>${ww >= 100 ? Math.round(ww).toLocaleString() : ww.toFixed(1)}</b> · 깨달음 ${L.ENL[P.enl]} · 실전 ${Math.round(P.real)}</div>`;
-  // 다음 경지까지 얼마 남았는지는 숫자로 보이지 않는다(10단계 4-3). 느낌으로만 보인다
-  if (ax && (P.arts.length || P.realm)) {
-    const fill = ax.rows.reduce((a, r) => a + r[2], 0) / ax.rows.length, lack = ax.rows.filter((r, i) => !ax.ok[i]).map(r => r[0]);
-    const feel = lack.length === 0 ? '문턱에 섰다. 한 번의 계기를 기다린다.' : lack.length === 1 ? `무언가 하나가 모자라다. (${lack[0]})` : fill > 0.75 ? '길이 보이기 시작한다.' : fill > 0.45 ? '아직 멀지만 나아가고 있다.' : '아직 아득하다.';
-    h += `<div style="margin-top:8px" class="ww">${ax.to}의 경지: ${feel}</div>`;
-  }
-  h += '</div>';
-  // 무공
-  if (P.arts.length) {
-    const arts = P.arts.slice().sort((a, b) => (b === m) - (a === m) || L.GRADES.indexOf(b.def.g) - L.GRADES.indexOf(a.def.g));
-    // 성취는 단계 이름(입문·소성·중성·극성·대성)과 정수 성으로만 보인다
-    const lvl = s => s >= 12 ? '대성' : s >= 10 ? '극성' : s >= 7 ? '중성' : s >= 4 ? '소성' : '입문';
-    h += `<div class="box"><h3>무공 ${P.arts.length}</h3>` + arts.slice(0, 9).map(a => { const s = L.s12(a), cap = L.sungCap(P, a); return `<div class="art ${a === m ? 'main' : ''}"><span class="nm">${esc(a.def.n)}</span><span class="gr">${a.def.g} ${esc(a.def.k)}</span><span class="sg">${lvl(s)}${s < 12 ? ' · ' + Math.max(0, Math.floor(s)) + '성' : ''}${s < 12 && s >= cap - 0.01 ? ' · 막힘' : ''}</span></div>`; }).join('') + (arts.length > 9 ? `<div class="muted">외 ${arts.length - 9}개</div>` : '') + '</div>';
-  }
-  // 몸과 마음
-  h += `<div class="box"><h3>몸과 마음 <span class="muted">바탕값</span></h3>` + Object.keys(L.BRANCH).map(b => { const v = L.branchBase(P, b); return `<div class="br"><span>${b}</span>${bar(v / 180)}<span class="v">${v.toFixed(0)}</span></div>`; }).join('')
-    + `<details><summary>열여덟 스탯 (실제 값 / 상한)</summary><div class="st18">${Object.values(L.BRANCH).flat().map(([s]) => `<span>${s} ${Math.round(P.st[s])}<span class="muted">/${Math.round(L.statCap(P, s))}</span></span>`).join('')}</div></details></div>`;
-  // 기와 처지
-  const c = P.career && L.careerDef(P.career), f = P.member && L.facDef(P.member.fid);
-  const wl = (WEALTH.slice().reverse().find(w => P.wealth >= w.min) || WEALTH[0]).n;
-  h += `<div class="box kv">
-    <span>내공</span><b>${Math.floor(L.effQi(P))}년 <span class="muted">/ 단전 ${Math.round(P.capa)}년 · 정순 ${Math.round(P.pur)}%${P.pqi > 0.5 ? ' · 약기 ' + P.pqi.toFixed(0) + '년' : ''}</span></b>
-    <span>운용</span><b>${Math.floor(P.flow)}</b>
-    <span>소속</span><b>${f ? `${esc(f.n)} · ${esc(L.rankName(P))}` : (P.flags.ronin ? '낭인' : '없음')}</b>
-    <span>생업</span><b>${c ? `${c.n} · ${c.lad[P.rung]} <span class="muted">숙련 ${Math.round(P.skill[c.id] || 0)}</span>` : '없음'}</b>
-    <span>명성</span><b>${fam.fame} <span class="muted">${Math.round(P.fame).toLocaleString()}명</span></b>
-    ${P.infamy >= 100 ? `<span>악명</span><b>${fam.infamy} <span class="muted">${Math.round(P.infamy).toLocaleString()}명</span></b>` : ''}
-    <span>재산</span><b>${wl} <span class="muted">${Math.round(P.wealth).toLocaleString()}냥</span></b>
-    <span>일정</span><b>한 해 ${L.slotsOf(P)}칸${P.hurt ? ` · <span style="color:var(--red)">${['', '경상', '중상', '위중'][P.hurt]}</span>` : ''}${P.poison ? ' · <span style="color:var(--red)">중독</span>' : ''}</b>
-  </div>`;
-  // 특성
-  const marks = ['근골', '오성', '심성'].map(k => { const x = P.apt[k]; const M = { 근골: ['허약한 골격', '근골이 약함', '근골이 좋음', '타고난 근골'], 오성: ['깨우침이 더딤', '이해가 더딘 편', '이해가 빠른 편', '깨우침이 빠름'], 심성: ['마음이 쉽게 흔들림', '마음이 여림', '심지가 있음', '마음이 굳음'] }[k]; return x >= 75 ? M[3] : x >= 65 ? M[2] : x >= 40 ? null : x >= 30 ? M[1] : M[0]; }).filter(Boolean);
-  h += `<div class="box"><h3>타고난 것</h3><div class="chips">${marks.map(x => `<span class="chip" style="border-style:dotted">${x}</span>`).join('')}${P.traits.map(t => L.isHidden(P, t) ? '<span class="chip unk" title="아직 드러나지 않았다">???</span>' : `<span class="chip t${t.tier}${t.good === 0 ? ' bad' : ''}" title="${esc(t.tier + ' · ' + clean(t.e))}">${esc(t.n)}</span>`).join('')}</div></div>`;
-  // 인연
-  const bonds = P.bonds.filter(b => b.rels.length).slice(-6).reverse();
-  if (bonds.length) h += `<div class="box"><h3>인연</h3>` + bonds.map(b => `<div class="bond">${esc(b.name)} <i>${esc(b.role)} · ${b.rels.map(esc).join(', ')}${b.alive ? '' : ' · 고인'}</i></div>`).join('') + '</div>';
-  $('sheet').innerHTML = h;
 }
+const TABS = ['무공', '몸', '행동', '인연', '세상'];
+function renderTabs() {
+  $('tabs').innerHTML = TABS.map(t => `<button class="${t === tab ? 'on' : ''}" data-t="${t}">${t}</button>`).join('');
+  $('tabs').querySelectorAll('button').forEach(b => b.onclick = () => { tab = b.dataset.t; renderTabs(); });
+  let h = '';
+  const m = L.mainArt(P), ax = L.nextAxes(P);
+  if (tab === '무공') {
+    h += `<div class="kv"><span>경지</span><b>${R[P.realm]}${P.realm ? ' · ' + L.STAGES[P.stage] : ''}</b><span>깨달음</span><b>${L.ENL[P.enl]}</b><span>내공</span><b>${Math.floor(L.effQi(P))}년 <span class="muted">단전 ${Math.round(P.capa)}년</span></b><span>실전</span><b>${Math.round(P.real)}</b></div>`;
+    if (ax && (P.arts.length || P.realm)) { const lack = ax.rows.filter((r, i) => !ax.ok[i]).map(r => r[0]), fill = ax.rows.reduce((a, r) => a + r[2], 0) / ax.rows.length; h += `<div class="feel">${ax.to}의 경지 — ${lack.length === 0 ? '문턱에 섰다.' : lack.length === 1 ? `무언가 하나가 모자라다(${lack[0]}).` : fill > 0.75 ? '길이 보이기 시작한다.' : fill > 0.45 ? '아직 멀지만 나아가고 있다.' : '아직 아득하다.'}</div>`; }
+    const lvl = s => s >= 12 ? '대성' : s >= 10 ? '극성' : s >= 7 ? '중성' : s >= 4 ? '소성' : '입문';
+    h += `<h3 style="margin-top:12px">익힌 무공 ${P.arts.length}</h3>` + (P.arts.slice().sort((a, b) => (b === m) - (a === m) || L.GRADES.indexOf(b.def.g) - L.GRADES.indexOf(a.def.g)).map(a => { const s = L.s12(a), cap = L.sungCap(P, a); return `<div class="art ${a === m ? 'main' : ''}"><span class="nm">${esc(a.def.n)}</span><span class="gr">${a.def.g} ${esc(a.def.k)}</span><span class="sg">${lvl(s)}${s < 12 ? ' ' + Math.max(0, Math.floor(s)) + '성' : ''}${s < 12 && s >= cap - 0.01 ? ' · 막힘' : ''}</span></div>`; }).join('') || '<p class="muted">아직 익힌 무공이 없다.</p>');
+  } else if (tab === '몸') {
+    h += '<h3>몸과 마음 <span class="muted">바탕값</span></h3>' + Object.keys(L.BRANCH).map(b => { const v = L.branchBase(P, b); return `<div class="br"><span>${b}</span><div class="bar"><i style="width:${Math.min(100, v / 1.8)}%"></i></div><span class="v">${v.toFixed(0)}</span></div>`; }).join('');
+    h += `<details><summary class="muted">열여덟 스탯</summary><div class="st18">${Object.values(L.BRANCH).flat().map(([s]) => `<span>${s} ${Math.round(P.st[s])}<span class="muted">/${Math.round(L.statCap(P, s))}</span></span>`).join('')}</div></details>`;
+    const M = { 근골: ['허약한 골격', '근골이 약함', '근골이 좋음', '타고난 근골'], 오성: ['깨우침이 더딤', '이해가 더딘 편', '이해가 빠른 편', '깨우침이 빠름'], 심성: ['마음이 쉽게 흔들림', '마음이 여림', '심지가 있음', '마음이 굳음'] };
+    const marks = Object.keys(M).map(k => { const x = P.apt[k]; return x >= 75 ? M[k][3] : x >= 65 ? M[k][2] : x >= 40 ? null : x >= 30 ? M[k][1] : M[k][0]; }).filter(Boolean);
+    h += `<h3 style="margin-top:12px">타고난 것</h3><div class="chips">${marks.map(x => `<span class="chip" style="border-style:dotted">${x}</span>`).join('')}${P.traits.map(t => L.isHidden(P, t) ? '<span class="chip unk" title="아직 드러나지 않았다">???</span>' : `<span class="chip t${t.tier}${t.good === 0 ? ' bad' : ''}" title="${esc(t.tier + ' · ' + clean(t.e))}">${esc(t.n)}</span>`).join('')}</div>`;
+    h += `<div class="kv" style="margin-top:12px"><span>일정</span><b>한 해 ${L.slotsOf(P)}칸</b><span>운용</span><b>${Math.floor(P.flow)}</b><span>정순</span><b>${Math.round(P.pur)}%</b></div>`;
+  } else if (tab === '행동') {
+    const acts = L.actions(P);
+    h += `<p class="muted" style="margin-top:0">고른 행동은 다음 달에 일어난다. 활동 범위: <b>${L.RANGE_NAME[L.rangeLevel(P)]}</b></p><div class="acts">${acts.map(a => `<button data-a="${a.id}" ${a.ok && P.alive ? '' : 'disabled'} class="${P.pending === a.id ? 'queued' : ''}" title="${esc(a.why || a.desc || '')}">${esc(a.n)}<small>${esc(a.ok ? (P.pending === a.id ? '다음 달에' : a.desc || '') : a.why)}</small></button>`).join('')}</div>`;
+  } else if (tab === '인연') {
+    const bonds = P.bonds.filter(b => b.rels.length).slice().reverse();
+    h += bonds.length ? bonds.slice(0, 20).map(b => `<div class="bond"><b>${esc(b.name)}</b>${b.epithet && b.intel ? ` 「${esc(b.epithet)}」` : ''}<i>${esc(b.role)} · ${b.rels.map(esc).join(', ')}${b.alive ? '' : ' · 고인'}</i></div>`).join('') : '<p class="muted">아직 깊은 인연이 없다.</p>';
+    if (P.spouse) h += `<p class="muted">배우자 ${esc(P.spouse.name)}${P.kids ? ` · 자식 ${P.kids}` : ''}</p>`;
+  } else if (tab === '세상') {
+    const era = P.era;
+    if (era) h += `<h3>시대</h3><p style="margin:0 0 8px"><b>${esc(era.chapter)}</b> · ${esc(era.label)}${era.local.length ? `<br><span class="muted">${era.local.map(esc).join(' · ')}</span>` : ''}</p>`;
+    const th = P.threads.filter(t => t.k.startsWith('소문:'));
+    h += '<h3>쫓고 있는 일</h3>' + (th.length ? th.map(t => `<div class="bond">「${esc(t.kind)}」 <i>${esc(L.atText({ place: t.place }))} · ${t.step}걸음째</i></div>`).join('') : '<p class="muted">없다.</p>');
+    const others = P.threads.filter(t => !t.k.startsWith('소문:'));
+    if (others.length) h += '<h3 style="margin-top:10px">얽힌 일</h3>' + others.map(t => `<div class="bond">「${esc(t.k)}」</div>`).join('');
+    if (P.force) h += `<h3 style="margin-top:10px">내 세력</h3><div class="kv"><span>이름</span><b>${esc(P.force.name)}</b><span>종류</span><b>${P.force.kind}</b><span>근거지</span><b>${esc(L.atText({ place: P.force.home }))}</b><span>머릿수</span><b>${P.force.men}명</b><span>세운 해</span><b>${yr(P.force.since)}</b></div>`;
+    if (L.myMen(P) && !P.force) h += `<p class="muted">따르는 사람 ${L.myMen(P)}명${L.unitSize(P) ? ` (직위로 거느리는 단 ${L.unitSize(P)}명 포함)` : ''}</p>`;
+  }
+  $('tabbody').innerHTML = h;
+  $('tabbody').querySelectorAll('[data-a]').forEach(b => b.onclick = () => { P.pending = P.pending === b.dataset.a ? null : b.dataset.a; renderTabs(); });
+}
+// 최신이 위로(10단계 9-11)
 function renderLog() {
   const out = []; let quiet = [];
-  const flush = () => { if (!quiet.length) return; const a = quiet[0], b = quiet[quiet.length - 1]; out.push(`<div class="quiet">${a.age === b.age ? a.age + '세' : a.age + '~' + b.age + '세'} · 조용히 흘렀다.</div>`); quiet = []; };
-  for (const c of P.log) {
+  const flush = () => { if (!quiet.length) return; const a = quiet[quiet.length - 1], b = quiet[0]; out.push(`<div class="quiet">${a.age === b.age ? a.age + '세' : a.age + '~' + b.age + '세'} · 조용히 흘렀다.</div>`); quiet = []; };
+  const cards = P.log.slice().reverse();
+  cards.forEach((c, i) => {
     const lines = c.lines;
-    if (!lines.length) { quiet.push(c); continue; }
+    if (!lines.length && i > 0) { quiet.push(c); return; }
     flush();
     const hot = lines.some(l => ['big', 'realm'].includes(l.cls));
-    out.push(`<div class="yc ${hot ? 'hot' : ''}"><div class="hd"><b>${c.age}세</b>${c.year < 0 ? '기원전 ' + -c.year : c.year}년 · ${esc(L.atText({ place: c.place }))}</div>${lines.map(l => `<p class="l-${l.cls || 'n'}">${l.m ? `<span class="mo">${l.m}월</span>` : ''}${l.t}</p>`).join('')}</div>`);
-  }
-  if (quiet.length && quiet[quiet.length - 1] !== P.card) flush(); else quiet = [];
+    out.push(`<div class="yc ${i === 0 ? 'now' : ''} ${hot ? 'hot' : ''}"><div class="hd"><span><b>${c.age}세</b>${yr(c.year)}</span><span>${esc(L.atText({ place: c.place }))}</span></div>${lines.map(l => `<p class="l-${l.cls || 'n'}">${l.m ? `<span class="mo">${l.m}월</span>` : ''}${l.t}</p>`).join('') || '<p class="l-muted">…</p>'}</div>`);
+  });
+  flush();
   $('log').innerHTML = out.join('');
-  if (follow) window.scrollTo(0, document.body.scrollHeight);
 }
+function renderAll() { renderHero(); renderTabs(); renderLog(); }
 function ask(q) {
   return new Promise(res => {
     const box = $('choice'); box.classList.remove('hidden');
@@ -351,58 +422,55 @@ function ask(q) {
     const done = i => { box.classList.add('hidden'); choiceResolve = null; res(i); };
     choiceResolve = () => done(Math.floor(Math.random() * q.options.length));
     box.querySelectorAll('button').forEach(b => b.onclick = () => done(+b.dataset.i));
-    if (auto) setTimeout(() => choiceResolve && choiceResolve(), 700 / speed);
-    box.scrollIntoView({ block: 'nearest' });
+    if (auto) setTimeout(() => choiceResolve && choiceResolve(), 900 / speed);
+    window.scrollTo({ top: 0 });
   });
 }
 async function wait(ms) { let t = 0; while (t < ms || paused) { await sleep(40); if (!paused) t += 40 * speed; } }
 
 async function live() {
-  const opts = buildOpts(); const spent = cartCost();
   $('intro').classList.add('hidden'); $('endScreen').classList.add('hidden'); $('lifeScreen').classList.remove('hidden');
-  $('log').innerHTML = '<p class="muted">세상이 흘러가는 중이다…</p>'; $('sheet').innerHTML = ''; $('who').textContent = '';
-  auto = $('autoStart').checked; $('autoChk').checked = auto; follow = true;
+  $('log').innerHTML = '<p class="muted">세상이 흘러가는 중이다…</p>';
+  auto = $('autoStart').checked; $('autoChk').checked = auto;
   await sleep(30);
-  rec.points -= spent; save();
-  P = L.create(opts); P.auto = auto; P.spent = spent;
+  P = L.create(buildOpts()); P.auto = auto;
   const gen = L.run(P);
-  let r = gen.next();
-  renderSheet(); renderLog();
+  let r = gen.next(), ticks = 0;
+  renderAll();
   while (!r.done) {
     let ans;
-    if (r.value && r.value.ask) { renderSheet(); renderLog(); ans = await ask(r.value); }
-    else if (r.value && r.value.tick) { renderSheet(); renderLog(); await wait(P.age < 6 ? 250 : 700); }
+    if (r.value && r.value.ask) { renderAll(); ans = await ask(r.value); }
+    else if (r.value && r.value.tick === 'month') { if (++ticks % 2 === 0 || speed < 3) { renderHero(); renderLog(); if (tab === '세상' || tab === '행동') renderTabs(); } await wait(P.age < 6 ? 40 : 110); }
+    else if (r.value && r.value.tick === 'year') { renderAll(); await wait(120); }
     r = gen.next(ans);
   }
-  renderSheet(); renderLog();
-  await wait(900);
+  renderAll();
+  await wait(1200);
   ending(r.value);
 }
 function ending(e) {
+  const before = UNLOCKS.filter(u => u.open()).map(u => u.id);
   const firstEnd = !rec.endings[e.name];
-  let pts = GPT[e.grade] * (firstEnd ? 2 : 1); const parts = [`엔딩 ${e.grade} ${GPT[e.grade]}점${firstEnd ? ' ×2(처음)' : ''}`];
   const newA = [...P.ach].filter(a => !rec.achs[a]);
-  pts += P.ach.size + newA.length; if (P.ach.size) parts.push(`업적 ${P.ach.size}개 ${P.ach.size + newA.length}점${newA.length ? `(처음 ${newA.length}개 ×2)` : ''}`);
-  rec.points += pts; rec.lives++;
+  rec.lives++;
   rec.endings[e.name] = { g: e.grade, c: (rec.endings[e.name] || { c: 0 }).c + 1 };
   for (const a of P.ach) rec.achs[a] = (rec.achs[a] || 0) + 1;
   if (!rec.origins.includes(P.origin.id)) rec.origins.push(P.origin.id);
   for (const t of P.traits) if (!L.MINOR_IDS.has(t.id) && !L.isHidden(P, t) && !rec.traits.includes(t.id)) rec.traits.push(t.id);
-  cart = {};
-  $('lifeScreen').classList.add('hidden'); $('endScreen').classList.remove('hidden');
-  $('eGrade').innerHTML = `<span class="gradeTag g${e.grade}" style="width:72px;height:72px;line-height:72px;font-size:48px;margin:0">${e.grade}</span>`;
-  $('eName').textContent = e.name + (firstEnd ? ' · 처음 본 엔딩' : '');
-  $('eWho').textContent = `${P.dharma || P.name}${P.epithet ? ` 「${P.epithet}」` : ''} · ${R[P.peak]} · 향년 ${P.age}세`;
-  $('eBio').textContent = L.summary(P);
-  $('eAch').innerHTML = [...P.ach].map(a => `<span class="ach ${newA.includes(a) ? 'new' : ''}">${a}${newA.includes(a) ? ' · 새 업적' : ''}</span>`).join('') || '<span class="muted">없음</span>';
-  $('ePts').textContent = `윤회 점수 +${pts} (${parts.join(', ')}). 지금 ${rec.points}점.${P.spent ? ` 이번 생에 ${P.spent}점을 썼다.` : ''}`;
-  rec.memorial.push({ g: e.grade, end: e.name, name: P.dharma || P.name, ep: P.epithet, realm: R[P.peak], age: P.age, year: P.start.y, epitaph: '' });
-  if (rec.memorial.length > 200) rec.memorial.shift();
+  rec.legends.push(L.legendOf(P)); if (rec.legends.length > 300) rec.legends.shift();
   save();
-  $('eEpitaph').value = '';
+  const opened = UNLOCKS.filter(u => u.open() && !before.includes(u.id));
+  $('lifeScreen').classList.add('hidden'); $('endScreen').classList.remove('hidden'); document.body.className = '';
+  $('eImg').src = $('portrait').src;
+  $('eGrade').innerHTML = `<span class="gt g${e.grade}" style="width:76px;height:76px;line-height:76px;font-size:50px;margin:0">${e.grade}</span>`;
+  $('eName').textContent = e.name + (firstEnd ? ' · 처음 본 엔딩' : '');
+  $('eWho').textContent = `${P.dharma || P.name}${P.epithet ? ` 「${P.epithet}」` : ''} · ${R[P.peak]} · ${yr(P.start.y)}~${yr(P.start.y + P.age)}`;
+  $('eBio').textContent = L.summary(P);
+  $('eAch').innerHTML = [...P.ach].map(a => `<span class="tag ${newA.includes(a) ? 'new' : ''}">${esc(a)}${newA.includes(a) ? ' · 처음' : ''}</span>`).join('') || '<span class="muted">없음</span>';
+  $('eUnl').innerHTML = (opened.length ? `새로 열린 것: <b>${opened.map(u => u.n).join(', ')}</b>. ` : '') + '이 사람은 강호 연대기에 남았다. 다음 생에서 그의 이름이나 무덤, 세운 세력을 만날 수 있다.';
   window.scrollTo(0, 0);
 }
-$('againBtn').onclick = () => { const t = $('eEpitaph').value.trim(); if (t && rec.memorial.length) { rec.memorial[rec.memorial.length - 1].epitaph = t; save(); } $('endScreen').classList.add('hidden'); $('intro').classList.remove('hidden'); renderIntro(); window.scrollTo(0, 0); };
+$('againBtn').onclick = () => { $('endScreen').classList.add('hidden'); $('intro').classList.remove('hidden'); renderIntro(); window.scrollTo(0, 0); };
 $('startBtn').onclick = live;
 renderIntro();
 </script>
