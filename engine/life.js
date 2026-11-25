@@ -1352,7 +1352,7 @@ LIFE.myMen = myMen; LIFE.unitSize = unitSize;
 // 무리의 힘 = 평균 무위 × 머릿수^0.6 + 우두머리 무위
 function groupPow(avgRealm, men, leaderWw) { const avg = BASEV[clamp(Math.round(avgRealm), 0, 7)] * STAGE_K[1] * 0.6; return avg * Math.pow(Math.max(1, men), 0.6) + leaderWw; }
 function* groupFight(P, enemy) {
-  const mine = myMen(P), myAvg = Math.max(0.6, P.realm * 0.4 + (P.force ? P.force.avg || 1 : 1) * 0.6 - 0.3);
+  const mine = myMen(P) + allyHelp(P), myAvg = Math.max(0.6, P.realm * 0.4 + (P.force ? P.force.avg || 1 : 1) * 0.6 - 0.3);
   const a = groupPow(myAvg, mine, wuwei(P)), b = groupPow(enemy.avg, enemy.men, npcWuwei(enemy.leader));
   const p = winP(P, a, b, 1, 1, Math.max(P.realm, enemy.leader.realm));
   const win = P.R() < p;
@@ -1821,9 +1821,17 @@ function* doShop(P) {
   for (let n = 0; n < 4; n++) {
     const st = shopStock(P, shop);
     if (!st.length) { say(P, '살 만한 것이 더 없다.', 'muted', P.month); return; }
-    const ch = yield { ask: shop, text: `${atText(P)}의 ${shop}. 가진 돈 ${Math.round(P.wealth).toLocaleString()}냥.`, options: st.map(x => [x.n + (x.q ? ` (${x.q})` : ''), `${x.price.toLocaleString()}냥${x.price > P.wealth ? ' — 돈이 모자라다' : ''}`]).concat([['나간다', '']]) };
-    if (ch >= st.length) return;
-    const x = st[ch];
+    const ch = yield { ask: shop, text: `${atText(P)}의 ${shop}. 가진 돈 ${Math.round(P.wealth).toLocaleString()}냥.`, options: st.map(x => [x.n + (x.q ? ` (${x.q})` : ''), `${x.price.toLocaleString()}냥${x.price > P.wealth ? ' — 돈이 모자라다' : ''}`]).concat([['슬쩍 훔친다', '정교·순발. 걸리면 큰일'], ['나간다', '']]) };
+    if (ch > st.length) return;
+    let x = st[ch];
+    // 훔치기(9-52): 걸리면 가게 호위와 싸우거나 관아에 끌려간다. 흑점·경매에서 걸리면 목숨이 걸린다
+    if (ch === st.length) {
+      x = st.slice().sort((a, b) => b.price - a.price)[Math.floor(P.R() * Math.min(2, st.length))];
+      const hard = { 흑점: 80, 경매: 90, 골동품점: 65, '큰 가게': 60, '서역 상인': 60 }[shop] || 50;
+      const r = check(P, '정교', hard, (baseOf(P, '순발') - 100) / 6 + (P.career === 'thief' ? 20 : 0));
+      if (r.ok) { say(P, `${shop}에서 ${J(x.n, '을를')} 슬쩍했다.`, 'act', P.month); x = Object.assign({}, x, { price: 0 }); addFame(P, 15, 'infamy'); P.align = clamp(P.align - 3, -100, 100); addAch(P, '손버릇'); P.deeds.도둑질 = (P.deeds.도둑질 || 0) + 1; }
+      else { say(P, `${x.n}에 손을 대다 들켰다.`, 'ng', P.month); if (shop === '흑점' || shop === '경매') { const g = makeNpc(P, shop === '흑점' ? '흑점의 칼잡이' : '경매장 호위대장', [0, 1]); yield* fight(P, g, { lethal: shop === '흑점' }); } else if (P.R() < 0.5) { const g = makeNpc(P, '가게 호위', [-1, 0]); yield* fight(P, g); } else { const fine = Math.min(P.wealth, x.price); P.wealth -= fine; addFame(P, 30, 'infamy'); say(P, `관아에 끌려가 ${fine}냥을 물었다.`, 'ng', P.month); } return; }
+    }
     if (x.price > P.wealth) { say(P, `${J(x.n, '을를')} 사기엔 돈이 모자랐다.`, 'muted', P.month); continue; }
     P.wealth -= x.price; P.bought = P.bought || {}; P.bought[shop + x.n + P.year] = 1;
     addAch(P, '돈으로 산 강함');
@@ -2358,9 +2366,10 @@ function* opportunity(P, withTravel) {
   const recs = recruitOffers(P), trav = withTravel && (P.year - (P.movedY || -99) >= 2 || P.R() < 0.25) ? travelOffers(P) : [];
   const pool = [];
   const take = (l, n) => { for (const x of l.sort(() => P.R() - 0.5).slice(0, n)) pool.push(x); };
-  take(recs, 2); take(bondOffers(P), 1); take(leadOffers(P), 1); take(memberOffers(P), 1); take(forceOffers(P), 2); take(trav, withTravel ? 2 : 0); take(acts, 4 - Math.min(3, pool.length));
+  take(recs, 2); take(bondOffers(P), 1); take(leadOffers(P), 1); take(memberOffers(P), 1); take(investOffers(P), 1); take(allianceOffers(P), 1); take(projectOffers(P), 1); take(forceOffers(P), 2); take(trav, withTravel ? 2 : 0); take(acts, 4 - Math.min(3, pool.length));
   if (!pool.length) return;
-  const opts = pool.slice(0, 4);
+  // 여러 갈래에서 모인 일을 섞어 넷만 보인다
+  const opts = pool.sort(() => P.R() - 0.5).slice(0, 4);
   const ch = yield { ask: withTravel ? '길과 기회' : '기회', text: `${P.month}월, ${atText(P)}. ${sceneOf(P, P.month)}${pk(P, OPP_LEAD)}${withTravel ? ' ' + pk(P, OPP_TRAVEL) : ''}`, month: P.month, options: opts.map(o => [o.n, o.hint || '']).concat([['하던 대로 지낸다', '']]) };
   if (ch >= opts.length) return;
   say(P, `▸ ${opts[ch].n}`, 'pick', P.month);
@@ -2732,6 +2741,7 @@ function* threatYear(P) {
   P.threats = P.threats.filter(t => t.y > P.year);
   for (const t of due.slice(0, 1)) {
     const f = facDef(t.fid); if (!f || !factionAlive(P, f.id)) continue;
+    if (P.force && (P.force.allies || []).length && P.R() < 0.3 * P.force.allies.length) { say(P, `${f.n}이 보복을 벼르다가 동맹들의 눈치를 보고 물러났다.`, 'muted'); continue; }
     const g = foeGroup(P, `${f.n}의 보복대장`, [Math.max(1, P.realm - 1), Math.min(6, P.realm + 1)], 6 + (f.prestige || 1) * 6);
     g.leader.org = f.n; g.leader.fid = f.id;
     const ch = yield { ask: '뒷배의 보복', text: `${t.who}의 일로 ${f.n}에서 사람을 보냈다. ${g.men}명이 문 앞에 섰다.`, month: P.month, options: [['맞서 싸운다', '무리 싸움'], ['배상금을 낸다', `${100 + (f.prestige || 1) * 100}냥`], ['자리를 피한다', '다른 고을로 떠난다']] };
@@ -2739,6 +2749,113 @@ function* threatYear(P) {
     else if (ch === 1) { const c = 100 + (f.prestige || 1) * 100; P.wealth = Math.max(0, P.wealth - c); repAdd(P, f.id, 10); say(P, `${c}냥을 물어 주고 일을 덮었다.`, 'muted'); addAch(P, '배상금'); }
     else { moveTo(P, nearPlace(P, 140)); say(P, `${J(atText(P), '으로')} 몸을 피했다.`, 'muted'); }
   }
+}
+
+// ---------- 투자(9-49): 돈을 맡기면 몇 해 뒤 불어나거나 날아간다 ----------
+const INVEST = [
+  { n: '서역 대상단에 돈을 댄다', yrs: [2, 4], risk: 0.35, mul: [2, 3.5], war: 1 },
+  { n: '표국 지분을 산다', yrs: [2, 3], risk: 0.2, mul: [1.4, 2], bandit: 1 },
+  { n: '객잔을 하나 사들인다', yrs: [3, 5], risk: 0.15, mul: [1.4, 2.2] },
+  { n: '광산에 돈을 묻는다', yrs: [3, 6], risk: 0.45, mul: [2.5, 5] },
+  { n: '염전 지분을 산다', yrs: [2, 4], risk: 0.25, mul: [1.6, 2.6], official: 1 },
+  { n: '전장에 돈을 맡겨 이자를 받는다', yrs: [3, 3], risk: 0.06, mul: [1.25, 1.35] },
+  { n: '조선소에 배 한 척 값을 댄다', yrs: [2, 4], risk: 0.3, mul: [1.8, 3] },
+];
+function investOffers(P) {
+  if (P.age < 18 || P.wealth < 200 || (P.invests || []).length >= 2 || P.year - (P.investY || -9) < 4 || P.R() < 0.75) return [];
+  const friend = relPeople(P, ['벗', '의형제']).find(b => b.bond >= 40 && P.R() < 0.4);
+  const x = friend ? { n: `${friend.name}의 장사에 돈을 댄다`, yrs: [2, 4], risk: 0.3, mul: [1.6, 2.8], friend } : pk(P, INVEST);
+  const amt = Math.round(P.wealth * (0.2 + P.R() * 0.3) / 10) * 10;
+  return [{ n: x.n, hint: `${amt}냥, ${x.yrs[0]}~${x.yrs[1]}년. 잘되면 ${x.mul[0]}~${x.mul[1]}배, 망하면 날린다`, go: function* () {
+    P.investY = P.year; P.wealth -= amt;
+    const yrs = x.yrs[0] + Math.floor(P.R() * (x.yrs[1] - x.yrs[0] + 1));
+    (P.invests = P.invests || []).push({ n: x.n, amt, due: P.year + yrs, risk: x.risk, mul: x.mul, war: x.war, bandit: x.bandit, friend: x.friend && x.friend.id });
+    say(P, `${amt}냥을 맡겼다 — ${x.n}. ${yrs}년 뒤에 결판이 난다.`, 'act', P.month);
+  } }];
+}
+function investYear(P) {
+  for (const v of (P.invests || []).filter(v => v.due <= P.year)) {
+    let risk = v.risk * (P.career === 'merchant' ? 0.75 : 1) * (hasTrait(P, '행운아') ? 0.7 : 1) * (hasTrait(P, '불운') ? 1.4 : 1);
+    if (P.era && P.era.dz) risk += (v.war ? P.era.dz.war * 0.3 : 0) + (v.bandit ? P.era.dz.bandit * 0.3 : 0);
+    const fr = v.friend && P.bonds.find(b => b.id === v.friend);
+    if (P.R() < risk) {
+      const back = P.R() < 0.4 ? Math.round(v.amt * 0.3) : 0; P.wealth += back;
+      say(P, `${v.n} — 일이 틀어졌다. ${back ? `${back}냥만 건졌다.` : '한 푼도 건지지 못했다.'}`, 'ng');
+      if (fr) fr.bond -= 15;
+      P.cnt = P.cnt || {}; P.cnt.투자실패 = (P.cnt.투자실패 || 0) + 1;
+    } else {
+      const got = Math.round(v.amt * (v.mul[0] + P.R() * (v.mul[1] - v.mul[0]))); P.wealth += got;
+      say(P, `${v.n} — 잘되었다. ${v.amt}냥이 ${got.toLocaleString()}냥이 되어 돌아왔다.`, 'ok');
+      if (fr) fr.bond += 15;
+      P.cnt = P.cnt || {}; P.cnt.투자성공 = (P.cnt.투자성공 || 0) + 1; if (P.cnt.투자성공 >= 3) addAch(P, '투자의 귀재');
+    }
+  }
+  P.invests = (P.invests || []).filter(v => v.due > P.year);
+}
+
+// ---------- 동맹·연맹 제의(9-50): 세력이 있으면 이웃이 손을 내민다 ----------
+function allianceOffers(P) {
+  const f = P.force; if (!f || P.year - (f.allyY || f.since) < 5 || (f.allies || []).length >= 4 || P.R() < 0.6) return [];
+  f.allies = f.allies || [];
+  const good = P.align >= 0, kinds = [];
+  const nearF = G.FACTIONS.filter(x => factionAlive(P, x.id) && (x.prestige || 0) <= Math.max(1, (f.tier || 0)) + 1 && (good ? ['정', '중'] : ['사', '중', '암']).includes(x.t) && !f.allies.some(a => a.fid === x.id));
+  const other = nearF.length ? pk(P, nearF) : null;
+  if (other) kinds.push({ k: '동맹', n: `${other.n}이(가) 동맹을 청한다`, hint: '서로 원군을 보낸다. 부름에 응해야 한다', fid: other.id, name: other.n });
+  if ((f.tier || 0) >= 1 && !f.allies.some(a => a.k === '연맹')) { const lg = good ? facDef('league') : facDef('sado'); if (lg && factionAlive(P, lg.id)) kinds.push({ k: '연맹', n: `${lg.n}에서 연맹에 들라 한다`, hint: '큰 연맹의 비호. 해마다 분담금, 연맹의 전쟁에 사람을 보낸다', fid: lg.id, name: lg.n }); }
+  if (other && !P.spouse && P.age <= 40) kinds.push({ k: '혼인', n: `${other.n}이(가) 혼인으로 맺자고 한다`, hint: '그 집 사람과 혼인하고 동맹이 된다', fid: other.id, name: other.n });
+  if (other) kinds.push({ k: '불가침', n: `${other.n}이(가) 서로 건드리지 말자 한다`, hint: '싸우지 않기로 한다. 부름은 없다', fid: other.id, name: other.n });
+  if (!kinds.length) return [];
+  const x = pk(P, kinds);
+  return [{ n: x.n.replace(/이\(가\)/, J(x.name, '이가').slice(x.name.length)), hint: x.hint, go: function* () {
+    f.allyY = P.year;
+    f.allies.push({ k: x.k, fid: x.fid, n: x.name, y: P.year });
+    repAdd(P, x.fid, 20);
+    if (x.k === '혼인') { const sp = makeNpc(P, P.sex === 'm' ? '그 집 규수' : '그 집 공자', [-2, 0]); sp.org = x.name; meet(P, sp, '배우자'); sp.bond = 20; say(P, `${x.name}의 ${J(sp.name, '과와')} 혼례를 올렸다. 두 세력이 사돈이 되었다.`, 'big', P.month); }
+    else say(P, `${J(x.name, '과와')} ${{ 동맹: '동맹을 맺었다', 연맹: '연맹에 들었다', 불가침: '서로 건드리지 않기로 했다' }[x.k]}.`, 'big', P.month);
+    addAch(P, x.k === '연맹' ? '연맹에 들다' : '동맹');
+  } }];
+}
+// 동맹의 원군과 부름
+function allyHelp(P) { const f = P.force; if (!f || !f.allies) return 0; return f.allies.filter(a => a.k !== '불가침' && factionAlive(P, a.fid)).reduce((s, a) => s + (a.k === '연맹' ? 15 : 8), 0); }
+function* allyYear(P) {
+  const f = P.force; if (!f || !(f.allies || []).length) return;
+  for (const a of f.allies.filter(a => a.k === '연맹')) { const fee = Math.round(f.men * 0.5); f.treasury = Math.max(0, (f.treasury || 0) - fee); }
+  const call = f.allies.filter(a => a.k !== '불가침' && factionAlive(P, a.fid));
+  if (!call.length || P.R() > 0.2) return;
+  const a = pk(P, call);
+  const ch = yield { ask: '동맹의 부름', text: `${a.n}에서 사람이 왔다. 적이 쳐들어왔으니 원군을 보내 달라고.`, month: P.month, options: [['사람을 이끌고 간다', '무리 싸움'], ['사람만 보낸다', '머릿수가 줄 수 있다'], ['못 들은 척한다', '동맹이 깨진다']] };
+  if (ch === 0) { const g = foeGroup(P, `${a.n}의 적 두목`, [Math.max(1, P.realm - 1), P.realm + 1], 10 + Math.floor(P.R() * 20)); const r = yield* groupFight(P, g); if (r.win) { repAdd(P, a.fid, 15); addFame(P, 200); } }
+  else if (ch === 1) { const lost = Math.round(f.men * (0.03 + P.R() * 0.07)); f.men -= lost; repAdd(P, a.fid, 8); say(P, `${lost}명이 돌아오지 못했다.`, 'muted', P.month); }
+  else { f.allies = f.allies.filter(x => x !== a); repAdd(P, a.fid, -30); say(P, `${J(a.n, '과와')}의 맹약이 깨졌다.`, 'ng', P.month); }
+}
+
+// ---------- 장기 과업(9-51): 몇 해에 걸쳐 진행되는 일 ----------
+const PROJECTS = {
+  decode: { n: '잔결 비급 해독', yrs: 4, ok: P => P.arts.length && P.realm >= 2, step: P => check(P, '이해', 60, P.enl * 4).ok, done: P => { giveArt(P, '상승', null, '여러 해 끝에 해독한 비급으로 익히기 시작했다'); addFame(P, 200); }, lines: ['잔결 비급의 한 쪽을 더 풀었다.', '막힌 구절 앞에서 한 해를 보냈다.', '빠진 장을 다른 무공의 이치로 메웠다.'] },
+  manor: { n: '장원을 짓는다', yrs: 3, ok: P => P.wealth >= 800 && P.age >= 25, cost: 250, step: P => true, done: P => { P.biz = (P.biz || 0) + 1; addFame(P, 300); P.flags.manor = 1; addAch(P, '장원의 주인'); }, lines: ['주춧돌을 놓았다.', '기와를 올렸다. 일꾼들이 늘었다.', '담장을 두르고 현판을 걸 날을 받았다.'] },
+  revenge: { n: '원수를 쫓는 길', yrs: 5, ok: P => relPeople(P, ['원수']).length && P.realm >= 1, step: P => check(P, '수읽기', 55).ok, done: function* (P) { const f = relPeople(P, ['원수'])[0]; if (!f) return; say(P, `다섯 해를 쫓은 끝에 ${J(f.name, '을를')} 막다른 곳으로 몰았다.`, 'big'); const r = yield* fight(P, f, { lethal: true, pMul: 1.2 }); if (r.win) { f.rels = f.rels.filter(x => x !== '원수'); f.alive = false; addAch(P, '원수를 갚다'); } }, lines: ['원수가 머물던 객잔을 찾았다. 사흘 늦었다.', '원수의 옛 동료를 만나 행방을 들었다.', '원수의 그림자를 쫓아 강을 건넜다.', '원수가 남긴 흔적이 짙어진다.'] },
+  pupil: { n: '아이 하나를 길러 낸다', yrs: 8, ok: P => P.realm >= 3 && P.age >= 30, step: P => true, start: P => { const d = makeNpc(P, '거둔 아이', [-9, -9]); d.realm = 0; d.age = 8; d.tal = 0.8 + P.R() * 0.7; meet(P, d, '제자'); d.bond = 40; P.projectPupil = d.id; say(P, `${J(d.name, '을를')} 거두어 직접 기르기로 했다.`, 'bond'); }, each: P => { const d = P.bonds.find(b => b.id === P.projectPupil); if (d && d.alive && d.realm < P.realm - 1 && P.R() < 0.4) { d.realm++; say(P, `기르는 아이 ${J(d.name, '이가')} ${REALMS[d.realm]}에 올랐다.`, 'bond'); } }, done: P => { const d = P.bonds.find(b => b.id === P.projectPupil); if (d && d.alive) { d.realm = Math.max(d.realm, P.realm - 1); d.bond += 30; addFame(P, 500); say(P, `${J(d.name, '이가')} ${REALMS[d.realm]}의 무인으로 자라 큰절을 올렸다.`, 'big'); addAch(P, '청출어람(제자)'); } }, lines: ['아이에게 마보를 세웠다.', '아이가 처음으로 초식을 이어 펼쳤다.', '아이가 열병을 앓아 밤을 새웠다.', '아이가 사형제들과 비무를 했다.'] },
+  journey: { n: '천하를 한 바퀴 돈다', yrs: 5, ok: P => P.age >= 18 && P.realm >= 1, step: P => { moveTo(P, nearPlace(P, 300)); return true; }, done: P => { addFame(P, 400); addAch(P, '천하를 돌다'); P.real = Math.min(1000, P.real + 100); }, lines: ['새 고을에 닿았다. 말도 음식도 다르다.', '사막을 건넜다.', '바다를 처음 보았다.', '이름 모를 고수와 하룻밤 술을 나눴다.'] },
+  create: { n: '평생의 무공을 짓는다', yrs: 6, ok: P => P.realm >= 4 && P.enl >= 2 && mainArt(P), step: P => check(P, '이해', 65, P.enl * 5).ok, done: P => { const m = mainArt(P); const gi = Math.min(5, gIdx(m.def.g) + 1); giveArt(P, GRADES[gi], null, '여섯 해를 바쳐 지은 무공으로 익히기 시작했다'); addAch(P, '무공 창안'); addFame(P, 5000); }, lines: ['초식의 뼈대를 세웠다.', '심법과 초식이 서로 어긋나 처음부터 다시 했다.', '꿈에서 마지막 초식을 보았다.', '제자에게 시연하며 고쳤다.'] },
+};
+function projectOffers(P) {
+  if (P.project || P.age < 18 || P.year - (P.projectEndY || -9) < 3 || P.R() < 0.8) return [];
+  const l = Object.entries(PROJECTS).filter(([k, x]) => x.ok(P) && !(P.projDone || []).includes(k));
+  if (!l.length) return [];
+  const [k, x] = pk(P, l);
+  return [{ n: `여러 해의 일: ${x.n}`, hint: `${x.yrs}년쯤 걸린다${x.cost ? `, 해마다 ${x.cost}냥` : ''}. 해마다 조금씩 나아간다`, go: function* () {
+    P.project = { k, prog: 0, y: P.year, fail: 0 }; if (x.start) x.start(P);
+    say(P, `${x.n}을(를) 시작했다. 몇 해가 걸릴 것이다.`.replace('을(를)', J(x.n, '을를').slice(x.n.length)), 'big', P.month);
+  } }];
+}
+function* projectYear(P) {
+  const pj = P.project; if (!pj) return;
+  const x = PROJECTS[pj.k]; if (!x) { P.project = null; return; }
+  if (x.cost) { if (P.wealth < x.cost) { say(P, `돈이 모자라 ${x.n}이 한 해 멈췄다.`, 'muted'); return; } P.wealth -= x.cost; }
+  if (x.each) x.each(P);
+  if (x.step(P)) { pj.prog++; say(P, `「${x.n}」 ${pk(P, x.lines)} (${pj.prog}/${x.yrs})`, 'thread'); }
+  else { pj.fail++; say(P, `「${x.n}」 이번 해는 나아간 것이 없다.`, 'muted'); if (pj.fail >= 4) { say(P, `${x.n}을 끝내 접었다.`, 'ng'); P.project = null; return; } }
+  if (pj.prog >= x.yrs) { P.project = null; P.projectEndY = P.year; P.projDone = (P.projDone || []).concat(pj.k); say(P, `여러 해에 걸친 「${x.n}」을 마쳤다.`, 'big'); P.events.push(`${P.age}세에 「${x.n}」을 마쳤다`); const r = x.done(P); if (r && r.next) yield* r; }
 }
 
 // ---------- 한 해(달 단위, 10단계 9-1) ----------
@@ -2777,6 +2894,7 @@ function* year(P) {
     // 기회는 넉 달마다(3·7·11월), 이동은 해마다 7월에 한 번 + 다른 달에 가끔 섞인다(9-16, 9-18)
     else if (!closed && (mo === 3 || mo === 7 || mo === 11)) { yield* opportunity(P, mo === 7 || P.R() < 0.25); if (!P.alive) return; }
     if (mo === 2 && !closed && (P.threats || []).length) { yield* threatYear(P); if (!P.alive) return; }
+    if (mo === 5 && !closed && P.force) { yield* allyYear(P); if (!P.alive) return; }
     if (mo === 1) { mortality(P); if (!P.alive) return; if (!closed) { yield* npcYear(P); if (P.age >= 8) worldNews(P); } if (!P.alive) return; }
     if (closedTpl[mo]) { yield* runTpl(P, closedTpl[mo], mo); if (!P.alive) return; }
     for (const f of plan[mo] || []) {
@@ -2830,6 +2948,8 @@ function* year(P) {
   acqYear(P, sch);
   yield* careerYear(P, sch.cnt);
   economyYear(P, sch.cnt);
+  investYear(P);
+  yield* projectYear(P); if (!P.alive) return;
   if (P.plan === '생업' && SHOP_CAREERS.includes(P.career) && P.wealth >= 400 * ((P.biz || 0) + 1) && P.R() < 0.2) { P.wealth -= 200 * ((P.biz || 0) + 1); P.biz = (P.biz || 0) + 1; say(P, `가게를 하나 더 냈다(${P.biz}곳).`, 'ok'); if (P.biz >= 2) addAch(P, '분점'); }
   if (P.member) { P.merit += 3 + (sch.cnt.의뢰 || 0) * 2 + (sch.cnt.사문 || 0) * 3; promote(P); artFromMerit(P); }
   forceYear(P);
@@ -2931,7 +3051,7 @@ const BASE_ACHS = ['첫걸음', '벽을 넘다', '늦깎이', '소년고수', '�
   '별호', '명동천하', '문풍상담', '거부', '장원급제', '가업을 잇다', '기연', '세 번의 기연', '천무지체', '세상이 바뀌다', '정마대전', '유랑', '백세',
   '소문을 쫓다', '정보는 힘', '전설의 무덤', '전생과 마주치다', '도장 깨기', '개파', '세력을 세우다', '무공 창안', '은거',
   '수하 열 명', '수하 쉰 명', '백인을 거느리다', '오백 무리', '천인을 거느리다',
-  '신메뉴', '분점', '상단주', '명검을 벼리다', '땅부자', '돈으로 산 강함', '첫 만남', '정인', '짝사랑', '혼례', '비전을 잇다', '청출어람(제자)', '생사지교', '원한을 끊다', '파문', '근신', '큰 세력의 주인', '대문파를 세우다', '삼대 제자', '오대 제자', '이름을 짓다', '전리품', '곳간을 털다', '뒷배를 꺾다', '배상금', '청부 열 번', '표행 스무 번', '수장의 자리', '부자', '이백 세', '역병을 이겨 내다', '스승의 부름', '문파가 먼저 찾아오다', '용병', '대문파의 산문', '장로의 후인', '절대고수의 후인', '폐관 수련', '길 떠나기', '충성의 맹세', '제자 모집', '사파 토벌', '하위 세력', '표행 열 번', '약탈 열 번', '협행 열 번', '어린 날의 모험', '신동'];
+  '신메뉴', '분점', '상단주', '명검을 벼리다', '땅부자', '돈으로 산 강함', '첫 만남', '정인', '짝사랑', '혼례', '비전을 잇다', '청출어람(제자)', '생사지교', '원한을 끊다', '파문', '근신', '투자의 귀재', '동맹', '연맹에 들다', '장원의 주인', '천하를 돌다', '손버릇', '큰 세력의 주인', '대문파를 세우다', '삼대 제자', '오대 제자', '이름을 짓다', '전리품', '곳간을 털다', '뒷배를 꺾다', '배상금', '청부 열 번', '표행 스무 번', '수장의 자리', '부자', '이백 세', '역병을 이겨 내다', '스승의 부름', '문파가 먼저 찾아오다', '용병', '대문파의 산문', '장로의 후인', '절대고수의 후인', '폐관 수련', '길 떠나기', '충성의 맹세', '제자 모집', '사파 토벌', '하위 세력', '표행 열 번', '약탈 열 번', '협행 열 번', '어린 날의 모험', '신동'];
 LIFE.ACHS = BASE_ACHS
   .concat(Object.keys((G.RUMORS || {})).map(k => '소문의 끝: ' + k))
   .concat(['구파일방', '세가', '연합', '사교', '흑도', '암중', '관부', '오악도불', '새외', '생업'].map(c => c + '에 들다'))
