@@ -60,12 +60,14 @@ h3{font-size:14px;margin:0 0 8px;color:var(--ink2);font-weight:700;letter-spacin
 /* 왼쪽 사이드바: 초상·상태·조작·탭을 한곳에(사용자 요청 2026-11-25) */
 .life{display:grid;grid-template-columns:400px minmax(0,1fr);gap:20px;align-items:start}
 .sb{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto;background:var(--card);border:1px solid var(--line);border-top:5px solid var(--band);box-shadow:0 4px 14px rgba(0,0,0,.08)}
-.sbtop{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:14px 14px 8px;align-items:end;background:linear-gradient(180deg,rgba(255,250,236,.9),rgba(251,246,234,0))}
-.sb .pt{width:150px;height:220px;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(circle at 50% 70%,#fff8e6,#e8dcc0);border:1px solid var(--line);overflow:hidden}
-.sb .pt img{height:214px;object-fit:contain}
+.sbtop{display:block;padding:0 0 8px}
+.sb .pt{width:100%;height:360px;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(ellipse at 50% 75%,#fffaf0 0%,#efe3c6 60%,#e2d3ae 100%);border-bottom:1px solid var(--line);overflow:hidden}
+.sb .pt img{height:350px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
+.sb .who{padding:10px 14px 0}
 .hn{font-size:28px;font-weight:900;line-height:1.2;word-break:keep-all}
 .hn .ep{display:inline-block;background:var(--red);color:#fff;font-size:14px;padding:1px 8px;margin:4px 0 0;font-weight:700}
 .hsub{color:var(--ink2);font-size:14px;margin:6px 0}
+.hsub.birth{font-size:13px;line-height:1.5;margin-top:-2px}
 .hchips{display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 10px}
 .hc{background:var(--paper);border:1px solid var(--line);padding:2px 9px;font-size:14px}
 .hc b{font-weight:700}
@@ -80,7 +82,8 @@ h3{font-size:14px;margin:0 0 8px;color:var(--ink2);font-weight:700;letter-spacin
 .sb .tabs{padding:0 6px;margin-top:6px}
 .sb .tabbody{border:0;border-top:0;background:transparent}
 main{min-width:0}
-@media(max-width:1100px){.life{grid-template-columns:340px minmax(0,1fr)}.sbtop{grid-template-columns:120px 1fr}.sb .pt{width:120px;height:176px}.sb .pt img{height:170px}.hn{font-size:24px}}
+@media(max-width:1100px){.life{grid-template-columns:340px minmax(0,1fr)}.sb .pt{height:300px}.sb .pt img{height:290px}.hn{font-size:24px}}
+@media(max-width:760px){.sb .pt{height:260px}.sb .pt img{height:250px}}
 @media(max-width:760px){.life{grid-template-columns:1fr}.sb{position:static;max-height:none}}
 .choice{border:2px solid var(--ink);background:var(--card);padding:16px 18px;margin-bottom:14px;box-shadow:0 5px 0 rgba(0,0,0,.08);animation:pop .25s}
 @keyframes pop{from{transform:translateY(-6px);opacity:.3}to{transform:none;opacity:1}}
@@ -188,6 +191,7 @@ main{min-width:0}
         <div class="who">
           <div class="hn" id="hName"></div>
           <div class="hsub" id="hSub"></div>
+          <div class="hsub birth" id="hBirth"></div>
           <div class="items" id="hItems"></div>
         </div>
       </div>
@@ -350,6 +354,8 @@ function renderHero() {
   $('hName').innerHTML = `${esc(P.dharma || P.name || '')}${P.epithet ? `<span class="ep">${esc(P.epithet)}</span>` : ''}`;
   const era = P.era;
   $('hSub').textContent = `${P.sex === 'm' ? '남' : '여'} · ${P.age}세 · ${yr(P.year)} ${P.month || 1}월 · ${L.atText(P)}${era ? ' · ' + era.label : ''}`;
+  const bi = L.birthInfo(P);
+  $('hBirth').textContent = bi ? `${yr(bi.year)} ${bi.home} 태생 · ${bi.origin} · ${bi.status} · ${bi.wealth}${bi.trade ? ' · 가업 ' + bi.trade : ''}${bi.era ? ' · ' + bi.era : ''}` : '';
   const ax = L.nextAxes(P), wall = ax && !ax.ok.every(Boolean) && ax.ok.filter(Boolean).length === ax.ok.length - 1;
   const chips = [`<span class="hc realm">${R[P.realm]}${P.realm ? ' ' + L.STAGES[P.stage] : ''}${wall ? ' · 벽' : ''}</span>`, `<span class="hc">무위 <b>${ww >= 100 ? Math.round(ww).toLocaleString() : ww.toFixed(1)}</b></span>`];
   if (f) chips.push(`<span class="hc">${esc(f.n)} · <b>${esc(L.rankName(P))}</b></span>`); else if (P.flags.ronin) chips.push('<span class="hc">낭인</span>');
@@ -392,8 +398,9 @@ function renderTabs() {
     h += `<h3 style="margin-top:12px">타고난 것</h3><div class="chips">${marks.map(x => `<span class="chip" style="border-style:dotted">${x}</span>`).join('')}${P.traits.map(t => L.isHidden(P, t) ? '<span class="chip unk" data-tip="아직 드러나지 않았다">???</span>' : `<span class="chip t${t.tier}${t.good === 0 ? ' bad' : ''}" data-tip="${esc(t.tier + ' · ' + clean(t.e))}">${esc(t.n)}</span>`).join('')}</div>`;
     h += `<div class="kv" style="margin-top:12px"><span>일정</span><b>한 해 ${L.slotsOf(P)}칸</b><span>운용</span><b>${Math.floor(P.flow)}</b><span>정순</span><b>${Math.round(P.pur)}%</b></div>`;
   } else if (tab === '행동') {
-    const acts = L.actions(P);
-    h += `<p class="muted" style="margin-top:0">고른 행동은 다음 달에 일어난다. 활동 범위: <b>${L.RANGE_NAME[L.rangeLevel(P)]}</b></p><div class="acts">${acts.map(a => `<button data-a="${a.id}" ${a.ok && P.alive ? '' : 'disabled'} class="${P.pending === a.id ? 'queued' : ''}" data-tip="${esc(a.why || a.desc || '')}">${esc(a.n)}<small>${esc(a.ok ? (P.pending === a.id ? '다음 달에' : a.desc || '') : a.why)}</small></button>`).join('')}</div>`;
+    // 지금 할 수 있는 일만 보인다(9-16)
+    const acts = L.actions(P).filter(a => a.ok);
+    h += `<p class="muted" style="margin-top:0">고른 행동은 다음 달에 일어난다. 활동 범위: <b>${L.RANGE_NAME[L.rangeLevel(P)]}</b></p><div class="acts">${acts.map(a => `<button data-a="${a.id}" ${a.ok && P.alive ? '' : 'disabled'} class="${P.pending === a.id ? 'queued' : ''}" data-tip="${esc(a.why || a.desc || '')}">${esc(a.n)}<small>${esc(a.ok ? (P.pending === a.id ? '다음 달에' : a.desc || '') : a.why)}</small></button>`).join('')}</div>${acts.length ? '' : '<p class="muted">지금은 할 수 있는 일이 없다. 기회는 3·7·11월에 찾아온다.</p>'}`;
   } else if (tab === '인연') {
     const ORDER = ['배우자', '정인', '혼약', '마음에 둔 사람', '스승', '제자', '의형제', '벗', '수하', '맞수', '원수'];
     const rank = b => Math.min(...b.rels.map(r => { const i = ORDER.indexOf(r); return i < 0 ? 99 : i; }));

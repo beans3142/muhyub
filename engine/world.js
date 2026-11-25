@@ -445,6 +445,12 @@ WS.addFaction = function (ctx, def, year) {
   const f = newFaction(ctx, d, year); f.rels = {}; f.generated = true; ctx.F[f.id] = f; ctx.list.push(f);
   activate(ctx, f, year); return f.id;
 };
+// 주인공 세력이 다른 세력을 꺾어 거둔다: 지명을 넘겨받고 진 세력은 무너진다(docs/p10-engine.md 9-16)
+WS.subjugate = function (ctx, loserId, winnerId, year) {
+  const l = ctx.F[loserId], w = winnerId && ctx.F[winnerId]; if (!l || !l.alive) return;
+  if (w && w.alive) { for (const id of [...l.places]) claim(ctx, w, id); w.pow += l.pow * 0.5; }
+  kill(ctx, l, year, w ? `${w.n}에게 꺾였다` : '꺾였다');
+};
 WS.START = START; WS.END = END;
 G.WORLDSIM = WS;
 })(typeof window !== 'undefined' ? window : globalThis);
