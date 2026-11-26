@@ -984,8 +984,9 @@ function trainYear(P, cnt) {
   for (const [s, r] of gr) grow(P, s, r);
   // 노화(1단계 2-2)
   // 노화(1단계 2-2): 55세부터 해마다 2%. 내공이 깊으면 늦게 시작하고 느리게 빠진다
-  const ageStart = 55 + Math.min(20, effQi(P) / 6) + fxAll(P, 'aging').reduce((a, v) => a + v, 0);
-  if (P.age >= ageStart && !P.flags.rejuv) for (const s of ['근력', '순발', '지속', '체력']) P.st[s] *= 1 - 0.02 / (1 + effQi(P) / 60);
+  // 9-57: 마흔다섯부터 빠지고, 해가 갈수록 빨리 빠진다. 절정부터만 내공이 늦춘다(oldAge)
+  const oaS = oldAge(P);
+  if (oaS >= 45 && !P.flags.rejuv) { const k = Math.min(0.12, 0.015 * Math.exp(0.04 * (oaS - 45))); for (const s of ['근력', '순발', '지속', '체력']) P.st[s] *= 1 - k; }
   // 내공(1단계 4장): 운기 칸이 있을 때만
   if (h && (cnt.운기 || cnt.폐관 || cnt.수련)) {
     const rate = NGB[gIdx(h.def.g)] * (h.def.ng ? h.def.ng / NGB[gIdx(h.def.g)] : 1) * mulOf(P, 'ng') * (1 + 0.15 * P.realm) * breath * closed * (h.def.yy === '마' || h.def.f === 'demon' ? 1.5 : 1);
@@ -1204,14 +1205,16 @@ const ILLS = ['학질', '이질', '폐병', '열병', '돌림병', '종기', '�
 function mortality(P) {
   if (P.age < 6) { const q = P.wealth < 10 ? 0.03 : P.wealth < 100 ? 0.022 : 0.012; if (P.R() < q * (hasTrait(P, '병약') ? 2 : 1)) die(P, pk(P, ['홍역', '열병', '설사병', '겨울 추위', '마마']) + '으로 세상을 떠났다', 'child'); return; }
   if (P.deathWin && P.age >= P.deathWin[0] && P.age <= P.deathWin[1] && P.realm < 4 && P.R() < 0.04) { die(P, '타고난 절맥이 터져 세상을 떠났다', 'vein'); return; }
-  const sick = SICK[P.realm] * (hasTrait(P, '병약') ? 2 : 1), poor = P.wealth < 10 ? 1.4 : P.wealth >= 1000 ? 0.6 : 1;
+  // 9-57: 절정 아래는 그 시대 사람의 수명을 따른다. 쉰을 넘으면 늙음·병·상처의 위험이 해마다 곱으로 늘어난다.
+  // 절정부터는 깊은 내공이 늙음을 조금 늦춘다(oldAge). 반로환동이면 늙음이 멎는다
+  const oa = oldAge(P), ageF = P.flags.rejuv ? 1 : oa > 50 ? Math.exp(0.07 * (oa - 50)) : 1;
+  const sick = (oa >= 50 && P.realm < 4 ? Math.max(SICK[P.realm], 0.7) : SICK[P.realm]) * (hasTrait(P, '병약') ? 2 : 1), poor = P.wealth < 10 ? 1.4 : P.wealth >= 1000 ? 0.7 : 1;
   // 한 해 앓는 병: 보이게 적고, 그해 죽을 확률을 올린다
   let q = 0.006 * sick * poor;
-  if (P.age >= 10 && P.R() < 0.07 * sick * poor) { const ill = pk(P, ILLS); P.illYear = ill; say(P, `${J(ill, '을를')} 앓아 한 철을 누워 지냈다.`, 'ng'); q += 0.05 * poor * (P.age >= 50 ? 1.5 : 1); P.flags.illSurvive = 1; }
-  const life = fxAll(P, 'life').concat(fxAll(P, 'aging')).reduce((a, v) => a + (typeof v === 'number' ? v : 0), 0);
-  const eff = P.age - P.realm * 8 - (P.apt.근골 - 50) / 8 - life - effQi(P) / 6 - (P.wealth >= 1000 ? 3 : 0);
-  if (!P.flags.rejuv) q += 0.0006 * Math.exp(0.095 * (eff - 20));
-  if (P.hurt === 3) q += 0.12 * WOUND[P.realm]; else if (P.hurt === 2) q += 0.02 * WOUND[P.realm];
+  if (P.age >= 10 && P.R() < Math.min(0.7, 0.07 * sick * poor * ageF)) { const ill = pk(P, ILLS); P.illYear = ill; say(P, `${J(ill, '을를')} 앓아 한 철을 누워 지냈다.`, 'ng'); q += Math.min(0.5, 0.05 * poor * ageF); P.flags.illSurvive = 1; }
+  if (!P.flags.rejuv) q += 0.012 * Math.exp(0.09 * (oa - 50));
+  const wf = Math.sqrt(ageF);
+  if (P.hurt === 3) q += 0.12 * WOUND[P.realm] * wf; else if (P.hurt === 2) q += 0.02 * WOUND[P.realm] * wf;
   if (P.poison) q += 0.03 * WOUND[P.realm];
   if (P.R() < q) {
     if (P.illYear && P.R() < 0.6) { die(P, `${P.illYear}으로 세상을 떠났다`, 'sick'); return; }
@@ -1220,8 +1223,16 @@ function mortality(P) {
   if (P.flags.illSurvive && P.alive) { P.flags.illSurvive = 0; if (P.age >= 15) addAch(P, '역병을 이겨 내다'); }
   P.illYear = null;
 }
+// 늙음의 나이: 절정 아래는 제 나이 그대로. 절정부터 경지와 내공이 몇 해에서 수십 해를 늦춘다. 특성(life·aging)은 경지와 상관없이 더한다
+function oldAge(P) {
+  const tr = fxAll(P, 'life').concat(fxAll(P, 'aging')).reduce((a, v) => a + (typeof v === 'number' ? v : 0), 0);
+  const deep = P.realm >= 4 ? [0, 0, 0, 0, 4, 8, 18, 40][P.realm] + Math.min(15, effQi(P) / 20) : 0;
+  return P.age - deep - tr;
+}
+LIFE.oldAge = oldAge;
 function recover(P) {
-  if (P.hurt && (P.R() < 0.4 || check(P, '회복', (P.age < 15 ? 20 : 35) + P.hurt * 5).ok)) P.hurt--;
+  const oa = oldAge(P), slow = oa > 50 ? Math.exp(-0.04 * (oa - 50)) : 1; // 늙으면 상처가 더디 낫는다
+  if (P.hurt && (P.R() < 0.4 * slow || check(P, '회복', (P.age < 15 ? 20 : 35) + P.hurt * 5).ok)) P.hurt--;
   if (P.poison && check(P, '체력', 50).ok) P.poison = 0;
 }
 
@@ -1443,7 +1454,7 @@ function* rumorStep(P, th) {
 // 싸움 앞에서 정보를 알아보는 갈림길(10단계 9-9)
 function* fightAsk(P, n, title, opts = {}) {
   let per = perceive(P, n);
-  if (!P.auto && !n.intel && (n.realm >= P.realm || n.epithet || n.men)) {
+  if (!P.auto && P.age >= 12 && !n.intel && (n.realm >= P.realm || n.epithet || n.men)) {
     const ch = yield { ask: title, text: `상대: ${per.txt}${n.men ? ` (무리 ${n.men}명)` : ''}. ${guessOdds(P, n, per)}.${backerText(P, n)}`, options: [['맞선다', ''], ['먼저 정보를 알아본다', '지략 또는 은자 몇 냥']], who: n };
     if (ch === 1) {
       const ok = P.wealth >= 20 ? (P.wealth -= 10, true) : check(P, '지략', 50).ok;
@@ -2865,7 +2876,7 @@ function* projectYear(P) {
 // ---------- 화면용 함수(9-56): 지도·이동·소지품·변화량 ----------
 // 지도: 모든 지명과 내 위치, 갈 수 있는 곳, 소문·쫓는 일·인연·소속이 있는 곳
 LIFE.mapData = function (P) {
-  const reach = new Set(placesInRange(P, null, 0).map(([id]) => id));
+  const reach = new Set(P.age < 12 ? [] : placesInRange(P, null, 0).map(([id]) => id)); // 열두 살 전에는 혼자 떠나지 못한다
   const mark = {};
   const add = (id, k, t) => { if (!id || !G.PLACES2[id]) return; (mark[id] = mark[id] || []).push({ k, t }); };
   for (const r of P.rumorQueue || []) add(r.place, '소문', r.kind);
@@ -2878,7 +2889,7 @@ LIFE.mapData = function (P) {
 };
 // 이동: 다음 달에 떠난다. 거리만큼 노잣돈이 든다
 LIFE.travelCost = function (P, pid) { const a = G.PLACES2[P.place], b = G.PLACES2[pid]; if (!a || !b) return 0; return Math.round(Math.hypot(a.x - b.x, a.y - b.y) / 6); };
-LIFE.travelTo = function (P, pid) { if (!G.PLACES2[pid] || pid === P.place) return false; P.pendingTravel = pid; return true; };
+LIFE.travelTo = function (P, pid) { if (!G.PLACES2[pid] || pid === P.place || P.age < 12) return false; P.pendingTravel = pid; return true; };
 function* travelStep(P) {
   const pid = P.pendingTravel; P.pendingTravel = null; if (!pid || !G.PLACES2[pid]) return;
   const cost = LIFE.travelCost(P, pid);

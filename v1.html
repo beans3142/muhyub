@@ -23,6 +23,7 @@ button,select,input{font-family:inherit}
 .tg{width:42px;height:22px;border-radius:11px;background:#cdbf9d;position:relative;cursor:pointer;flex:none}
 .tg::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
 .tg.on{background:var(--jade)}.tg.on::after{left:23px}
+.guide{max-width:780px;color:var(--ink2);margin:0 0 22px;padding-left:20px;line-height:1.85;font-size:15px}
 .vers{margin-top:26px;font-size:13px;color:var(--ink3)}.vers a{color:var(--ink2);margin-right:10px}
 /* ---- 생 화면 ---- */
 #life{display:grid;grid-template-columns:76px minmax(0,1fr) 310px;height:100vh}
@@ -131,7 +132,7 @@ button,select,input{font-family:inherit}
 #tip{position:fixed;z-index:99;display:none;background:var(--ink);color:#fbf7ee;font-size:13px;padding:6px 10px;max-width:320px;pointer-events:none}
 </style></head><body>
 <section id="intro">
-  <h1>강호 천만 분의 일</h1><div class="sub">단 한 번의 무림 일생 · 화면 A (메뉴형)</div>
+  <h1>강호 천만 분의 일</h1><div class="sub">단 한 번의 무림 일생 · 화면 A (메뉴형)</div><div id="guide"></div>
   <button class="go" id="goBtn">태어나기</button> <label class="mut" style="margin-left:12px"><input type="checkbox" id="autoStart"> 갈림길도 운명에 맡기기</label>
   <div class="unls" id="unls"></div>
   <p class="mut" id="past"></p>
@@ -156,9 +157,10 @@ const P_ = () => Game.P;
 
 // ---------- 시작 ----------
 function intro() {
-  $('unls').innerHTML = UNLOCKS.map(u => u.open()
+  $('guide').innerHTML = guideHTML();
+  $('unls').innerHTML = unlockIntro(() => UNLOCKS.map(u => u.open()
     ? `<div class="unl"><div><b>${u.n}</b><small>${u.d}</small></div><span class="tg ${rec.on[u.id] ? 'on' : ''}" data-u="${u.id}"></span></div>`
-    : `<div class="unl lock"><div><b>🔒 ${u.n}</b><small>${u.why}</small></div></div>`).join('');
+    : `<div class="unl lock"><div><b>🔒 ${u.n}</b><small>${u.why}</small></div></div>`).join(''));
   $('unls').querySelectorAll('[data-u]').forEach(e => e.onclick = () => { rec.on[e.dataset.u] = !rec.on[e.dataset.u]; save(); intro(); });
   $('past').textContent = `지난 생 ${rec.lives}번 · 본 엔딩 ${Object.keys(rec.endings).length}종 · 업적 ${Object.keys(rec.achs).length}/${L.ACHS.length}`;
 }
@@ -188,12 +190,12 @@ function side() {
   const role = f ? `${f.n} · ${L.rankName(P)}` : P.force ? `${P.force.name} ${L.forceTitle(P)}` : c ? `${c.n} · ${c.lad[P.rung]}` : P.age >= 18 ? L.roninTitle(P) : '어린 날';
   $('side').innerHTML = `<div class="pt">${imgTag(pid, '', true)}</div>
     <div class="who"><div class="nm">${esc(P.dharma || P.name || '')}${P.epithet ? `<span class="ep">「${esc(P.epithet)}」</span>` : ''}</div><div class="sub">${P.age}세 · ${yr(P.year)} ${P.month || 1}월 · ${esc(L.atText(P))}</div><div class="sub">${esc(role)}</div></div>
-    <div class="realm"><b>${R[P.realm]}${P.realm ? ' ' + L.STAGES[P.stage] : ''}</b><span>무위 ${L.wuwei(P) >= 100 ? Math.round(L.wuwei(P)).toLocaleString() : L.wuwei(P).toFixed(1)}</span></div>
+    <div class="realm" data-tip="${esc(TIP.realm)}"><b>${R[P.realm]}${P.realm ? ' ' + L.STAGES[P.stage] : ''}</b><span data-tip="${esc(TIP.ww)}">무위 ${L.wuwei(P) >= 100 ? Math.round(L.wuwei(P)).toLocaleString() : L.wuwei(P).toFixed(1)}</span></div>
     ${ax ? `<div class="bar"><i style="width:${Math.round(fill * 100)}%"></i></div><small>다음 ${ax.to} · ${ax.ok.every(Boolean) ? '문턱에 섰다' : '모자란 것: ' + ax.rows.filter((r, i) => !ax.ok[i]).map(r => r[0]).join(', ')}</small>` : ''}
-    <div class="stats"><div><small>명성</small><b>${fam.fame}</b></div><div><small>재산</small><b>${Math.round(P.wealth).toLocaleString()}냥</b></div>
+    <div class="stats"><div data-tip="${esc(TIP.fame)}"><small>명성</small><b>${fam.fame}</b></div><div><small>재산</small><b>${Math.round(P.wealth).toLocaleString()}냥</b></div>
     <div class="${P.infamy >= 1000 ? 'bad' : ''}"><small>악명</small><b>${P.infamy >= 1000 ? fam.infamy : '없음'}</b></div><div class="${P.hurt || P.poison ? 'bad' : ''}"><small>몸</small><b>${P.hurt ? ['', '경상', '중상', '위중'][P.hurt] : P.poison ? '중독' : '성함'}</b></div></div>
     ${recent.length ? `<div class="rec"><label>최근 결과</label>${recent.slice(0, 5).map(r => `<div><b>${esc(r.title)}</b> <span class="mut">${r.age}세</span><div>${r.deltas.slice(0, 4).map(d => `<i class="${d.good ? '' : 'b'}">${esc(d.k)} ${esc(d.v)}</i>`).join('') || `<span class="mut">${esc(plain(r.lines[0] ? r.lines[0].t : ''))}</span>`}</div></div>`).join('')}</div>` : ''}
-    <div class="ctl"><label>방침</label><select id="plan" ${P.age < 15 ? 'disabled' : ''}></select><div class="mut" id="planD" style="font-size:12.5px"></div>
+    <div class="ctl"><label data-tip="${esc(TIP.plan)}">방침 · 한 해를 무엇에 쓸지</label><select id="plan" ${P.age < 15 ? 'disabled' : ''}></select><div class="mut" id="planD" style="font-size:12.5px"></div>
       <div class="seg">${['멈춤', '1배', '3배', '10배'].map((t, i) => `<button data-v="${i}" class="${(i === 0 && Game.paused) || (i > 0 && !Game.paused && Game.speed === [0, 1, 3, 10][i]) ? 'on' : ''}">${t}</button>`).join('')}</div>
       <div class="auto">갈림길을 운명에 맡기기 <span class="tg ${Game.auto ? 'on' : ''}" id="autoT"></span></div></div>`;
   const pl = L.plansFor(P);
@@ -269,7 +271,7 @@ let mapAll = false;
 function scrMap() {
   const P = P_(), V = mapView(P, { all: mapAll, sel: mapSel }), M = V.M, sel = V.sel;
   const marked = V.marked;
-  const goBtn = p => p.reach ? `<button class="mini" data-go="${p.id}">떠난다 · ${L.travelCost(P, p.id)}냥</button>` : '<span class="mut" style="font-size:12px">범위 밖</span>';
+  const goBtn = p => p.reach ? `<button class="mini" data-go="${p.id}">떠난다 · ${L.travelCost(P, p.id)}냥</button>` : `<span class="mut" style="font-size:12px">${P.age < 12 ? '열두 살부터' : '범위 밖'}</span>`;
   return `<h2>지도 <small>활동 범위 ${M.range} · 금색은 볼일이 있는 곳 · 떠나면 다음 달에 닿는다</small><span class="tabs"><button class="${mapAll ? '' : 'on'}" data-all="0">활동 범위</button><button class="${mapAll ? 'on' : ''}" data-all="1">천하</button></span></h2>
   <div class="mapside"><div class="map">${V.svg}</div>
   <div class="mapinfo">${M.pending ? `<div class="pend">다음 달 <b>${esc(L.atText({ place: M.pending }))}</b>으로 떠난다 <button class="mini ghost" id="cancelGo">취소</button></div>` : ''}

@@ -231,7 +231,25 @@ const Game = {
 };
 
 // ---------- 화면 공용 글귀 ----------
-const roleText = P => { const f = P.member && L.facDef(P.member.fid), c = P.career && L.careerDef(P.career); return f ? `${f.n} · ${L.rankName(P)}` : P.force ? `${P.force.name} ${L.forceTitle(P)}` : c ? `${c.n} · ${c.lad[P.rung]}` : P.age >= 18 ? L.roninTitle(P) : '어린 날'; };
+const roleText = P => { if (P.age < 10) return '어린 날'; const f = P.member && L.facDef(P.member.fid), c = P.career && L.careerDef(P.career); return f ? `${f.n} · ${L.rankName(P)}` : P.force ? `${P.force.name} ${L.forceTitle(P)}` : c ? `${c.n} · ${c.lad[P.rung]}` : P.age >= 18 ? L.roninTitle(P) : '어린 날'; };
+// 처음 하는 사람을 위한 설명(9-58)
+const GUIDE = [
+  '한 사람의 일생을 태어날 때부터 지켜본다. 시간은 저절로 흐르고, 멈춤·빠르기를 고를 수 있다.',
+  '갈림길이 오면 고른다. 고른 결과와 바뀐 것(명성·재산·경지·인연…)이 바로 보인다.',
+  '열다섯 살부터 방침(한 해를 무엇에 쓸지)을 정하고, 열두 살부터 지도에서 갈 곳을 고를 수 있다.',
+  '죽으면 한 생이 끝난다. 이룬 일이 업적으로 남고, 업적이 다음 생의 「타고날 것」을 연다.',
+];
+const TIP = {
+  realm: '경지: 범인(무공 없는 보통 사람) → 삼류 → 이류 → 일류 → 절정 → 초절정 → 화경 → 현경. 막대는 다음 경지까지 얼마나 찼는지다',
+  ww: '무위: 싸움 실력을 하나로 센 값. 경지가 오르면 크게 뛴다',
+  fame: '명성: 강호에 이름이 알려진 정도. 무명소졸에서 시작한다',
+  plan: '방침: 한 해를 무엇에 쓸지. 수련·생업·유랑 등에 따라 크는 것과 만나는 일이 달라진다',
+  speed: '시간 빠르기. Space로 멈추고 다시 흐르게 한다',
+  auto: '켜면 갈림길에서 멈추지 않고 아무것이나 고른다',
+};
+// 시작 화면의 「타고날 것」: 아직 하나도 안 열렸으면 목록 대신 한 줄로
+function unlockIntro(render) { const open = UNLOCKS.filter(u => u.open()).length; return open ? render() : `<p style="opacity:.75;font-size:14px;grid-column:1/-1;margin:0">지난 생의 업적으로 「타고날 것」이 열린다. 지금은 열린 것이 없다(0/${UNLOCKS.length}).</p>`; }
+const guideHTML = cls => `<ol class="${cls || 'guide'}">${GUIDE.map(g => `<li>${g}</li>`).join('')}</ol>`;
 const bodyText = P => P.hurt ? ['', '경상', '중상', '위중'][P.hurt] : P.poison ? '중독' : '성함';
 const wwText = P => { const w = L.wuwei(P); return w >= 100 ? Math.round(w).toLocaleString() : w.toFixed(1); };
 const realmText = P => R[P.realm] + (P.realm ? ' ' + L.STAGES[P.stage] : '');
@@ -250,9 +268,10 @@ function mapView(P, o = {}) {
   const M = L.mapData(P), here = M.places.find(p => p.id === M.here), sel = o.sel ? M.places.find(p => p.id === o.sel) : null;
   const dist = p => here ? Math.hypot(p.x - here.x, p.y - here.y) : 0;
   const box = o.all ? M.places : M.places.filter(p => p.reach || p.id === M.here);
-  const pad = 30, ar = o.aspect || 1.45, x0 = Math.min(...box.map(p => p.x)) - pad, y0 = Math.min(...box.map(p => p.y)) - pad;
+  let pad = 30, ar = o.aspect || 1.45, x0 = Math.min(...box.map(p => p.x)) - pad, y0 = Math.min(...box.map(p => p.y)) - pad;
   let W = Math.max(...box.map(p => p.x)) - x0 + pad, H = Math.max(...box.map(p => p.y)) - y0 + pad;
-  if (W / H < ar) W = H * ar; else H = W / ar;
+  if (W < 220) { const cx = x0 + W / 2; W = 220; x0 = cx - W / 2; } if (H < 150) { const cy = y0 + H / 2; H = 150; y0 = cy - H / 2; } // 어릴 때는 범위가 좁아도 둘레가 보이게
+  if (W / H < ar) { x0 -= (H * ar - W) / 2; W = H * ar; } else { y0 -= (W / ar - H) / 2; H = W / ar; } // 가운데를 맞춰 늘린다
   const fs = W / (o.fs || 60), X = p => p.x - x0, Y = p => p.y - y0;
   const regs = {}; for (const p of M.places) (regs[p.r] = regs[p.r] || []).push(p);
   const regTxt = Object.entries(regs).map(([r, l]) => { const cx = l.reduce((a, p) => a + p.x, 0) / l.length - x0, cy = l.reduce((a, p) => a + p.y, 0) / l.length - y0; return cx > 0 && cx < W && cy > 0 && cy < H ? `<text x="${cx}" y="${cy}" font-size="${fs * 2.4}" fill="${o.ink || '#1f1913'}" opacity=".08" text-anchor="middle" font-weight="900">${esc(r)}</text>` : ''; }).join('');

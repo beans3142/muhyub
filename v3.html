@@ -19,6 +19,7 @@ kbd{font:10.5px/1 sans-serif;border:1px solid var(--line);border-radius:3px;padd
 .tg{width:38px;height:20px;border-radius:10px;background:#d8cfbb;position:relative;cursor:pointer;flex:none}
 .tg::after{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
 .tg.on{background:var(--jade)}.tg.on::after{left:21px}
+.guide{max-width:780px;color:var(--ink2);margin:0 0 22px;padding-left:20px;line-height:1.85}
 .vers{margin-top:26px;font-size:13px;color:var(--ink3)}.vers a{color:var(--ink2);margin-right:10px}
 /* 생 */
 #life{display:grid;grid-template-columns:minmax(0,1fr) 520px;height:100vh}
@@ -97,7 +98,7 @@ kbd{font:10.5px/1 sans-serif;border:1px solid var(--line);border-radius:3px;padd
 #end p{font-family:"Gowun Batang",serif;font-size:16.5px;line-height:1.9}
 #tip{position:fixed;z-index:99;display:none;background:var(--ink);color:#fff;font-size:12.5px;padding:6px 10px;max-width:320px;pointer-events:none;border-radius:4px}
 </style></head><body>
-<section id="intro"><h1>강호 천만 분의 일</h1><div class="sub">단 한 번의 무림 일생 · 화면 C (이야기·정보 두 쪽)</div>
+<section id="intro"><h1>강호 천만 분의 일</h1><div class="sub">단 한 번의 무림 일생 · 화면 C (이야기·정보 두 쪽)</div><div id="guide"></div>
   <button class="go" id="goBtn">태어나기</button> <label class="mut" style="margin-left:12px"><input type="checkbox" id="autoStart"> 갈림길도 운명에 맡기기</label>
   <div class="unls" id="unls"></div><p class="mut" id="past"></p>
   <div class="vers">화면 고르기: <a href="v1.html">A 메뉴형</a><a href="v2.html">B 대화창 고정</a><a href="v3.html">C 이야기·정보 두 쪽</a><a href="v4.html">D 지도 중심</a><a href="index.html">지금 화면</a></div></section>
@@ -118,9 +119,10 @@ const P_ = () => Game.P;
 let tab = '요약', cur = null, pickResolve = null, results = [], shown = 10, stick = true, mapSel = null, mapAll = false;
 
 function intro() {
-  $('unls').innerHTML = UNLOCKS.map(u => u.open()
+  $('guide').innerHTML = guideHTML();
+  $('unls').innerHTML = unlockIntro(() => UNLOCKS.map(u => u.open()
     ? `<div class="unl"><div><b>${u.n}</b><small>${u.d}</small></div><span class="tg ${rec.on[u.id] ? 'on' : ''}" data-u="${u.id}"></span></div>`
-    : `<div class="unl lock"><div><b>${u.n}</b><small>${u.why}</small></div></div>`).join('');
+    : `<div class="unl lock"><div><b>${u.n}</b><small>${u.why}</small></div></div>`).join(''));
   $('unls').querySelectorAll('[data-u]').forEach(e => e.onclick = () => { rec.on[e.dataset.u] = !rec.on[e.dataset.u]; save(); intro(); });
   $('past').textContent = `지난 생 ${rec.lives}번 · 엔딩 ${Object.keys(rec.endings).length}종 · 업적 ${Object.keys(rec.achs).length}/${L.ACHS.length}`;
 }
@@ -194,8 +196,8 @@ function pane() {
 function tSum() {
   const P = P_(), fam = L.fameName(P), nx = nextText(P), bi = L.birthInfo(P);
   return `<div class="hero"><div class="pic">${imgTag(portrait(P), '', true)}</div><div><div class="nm">${esc(nameText(P))}</div>${P.epithet ? `<div class="ep">「${esc(P.epithet)}」</div>` : ''}<div class="mut">${esc(roleText(P))}</div>
-    <div class="rl">${realmText(P)}<small>무위 ${wwText(P)}</small></div>${nx ? `<div class="pg" data-tip="${esc(nx.need)}"><i style="width:${Math.round(nx.fill * 100)}%"></i></div><small class="mut">다음 ${nx.to} · ${esc(nx.need)}</small>` : ''}</div></div>
-    <div class="tiles"><div><small>명성</small><b>${fam.fame}</b></div><div><small>재산</small><b>${Math.round(P.wealth).toLocaleString()}냥</b></div><div class="${P.infamy >= 1000 ? 'bad' : ''}"><small>악명</small><b>${P.infamy >= 1000 ? fam.infamy : '없음'}</b></div><div class="${P.hurt || P.poison ? 'bad' : ''}"><small>몸</small><b>${bodyText(P)}</b></div></div>
+    <div class="rl" data-tip="${esc(TIP.realm + ' / ' + TIP.ww)}">${realmText(P)}<small>무위 ${wwText(P)}</small></div>${nx ? `<div class="pg" data-tip="${esc(nx.need)}"><i style="width:${Math.round(nx.fill * 100)}%"></i></div><small class="mut">다음 ${nx.to} · ${esc(nx.need)}</small>` : ''}</div></div>
+    <div class="tiles"><div data-tip="${esc(TIP.fame)}"><small>명성</small><b>${fam.fame}</b></div><div><small>재산</small><b>${Math.round(P.wealth).toLocaleString()}냥</b></div><div class="${P.infamy >= 1000 ? 'bad' : ''}"><small>악명</small><b>${P.infamy >= 1000 ? fam.infamy : '없음'}</b></div><div class="${P.hurt || P.poison ? 'bad' : ''}"><small>몸</small><b>${bodyText(P)}</b></div></div>
     <div class="h5">몸과 마음</div>${Object.keys(L.BRANCH).map(b => { const v = L.branchBase(P, b); return `<div class="br"><span>${b}</span><div class="pg"><i style="width:${Math.min(100, v / 1.8)}%"></i></div><b>${v.toFixed(0)}</b></div>`; }).join('')}
     <div class="h5">특성</div><div class="chips">${P.traits.map(t => L.isHidden(P, t) ? '<span class="u">???</span>' : `<span class="${t.good === 0 ? 'b' : t.c === '후천' ? 'g' : ''}" data-tip="${esc(traitTip(t))}">${esc(t.n)}</span>`).join('')}</div>
     <div class="h5">태생</div><div class="kv"><span>고향</span><b>${esc(bi.home)}</b><span>집안</span><b>${esc(bi.origin)} · ${esc(bi.status)}</b><span>형편</span><b>${esc(bi.wealth)}</b></div>
@@ -218,7 +220,7 @@ function tForce() {
 }
 function tMap() {
   const P = P_(), V = mapView(P, { all: mapAll, sel: mapSel, aspect: 1.6, fs: 45 }), M = V.M, sel = V.sel;
-  const goBtn = p => p.reach ? `<button class="mini" data-go="${p.id}">떠난다 · ${L.travelCost(P, p.id)}냥</button>` : '<span class="mut" style="font-size:12px">범위 밖</span>';
+  const goBtn = p => p.reach ? `<button class="mini" data-go="${p.id}">떠난다 · ${L.travelCost(P, p.id)}냥</button>` : `<span class="mut" style="font-size:12px">${P.age < 12 ? '열두 살부터' : '범위 밖'}</span>`;
   return `<div style="display:flex;gap:6px;margin-bottom:8px;align-items:center"><b>지금 ${esc(L.atText(P))}</b><span class="mut" style="font-size:12.5px">· 활동 범위 ${M.range}</span><span style="margin-left:auto"></span><button class="mini ${mapAll ? 'ghost' : ''}" data-all="0">범위</button><button class="mini ${mapAll ? '' : 'ghost'}" data-all="1">천하</button></div>
     <div class="mp">${V.svg}</div>${M.pending ? `<div class="pend">다음 달 <b>${esc(L.atText({ place: M.pending }))}</b>으로 떠난다 <button class="mini ghost" id="cancelGo">취소</button></div>` : ''}
     ${sel && sel.id !== M.here ? `<div class="pend" style="background:#fff;border-color:var(--line)"><b>${esc(sel.n)}</b> <span class="mut">${esc(sel.r)} · ${PLACE_T[sel.t] || ''}</span>${(sel.mark || []).map(m => `<div>· ${esc(m.k)} — ${esc(m.t)}</div>`).join('')}<div style="margin-top:6px">${goBtn(sel)}</div></div>` : ''}

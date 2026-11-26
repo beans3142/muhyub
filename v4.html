@@ -21,6 +21,7 @@ kbd{font:10.5px/1 sans-serif;border:1px solid currentColor;border-radius:3px;pad
 .tg{width:40px;height:21px;border-radius:11px;background:#cdbf9d;position:relative;cursor:pointer;flex:none}
 .tg::after{content:"";position:absolute;left:3px;top:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .15s}
 .tg.on{background:var(--jade)}.tg.on::after{left:22px}
+.guide{max-width:620px;color:var(--ink2);margin:0 0 22px;padding:12px 16px 12px 34px;line-height:1.85;background:rgba(247,241,227,.9);border-left:4px solid var(--ink)}
 .vers{margin-top:24px;font-size:13px;color:var(--ink3)}.vers a{color:var(--ink2);margin-right:10px}
 /* 생 */
 #life{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) 430px}
@@ -95,7 +96,7 @@ kbd{font:10.5px/1 sans-serif;border:1px solid currentColor;border-radius:3px;pad
 #end .l{position:relative}
 #tip{position:fixed;z-index:99;display:none;background:var(--ink);color:#fbf7ee;font-size:12.5px;padding:6px 10px;max-width:320px;pointer-events:none}
 </style></head><body>
-<section id="intro"><div class="bg"><div class="mapbg" id="mapbg"></div><div class="tt"><h1>강호 천만 분의 일</h1><div class="sub">단 한 번의 무림 일생 · 화면 D (지도 중심)</div>
+<section id="intro"><div class="bg"><div class="mapbg" id="mapbg"></div><div class="tt"><h1>강호 천만 분의 일</h1><div class="sub">단 한 번의 무림 일생 · 화면 D (지도 중심)</div><div id="guide"></div>
   <button class="go" id="goBtn">태어나기</button><div style="margin-top:10px"><label class="mut"><input type="checkbox" id="autoStart"> 갈림길도 운명에 맡기기</label></div>
   <p class="mut" id="past"></p><div class="vers">화면 고르기: <a href="v1.html">A 메뉴형</a><a href="v2.html">B 대화창 고정</a><a href="v3.html">C 이야기·정보 두 쪽</a><a href="v4.html">D 지도 중심</a><a href="index.html">지금 화면</a></div></div></div>
   <div class="r"><h3>타고날 것</h3><div id="unls"></div></div></section>
@@ -118,9 +119,10 @@ const P_ = () => Game.P;
 let cur = null, pickResolve = null, drawer = null, mapSel = null, mapAll = false;
 
 function intro() {
-  $('unls').innerHTML = UNLOCKS.map(u => u.open()
+  $('guide').innerHTML = guideHTML();
+  $('unls').innerHTML = unlockIntro(() => UNLOCKS.map(u => u.open()
     ? `<div class="unl"><div><b>${u.n}</b><small>${u.d}</small></div><span class="tg ${rec.on[u.id] ? 'on' : ''}" data-u="${u.id}"></span></div>`
-    : `<div class="unl lock"><div><b>${u.n}</b><small>${u.why}</small></div></div>`).join('');
+    : `<div class="unl lock"><div><b>${u.n}</b><small>${u.why}</small></div></div>`).join(''));
   $('unls').querySelectorAll('[data-u]').forEach(e => e.onclick = () => { rec.on[e.dataset.u] = !rec.on[e.dataset.u]; save(); intro(); });
   $('past').textContent = `지난 생 ${rec.lives}번 · 엔딩 ${Object.keys(rec.endings).length}종 · 업적 ${Object.keys(rec.achs).length}/${L.ACHS.length}`;
   // 시작 화면 바탕: 천하의 지명
@@ -141,8 +143,8 @@ function map() {
 function me() {
   const P = P_(), fam = L.fameName(P), nx = nextText(P);
   $('me').innerHTML = `${imgTag(portrait(P))}<div><div class="nm">${esc(nameText(P))}${P.epithet ? `<span>「${esc(P.epithet)}」</span>` : ''}</div><div class="sub">${P.age}세 ${P.month || 1}월 · ${esc(roleText(P))}</div>
-    <div class="rl">${realmText(P)}<small>무위 ${wwText(P)}</small></div>${nx ? `<div class="pg" data-tip="다음 ${nx.to} · ${esc(nx.need)}"><i style="width:${Math.round(nx.fill * 100)}%"></i></div>` : ''}
-    <div class="st"><span>명성<b>${fam.fame}</b></span><span>재산<b>${Math.round(P.wealth).toLocaleString()}냥</b></span>${P.infamy >= 1000 ? `<span class="bad">악명<b>${fam.infamy}</b></span>` : ''}<span class="${P.hurt || P.poison ? 'bad' : ''}">몸<b>${bodyText(P)}</b></span></div></div>`;
+    <div class="rl" data-tip="${esc(TIP.realm + ' / ' + TIP.ww)}">${realmText(P)}<small>무위 ${wwText(P)}</small></div>${nx ? `<div class="pg" data-tip="다음 ${nx.to} · ${esc(nx.need)}"><i style="width:${Math.round(nx.fill * 100)}%"></i></div>` : ''}
+    <div class="st"><span data-tip="${esc(TIP.fame)}">명성<b>${fam.fame}</b></span><span>재산<b>${Math.round(P.wealth).toLocaleString()}냥</b></span>${P.infamy >= 1000 ? `<span class="bad">악명<b>${fam.infamy}</b></span>` : ''}<span class="${P.hurt || P.poison ? 'bad' : ''}">몸<b>${bodyText(P)}</b></span></div></div>`;
   const ls = allLines(P).filter(l => l.cls !== 'world').slice(-4);
   $('ticker').innerHTML = ls.map(l => `<div class="${l.cls || ''}"><span class="m">${l.age}세${l.m ? ' ' + l.m + '월' : ''}</span>${plain(l.t)}</div>`).join('') || '<div class="mut">세상이 흘러간다.</div>';
 }
@@ -190,12 +192,13 @@ function panel() {
   // 지금 여기 + 고른 곳
   const V = mapView(P, { sel: mapSel }), M = V.M, here = V.here, sel = V.sel;
   const ppl = P.bonds.filter(b => b.alive && b.rels.length && b.home === P.place);
-  const goBtn = p => p.reach ? `<button class="mini" data-go="${p.id}">떠난다 · ${L.travelCost(P, p.id)}냥</button>` : '<span class="mut" style="font-size:12px">범위 밖</span>';
+  const goBtn = p => p.reach ? `<button class="mini" data-go="${p.id}">떠난다 · ${L.travelCost(P, p.id)}냥</button>` : `<span class="mut" style="font-size:12px">${P.age < 12 ? '열두 살부터' : '범위 밖'}</span>`;
   $('panel').innerHTML = `<div class="here"><div class="mut" style="font-size:12.5px;letter-spacing:.15em">지금 여기</div><h2>${esc(here ? here.n : L.atText(P))}</h2><div class="r">${esc(here ? here.r : '')} · ${PLACE_T[here && here.t] || ''}${P.era ? ' · ' + esc(P.era.label) : ''}</div>
     ${here && here.mark ? `<div class="h5">이곳의 볼일</div>${here.mark.map(m => `<div class="mk">· ${esc(m.k)} — ${esc(m.t)}</div>`).join('')}` : ''}
     ${ppl.length ? `<div class="h5">이곳에 사는 인연</div><div class="ppl">${ppl.slice(0, 8).map(b => `<div>${imgTag(npcFace(b, P))}${esc(b.name)}<br><span class="mut">${esc(b.rels.slice(-1)[0])}</span></div>`).join('')}</div>` : ''}
     ${M.pending ? `<div class="pend">다음 달 <b>${esc(L.atText({ place: M.pending }))}</b>으로 떠난다 <button class="mini ghost" id="cancelGo">취소</button></div>` : ''}
     ${sel && sel.id !== M.here ? `<div class="dest"><b style="font-size:17px">${esc(sel.n)}</b> <span class="mut">${esc(sel.r)} · ${PLACE_T[sel.t] || ''}</span>${(sel.mark || []).map(m => `<div class="mk">· ${esc(m.k)} — ${esc(m.t)}</div>`).join('')}<div style="margin-top:8px">${goBtn(sel)}</div></div>` : ''}
+    ${P.age < 12 ? '<p class="mut" style="font-size:13.5px">열두 살이 되면 지도에서 갈 곳을 골라 떠날 수 있다.</p>' : '<p class="mut" style="font-size:13.5px">지도의 점이나 아래 목록을 누르면 그곳으로 떠날 수 있다. 다음 달에 닿는다.</p>'}
     <div class="h5">볼일 있는 곳</div>${V.marked.map(p => `<div class="mrow" data-p="${p.id}"><div><b>${esc(p.n)}</b> <span class="mut">${esc(p.r)}</span><small>${p.mark.map(m => `${esc(m.k)}: ${esc(m.t)}`).join(' · ')}</small></div>${goBtn(p)}</div>`).join('') || '<div class="mut">없다.</div>'}</div>`;
   $('panel').querySelectorAll('.mrow').forEach(g => g.onclick = () => { mapSel = g.dataset.p; map(); panel(); });
   $('panel').querySelectorAll('[data-go]').forEach(b => b.onclick = e => { e.stopPropagation(); L.travelTo(P, b.dataset.go); mapSel = null; map(); panel(); });
