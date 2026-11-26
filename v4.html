@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강호 천만 분의 일 · 화면 4 (지도 중심)</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1d1a16;--ink2:#4f473c;--ink3:#8d826f;--paper:#f7f1e3;--paper2:#ebe1c9;--map:#e9dfc3;--line:#d4c6a4;--red:#a8321f;--jade:#2c6a53;--gold:#b8871f}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:"Nanum Myeongjo",serif;background:var(--map);color:var(--ink);font-size:15px;line-height:1.6;overflow:hidden}
+button,select{font-family:inherit}.hide{display:none!important}.mut{color:var(--ink3)}
+kbd{font:10.5px/1 sans-serif;border:1px solid currentColor;border-radius:3px;padding:1px 4px;opacity:.55}
+/* 시작 */
+#intro{position:fixed;inset:0;display:grid;grid-template-columns:1fr 460px}
+#intro .bg{position:relative;overflow:hidden}#intro .bg .mapbg{position:absolute;inset:0;opacity:.4}
+#intro .tt{position:absolute;left:60px;top:80px}
+#intro h1{font-size:58px;font-weight:800;margin:0;text-shadow:0 2px 0 var(--map)}#intro .sub{color:var(--ink2);margin:4px 0 26px}
+.go{background:var(--red);color:#fff;border:0;padding:15px 40px;font-size:18px;font-weight:800;cursor:pointer}.go:hover{background:var(--ink)}
+#intro .r{background:var(--paper);border-left:2px solid var(--ink);padding:30px 26px;overflow:auto}
+#intro h3{margin:0 0 10px;font-size:14px;letter-spacing:.2em;color:var(--ink2)}
+.unl{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dotted var(--line)}
+.unl b{font-size:14.5px}.unl small{display:block;color:var(--ink3);font-size:12.5px}.unl.lock{opacity:.5}
+.tg{width:40px;height:21px;border-radius:11px;background:#cdbf9d;position:relative;cursor:pointer;flex:none}
+.tg::after{content:"";position:absolute;left:3px;top:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .15s}
+.tg.on{background:var(--jade)}.tg.on::after{left:22px}
+.vers{margin-top:24px;font-size:13px;color:var(--ink3)}.vers a{color:var(--ink2);margin-right:10px}
+/* 생 */
+#life{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) 430px}
+.mapA{position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#f2ead4,#e2d5b4 80%)}
+.mapA .svg{position:absolute;inset:0}
+.me{position:absolute;left:16px;top:16px;background:rgba(247,241,227,.95);border:2px solid var(--ink);display:grid;grid-template-columns:72px 1fr;gap:12px;padding:10px 14px 10px 10px;width:380px;box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.me img{width:72px;height:86px;object-fit:cover;object-position:50% 6%;background:var(--paper2)}
+.me .nm{font-size:20px;font-weight:800;line-height:1.2}.me .nm span{font-size:13px;color:var(--red);margin-left:4px}
+.me .sub{font-size:12.5px;color:var(--ink2)}
+.me .rl{font-size:15px;font-weight:800;margin-top:3px}.me .rl small{font-weight:400;color:var(--ink3);font-size:12px;margin-left:5px}
+.me .pg{height:4px;background:var(--paper2);margin-top:3px}.me .pg i{display:block;height:100%;background:var(--jade)}
+.me .st{display:flex;gap:10px;font-size:12px;color:var(--ink3);margin-top:4px;white-space:nowrap}.me .st b{color:var(--ink);font-size:13px;margin-left:2px}.me .st .bad b{color:var(--red)}
+.ticker{position:absolute;left:16px;bottom:70px;width:560px;max-width:60%;background:rgba(247,241,227,.9);border-left:4px solid var(--ink);padding:8px 14px;font-size:14px}
+.ticker div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ticker .m{color:var(--ink3);font-size:12px;margin-right:6px}
+.ticker .ok{color:var(--jade)}.ticker .ng{color:var(--red)}.ticker .big{font-weight:800}
+.ctl{position:absolute;left:16px;right:16px;bottom:14px;display:flex;gap:10px;align-items:center}
+.ctl .box{background:var(--ink);color:#efe4cb;display:flex;align-items:center;gap:8px;padding:6px 10px}
+.ctl select{background:#2d2822;color:#efe4cb;border:1px solid #514839;padding:4px;font-size:13.5px}
+.seg{display:flex}.seg button{background:transparent;border:0;color:#cfc2a3;padding:4px 9px;cursor:pointer;font-size:13px}.seg button.on{background:var(--gold);color:var(--ink)}
+.legend{margin-left:auto;background:rgba(247,241,227,.9);padding:5px 10px;font-size:12px;color:var(--ink2);display:flex;gap:12px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+/* 오른쪽 */
+.side{background:var(--paper);border-left:2px solid var(--ink);display:flex;flex-direction:column;min-height:0;position:relative}
+.icons{display:flex;border-bottom:1px solid var(--line);background:var(--paper2)}
+.icons button{flex:1;background:none;border:0;padding:8px 0 6px;cursor:pointer;font-size:17px;font-weight:800;color:var(--ink2);position:relative;display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.icons button small{font-size:10.5px;font-weight:400}.icons button.on{background:var(--ink);color:#f3e7c9}
+.icons .dot{position:absolute;top:5px;right:12px;width:6px;height:6px;border-radius:50%;background:var(--red)}
+.panel{flex:1;overflow:auto;padding:16px 18px}
+.ev .pic{height:250px;margin:-16px -18px 12px;background:linear-gradient(180deg,#dcd6c4,#ebe1c9);display:flex;justify-content:center;align-items:flex-end;overflow:hidden;position:relative}
+.ev .pic img{height:250px}.ev .pic .lbl{position:absolute;left:0;bottom:0;background:var(--ink);color:#f3e7c9;padding:3px 12px;font-size:13.5px;font-weight:800}
+.ev .k{font-size:12px;font-weight:800;letter-spacing:.18em;color:var(--red)}
+.ev .q{font-size:17.5px;line-height:1.75;margin:4px 0 12px}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opts button{text-align:left;background:#fff;border:1px solid var(--ink);padding:9px 13px;font-size:15px;cursor:pointer;display:flex;gap:10px;align-items:baseline}
+.opts button em{font-style:normal;font-size:12px;color:var(--ink3);margin-left:auto}
+.opts button:hover{background:var(--ink);color:#fff}
+.nameIn{display:flex;gap:8px;margin-bottom:8px}.nameIn input{flex:1;padding:8px;border:1px solid var(--ink);font-size:15px;font-family:inherit}.nameIn button{border:0;background:var(--ink);color:#fff;padding:0 14px;cursor:pointer}
+.res .top{display:flex;gap:14px;align-items:center;margin-bottom:8px}
+.res .seal{width:70px;height:70px;flex:none;border:4px solid var(--jade);color:var(--jade);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;transform:rotate(-8deg)}
+.res .seal.ng{border-color:var(--red);color:var(--red)}.res .seal.mid{border-color:var(--ink3);color:var(--ink3)}
+.res .ln{font-size:16px;margin:3px 0}.res .ln.ok{color:var(--jade);font-weight:800}.res .ln.ng{color:var(--red);font-weight:800}.res .ln.big{font-weight:800}
+.dl{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.dl span{font-size:13.5px;font-weight:800;padding:3px 11px;border-radius:13px;color:#fff;background:var(--jade)}.dl span.b{background:var(--red)}
+.cont{border:0;background:var(--ink);color:#fff;padding:10px 24px;font-size:15px;cursor:pointer;width:100%}
+.here h2{margin:0;font-size:28px;font-weight:800}.here .r{color:var(--ink3);font-size:13.5px}
+.h5{font-size:12px;font-weight:800;letter-spacing:.15em;color:var(--ink3);margin:16px 0 6px}
+.mk{font-size:14px;padding:3px 0}
+.ppl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.ppl div{text-align:center;font-size:12.5px}.ppl img{width:100%;height:84px;object-fit:cover;object-position:50% 6%;background:var(--paper2);display:block}
+.dest{background:#fff;border:1px solid var(--line);padding:10px 12px;margin-top:10px}
+.mini{border:0;background:var(--ink);color:#fff;padding:6px 12px;cursor:pointer;font-size:13px;white-space:nowrap}.mini.ghost{background:transparent;color:var(--ink2);border:1px solid var(--line)}
+.mrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px dotted var(--line);cursor:pointer}.mrow small{display:block;font-size:12px;color:var(--ink3);line-height:1.4}
+.pend{background:#fff3d6;border:1px solid #e2c27a;padding:8px 10px;margin:10px 0;font-size:14px}
+/* 서랍 */
+.drawer{position:absolute;inset:0;background:var(--paper);z-index:5;display:flex;flex-direction:column;box-shadow:-10px 0 30px rgba(0,0,0,.15)}
+.drawer .hd{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:2px solid var(--ink)}
+.drawer .hd b{font-size:19px}.drawer .hd small{color:var(--ink3)}.drawer .hd button{margin-left:auto;background:none;border:1px solid var(--line);padding:3px 10px;cursor:pointer}
+.drawer .bd{flex:1;overflow:auto;padding:14px 16px}
+.kv{display:grid;grid-template-columns:84px 1fr;gap:3px 10px;font-size:14px}.kv span{color:var(--ink3)}
+.br{display:grid;grid-template-columns:44px 1fr 34px;gap:8px;align-items:center;font-size:13.5px;margin:3px 0}.br .pg{height:6px;background:var(--paper2)}.br .pg i{display:block;height:100%;background:var(--jade)}
+.chips span{display:inline-block;border:1px solid var(--line);background:#fff;padding:1px 8px;margin:0 4px 5px 0;font-size:13px}.chips .g{border-color:#8fb39d;color:var(--jade)}.chips .b{border-color:#d4a39b;color:var(--red)}.chips .u{border-style:dashed;color:var(--ink3)}
+.pp{display:grid;grid-template-columns:56px 1fr;gap:10px;padding:7px 0;border-bottom:1px dotted var(--line)}.pp img{width:56px;height:64px;object-fit:cover;object-position:50% 6%;background:var(--paper2)}
+.pp b{font-size:14.5px}.pp .r{font-size:12px;font-weight:800;margin-left:5px}.pp small{display:block;font-size:12px;color:var(--ink3);line-height:1.45}.pp.dead{opacity:.5}
+.artrow{display:grid;grid-template-columns:1fr 96px 70px;padding:6px 0;border-bottom:1px dotted var(--line);font-size:13.5px}.artrow.main{font-weight:800}
+.it{display:grid;grid-template-columns:42px 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dotted var(--line)}.it .ic{width:42px;height:42px;background:var(--ink);color:#f3e7c9;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}.it small{display:block;font-size:12px;color:var(--ink3)}
+.yr h4{margin:10px 0 2px;font-size:14.5px}.yr h4 small{font-weight:400;color:var(--ink3);margin-left:6px}
+.fl{display:grid;grid-template-columns:32px 1fr;font-size:13.5px;padding:1px 0}.fl .m{font-size:11.5px;color:var(--ink3);padding-top:2px}.fl.world,.fl.muted{color:var(--ink3)}.fl.big,.fl.realm{font-weight:800}.fl.ok{color:var(--jade)}.fl.ng{color:var(--red)}.fl.rumor,.fl.thread{color:#6a4c8c}.fl.bond{color:#8a4b2f}
+.ach{display:flex;flex-wrap:wrap;gap:5px}.ach span{border:1px solid var(--line);background:#fff;padding:1px 9px;font-size:12.5px}.ach .off{color:#cbbf9f}
+/* 끝 */
+#end{position:fixed;inset:0;display:grid;grid-template-columns:1fr 520px}
+#end .r{background:var(--paper);border-left:2px solid var(--ink);padding:40px 34px;overflow:auto}
+#end .g{font-size:64px;font-weight:800;color:var(--red);line-height:1}#end .n{font-size:26px;font-weight:800}
+#end p{font-size:15.5px;line-height:1.85}
+#end .l{position:relative}
+#tip{position:fixed;z-index:99;display:none;background:var(--ink);color:#fbf7ee;font-size:12.5px;padding:6px 10px;max-width:320px;pointer-events:none}
+</style></head><body>
+<section id="intro"><div class="bg"><div class="mapbg" id="mapbg"></div><div class="tt"><h1>강호 천만 분의 일</h1><div class="sub">단 한 번의 무림 일생 · 화면 4 (지도 중심)</div>
+  <button class="go" id="goBtn">태어나기</button><div style="margin-top:10px"><label class="mut"><input type="checkbox" id="autoStart"> 갈림길도 운명에 맡기기</label></div>
+  <p class="mut" id="past"></p><div class="vers">다른 화면: <a href="v1.html">1 메뉴형</a><a href="v2.html">2 대화창 고정</a><a href="v3.html">3 이야기·정보 두 쪽</a><a href="v4.html">4 지도 중심</a><a href="index.html">지금 화면</a></div></div></div>
+  <div class="r"><h3>타고날 것</h3><div id="unls"></div></div></section>
+<section id="life" class="hide">
+  <div class="mapA"><div class="svg" id="svg"></div><div class="me" id="me"></div><div class="ticker" id="ticker"></div>
+    <div class="ctl" id="ctl"></div></div>
+  <aside class="side"><div class="icons" id="icons"></div><div class="panel" id="panel"></div><div class="drawer hide" id="drawer"><div class="hd"><b id="dT"></b><small id="dS"></small><button id="dX">닫기 Esc</button></div><div class="bd" id="dB"></div></div></aside>
+</section>
+<section id="end" class="hide"></section>
+<div id="tip"></div>
+
+<script src="data/factions.js"></script><script src="data/places.js"></script><script src="data/regions.js"></script><script src="data/names.js"></script><script src="data/anchors.js"></script><script src="data/traits.js"></script><script src="data/traits_life.js"></script><script src="data/arts.js"></script><script src="data/careers.js"></script><script src="data/origins.js"></script><script src="data/items.js"></script><script src="data/eventbook.js"></script><script src="data/lifebook.js"></script><script src="data/murimbook.js"></script><script src="data/murimbook2.js"></script><script src="data/factionbook.js"></script><script src="data/murimbook3.js"></script><script src="data/murimbook4.js"></script><script src="data/events.js"></script><script src="data/starts.js"></script><script src="data/canon.js"></script><script src="data/named.js"></script><script src="art/fac_art.js"></script>
+<script src="engine/world.js"></script><script src="engine/life.js"></script><script src="ui/core.js"></script>
+<script>
+// 화면 4(9-57): 지도가 화면의 주인이다. 내가 선 곳·지나온 길·볼일 있는 곳(소문·쫓는 일·인연·사문)이 늘 보이고, 점을 누르면 오른쪽에서 바로 떠날 수 있다.
+// 오른쪽 칸은 평소에는 「지금 여기」(이 고을의 볼일과 사는 사람), 갈림길이면 상대의 얼굴과 선택지, 고른 뒤에는 결과 도장과 변화량을 보인다.
+// 인물·무공·소지품·인연·세력·기록·업적은 오른쪽 칸 위로 덮이는 서랍이다.
+const DRAWERS = [['인물', '人', 'C'], ['무공', '武', 'K'], ['소지품', '囊', 'I'], ['인연', '緣', 'R'], ['세력', '勢', 'F'], ['기록', '史', 'L'], ['업적', '功', 'A']];
+const P_ = () => Game.P;
+let cur = null, pickResolve = null, drawer = null, mapSel = null, mapAll = false;
+
+function intro() {
+  $('unls').innerHTML = UNLOCKS.map(u => u.open()
+    ? `<div class="unl"><div><b>${u.n}</b><small>${u.d}</small></div><span class="tg ${rec.on[u.id] ? 'on' : ''}" data-u="${u.id}"></span></div>`
+    : `<div class="unl lock"><div><b>${u.n}</b><small>${u.why}</small></div></div>`).join('');
+  $('unls').querySelectorAll('[data-u]').forEach(e => e.onclick = () => { rec.on[e.dataset.u] = !rec.on[e.dataset.u]; save(); intro(); });
+  $('past').textContent = `지난 생 ${rec.lives}번 · 엔딩 ${Object.keys(rec.endings).length}종 · 업적 ${Object.keys(rec.achs).length}/${L.ACHS.length}`;
+  // 시작 화면 바탕: 천하의 지명
+  const ps = Object.values(window.PLACES2), x0 = Math.min(...ps.map(p => p.x)) - 20, y0 = Math.min(...ps.map(p => p.y)) - 20, W = Math.max(...ps.map(p => p.x)) - x0 + 20, H = Math.max(...ps.map(p => p.y)) - y0 + 20;
+  $('mapbg').innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">${ps.map(p => `<circle cx="${p.x - x0}" cy="${p.y - y0}" r="${p.t === '성' ? 2.6 : 1.6}" fill="#8d826f"/>${p.t === '성' ? `<text x="${p.x - x0 + 4}" y="${p.y - y0 + 2}" font-size="7" fill="#8d826f">${esc(p.n)}</text>` : ''}`).join('')}</svg>`;
+}
+function startLife() { $('intro').classList.add('hide'); $('end').classList.add('hide'); $('life').classList.remove('hide'); Game.auto = $('autoStart').checked; cur = null; drawer = null; mapSel = null; $('drawer').classList.add('hide'); Game.start(hooks); }
+$('goBtn').onclick = startLife;
+
+// ---------- 지도 ----------
+const trailOf = P => { const t = []; for (const c of P.log) if (c.place && t[t.length - 1] !== c.place) t.push(c.place); if (t[t.length - 1] !== P.place) t.push(P.place); return t; };
+function map() {
+  const P = P_(), box = $('svg').getBoundingClientRect();
+  const V = mapView(P, { all: mapAll, sel: mapSel, aspect: box.width / Math.max(1, box.height), fs: 75, trail: trailOf(P) });
+  $('svg').innerHTML = V.svg;
+  $('svg').querySelectorAll('.pl').forEach(g => g.onclick = () => { mapSel = mapSel === g.dataset.p ? null : g.dataset.p; map(); if (!cur) panel(); });
+}
+function me() {
+  const P = P_(), fam = L.fameName(P), nx = nextText(P);
+  $('me').innerHTML = `${imgTag(portrait(P))}<div><div class="nm">${esc(nameText(P))}${P.epithet ? `<span>「${esc(P.epithet)}」</span>` : ''}</div><div class="sub">${P.age}세 ${P.month || 1}월 · ${esc(roleText(P))}</div>
+    <div class="rl">${realmText(P)}<small>무위 ${wwText(P)}</small></div>${nx ? `<div class="pg" data-tip="다음 ${nx.to} · ${esc(nx.need)}"><i style="width:${Math.round(nx.fill * 100)}%"></i></div>` : ''}
+    <div class="st"><span>명성<b>${fam.fame}</b></span><span>재산<b>${Math.round(P.wealth).toLocaleString()}냥</b></span>${P.infamy >= 1000 ? `<span class="bad">악명<b>${fam.infamy}</b></span>` : ''}<span class="${P.hurt || P.poison ? 'bad' : ''}">몸<b>${bodyText(P)}</b></span></div></div>`;
+  const ls = allLines(P).filter(l => l.cls !== 'world').slice(-4);
+  $('ticker').innerHTML = ls.map(l => `<div class="${l.cls || ''}"><span class="m">${l.age}세${l.m ? ' ' + l.m + '월' : ''}</span>${plain(l.t)}</div>`).join('') || '<div class="mut">세상이 흘러간다.</div>';
+}
+function ctl() {
+  const P = P_(), pl = L.plansFor(P), pd = pl.find(d => d.n === P.plan);
+  $('ctl').innerHTML = `<div class="box"><span style="font-size:12.5px;color:#a99c80">방침</span><select id="plan" ${P.age < 15 ? 'disabled' : ''} data-tip="${esc(pd ? pd.desc : '열다섯 살부터 방침을 정한다')}">${pl.map(d => `<option ${d.n === P.plan ? 'selected' : ''}>${esc(d.n)}</option>`).join('') || '<option>어린 날</option>'}</select></div>
+    <div class="box"><div class="seg">${['멈춤', '1배', '3배', '10배'].map((t, i) => `<button data-v="${i}" class="${(i === 0 && Game.paused) || (i > 0 && !Game.paused && Game.speed === [0, 1, 3, 10][i]) ? 'on' : ''}">${t}</button>`).join('')}</div></div>
+    <div class="box" data-tip="켜면 갈림길에서 멈추지 않는다"><span style="font-size:12.5px">자동</span><span class="tg ${Game.auto ? 'on' : ''}" id="autoT"></span></div>
+    <div class="box"><div class="seg"><button data-all="0" class="${mapAll ? '' : 'on'}">활동 범위</button><button data-all="1" class="${mapAll ? 'on' : ''}">천하</button></div></div>
+    <div class="legend"><span><i style="background:#c0392b"></i>나</span><span><i style="background:#c8961e"></i>볼일</span><span><i style="background:#5d5141"></i>갈 수 있음</span><span><i style="background:#cbbf9f"></i>범위 밖</span></div>`;
+  $('plan').onchange = e => { P.plan = e.target.value; ctl(); };
+  $('ctl').querySelectorAll('[data-v]').forEach(b => b.onclick = () => { const v = +b.dataset.v; if (v === 0) Game.paused = !Game.paused; else { Game.paused = false; Game.speed = [0, 1, 3, 10][v]; } ctl(); });
+  $('ctl').querySelectorAll('[data-all]').forEach(b => b.onclick = () => { mapAll = b.dataset.all === '1'; ctl(); map(); });
+  $('autoT').onclick = () => { Game.auto = !Game.auto; P.auto = Game.auto; if (Game.auto && pickResolve) pickResolve(Math.floor(Math.random() * cur.q.options.length)); ctl(); };
+}
+
+// ---------- 오른쪽 칸 ----------
+const LC = c => ({ thread: 'rumor', path: 'big', act: '' }[c] ?? c ?? '');
+function icons() {
+  const P = P_(), dot = { 인연: P.bonds.some(b => b.alive && b.trouble) };
+  $('icons').innerHTML = DRAWERS.map(([n, ic, k]) => `<button data-d="${n}" class="${drawer === n ? 'on' : ''}">${ic}<small>${n} ${k}</small>${dot[n] ? '<i class="dot"></i>' : ''}</button>`).join('');
+  $('icons').querySelectorAll('button').forEach(b => b.onclick = () => drawer === b.dataset.d ? closeDrawer() : openDrawer(b.dataset.d));
+}
+function panel() {
+  const P = P_();
+  if (cur && cur.type === 'ask') {
+    const q = cur.q, who = q.who || q.npc;
+    $('panel').innerHTML = `<div class="ev"><div class="pic">${imgTag(cur.face || portrait(P), '', true)}${who && who.name ? `<span class="lbl">${esc(who.name)}</span>` : ''}</div><div class="k">${esc(q.ask)}${q.month ? ' · ' + q.month + '월' : ''}</div><div class="q">${q.text}</div>
+      ${q.input ? '<div class="nameIn"><input id="nameIn" maxlength="12" placeholder="이름을 직접 쓴다"><button id="nameGo">이 이름으로</button></div>' : ''}
+      <div class="opts">${q.options.map((o, i) => `<button data-i="${i}"><kbd>${i + 1}</kbd><span>${esc(o[0])}</span>${o[1] ? `<em>${esc(o[1])}</em>` : ''}</button>`).join('')}</div></div>`;
+    $('panel').querySelectorAll('[data-i]').forEach(b => b.onclick = () => pickResolve && pickResolve(+b.dataset.i));
+    const ng = $('nameGo'); if (ng) { const go = () => { const v = $('nameIn').value.trim(); if (v && pickResolve) pickResolve(v); }; ng.onclick = go; $('nameIn').onkeydown = e => { if (e.key === 'Enter') go(); }; }
+    return;
+  }
+  if (cur && cur.type === 'res') {
+    const r = cur.r, good = r.lines.some(l => l.cls === 'ok') || r.deltas.some(d => d.good), bad = r.lines.some(l => l.cls === 'ng') || r.deltas.some(d => !d.good);
+    const seal = good && !bad ? ['成', ''] : bad && !good ? ['敗', 'ng'] : ['半', 'mid'];
+    $('panel').innerHTML = `${r.face ? `<div class="ev"><div class="pic" style="height:200px">${imgTag(r.face, '', true).replace('<img', '<img style="height:200px"')}</div></div>` : ''}<div class="res"><div class="top"><div class="seal ${seal[1]}">${seal[0]}</div><div><div class="mut" style="font-size:12.5px;letter-spacing:.12em">${esc(r.title)}</div><b style="font-size:16px">▸ ${esc(r.pick)}</b></div></div>
+      ${r.lines.slice(0, 6).map(l => `<div class="ln ${LC(l.cls)}">${l.t}</div>`).join('')}
+      ${r.deltas.length ? `<div class="dl">${r.deltas.map(d => `<span class="${d.good ? '' : 'b'}">${esc(d.k)} ${esc(d.v)}</span>`).join('')}</div>` : ''}
+      <button class="cont" id="contBtn">계속 <kbd>Space</kbd></button></div>`;
+    $('contBtn').onclick = () => cur && cur.go();
+    return;
+  }
+  // 지금 여기 + 고른 곳
+  const V = mapView(P, { sel: mapSel }), M = V.M, here = V.here, sel = V.sel;
+  const ppl = P.bonds.filter(b => b.alive && b.rels.length && b.home === P.place);
+  const goBtn = p => p.reach ? `<button class="mini" data-go="${p.id}">떠난다 · ${L.travelCost(P, p.id)}냥</button>` : '<span class="mut" style="font-size:12px">범위 밖</span>';
+  $('panel').innerHTML = `<div class="here"><div class="mut" style="font-size:12.5px;letter-spacing:.15em">지금 여기</div><h2>${esc(here ? here.n : L.atText(P))}</h2><div class="r">${esc(here ? here.r : '')} · ${PLACE_T[here && here.t] || ''}${P.era ? ' · ' + esc(P.era.label) : ''}</div>
+    ${here && here.mark ? `<div class="h5">이곳의 볼일</div>${here.mark.map(m => `<div class="mk">· ${esc(m.k)} — ${esc(m.t)}</div>`).join('')}` : ''}
+    ${ppl.length ? `<div class="h5">이곳에 사는 인연</div><div class="ppl">${ppl.slice(0, 8).map(b => `<div>${imgTag(npcFace(b, P))}${esc(b.name)}<br><span class="mut">${esc(b.rels.slice(-1)[0])}</span></div>`).join('')}</div>` : ''}
+    ${M.pending ? `<div class="pend">다음 달 <b>${esc(L.atText({ place: M.pending }))}</b>으로 떠난다 <button class="mini ghost" id="cancelGo">취소</button></div>` : ''}
+    ${sel && sel.id !== M.here ? `<div class="dest"><b style="font-size:17px">${esc(sel.n)}</b> <span class="mut">${esc(sel.r)} · ${PLACE_T[sel.t] || ''}</span>${(sel.mark || []).map(m => `<div class="mk">· ${esc(m.k)} — ${esc(m.t)}</div>`).join('')}<div style="margin-top:8px">${goBtn(sel)}</div></div>` : ''}
+    <div class="h5">볼일 있는 곳</div>${V.marked.map(p => `<div class="mrow" data-p="${p.id}"><div><b>${esc(p.n)}</b> <span class="mut">${esc(p.r)}</span><small>${p.mark.map(m => `${esc(m.k)}: ${esc(m.t)}`).join(' · ')}</small></div>${goBtn(p)}</div>`).join('') || '<div class="mut">없다.</div>'}</div>`;
+  $('panel').querySelectorAll('.mrow').forEach(g => g.onclick = () => { mapSel = g.dataset.p; map(); panel(); });
+  $('panel').querySelectorAll('[data-go]').forEach(b => b.onclick = e => { e.stopPropagation(); L.travelTo(P, b.dataset.go); mapSel = null; map(); panel(); });
+  const cg = $('cancelGo'); if (cg) cg.onclick = () => { P.pendingTravel = null; map(); panel(); };
+}
+
+// ---------- 서랍 ----------
+function openDrawer(n) { drawer = n; $('drawer').classList.remove('hide'); renderDrawer(); icons(); }
+function closeDrawer() { drawer = null; $('drawer').classList.add('hide'); if (P_()) icons(); }
+$('dX').onclick = closeDrawer;
+function renderDrawer() {
+  const P = P_(), keep = $('dB').scrollTop, D = { 인물: dPerson, 무공: dArts, 소지품: dInv, 인연: dBonds, 세력: dForce, 기록: dLog, 업적: dAch }[drawer]();
+  $('dT').textContent = drawer; $('dS').textContent = D[0]; $('dB').innerHTML = D[1]; $('dB').scrollTop = keep;
+}
+function dPerson() {
+  const P = P_(), bi = L.birthInfo(P);
+  return [roleText(P), `<div class="kv"><span>고향</span><b>${esc(bi.home)}</b><span>집안</span><b>${esc(bi.origin)} · ${esc(bi.status)}</b><span>형편</span><b>${esc(bi.wealth)}</b><span>가업</span><b>${esc(bi.trade || '없음')}</b></div>
+    <div class="h5">몸과 마음</div>${Object.keys(L.BRANCH).map(b => { const v = L.branchBase(P, b); return `<div class="br"><span>${b}</span><div class="pg"><i style="width:${Math.min(100, v / 1.8)}%"></i></div><b>${v.toFixed(0)}</b></div>`; }).join('')}
+    <div class="h5">특성</div><div class="chips">${P.traits.map(t => L.isHidden(P, t) ? '<span class="u">???</span>' : `<span class="${t.good === 0 ? 'b' : t.c === '후천' ? 'g' : ''}" data-tip="${esc(traitTip(t))}">${esc(t.n)}</span>`).join('')}</div>
+    ${P.ledger ? `<div class="h5">지난해 살림</div><div class="kv"><span>들어온 돈</span><b>${P.ledger.in.map(x => `${esc(x[0])} ${x[1]}냥`).join(', ') || '없음'}</b><span>나간 돈</span><b>${P.ledger.out.map(x => `${esc(x[0])} ${x[1]}냥`).join(', ') || '없음'}</b></div>` : ''}`];
+}
+function dArts() {
+  const P = P_(), m = L.mainArt(P);
+  return [`${realmText(P)} · 깨달음 ${L.ENL[P.enl]}`, `<div class="kv"><span>내공</span><b>${Math.floor(L.effQi(P))}년 / 단전 ${Math.round(P.capa)}년</b><span>실전</span><b>${Math.round(P.real)}</b><span>운용·정순</span><b>${Math.floor(P.flow)} · ${Math.round(P.pur)}%</b></div>
+    <div class="h5">익힌 무공 ${P.arts.length}</div>${P.arts.slice().sort((a, b) => (b === m) - (a === m) || L.GRADES.indexOf(b.def.g) - L.GRADES.indexOf(a.def.g)).map(a => { const s = L.s12(a); return `<div class="artrow ${a === m ? 'main' : ''}"><span>${esc(a.def.n)}${a === m ? ' · 주무공' : ''}</span><span class="mut">${a.def.g} ${esc(a.def.k)}</span><span>${artLevel(s)}${s < 12 ? ' ' + Math.floor(s) + '성' : ''}</span></div>`; }).join('') || '<span class="mut">아직 없다.</span>'}`];
+}
+function dInv() { const P = P_(), inv = L.inventory(P); return [`${inv.length}가지`, `<div class="it"><div class="ic">銀</div><div><b>${Math.round(P.wealth).toLocaleString()}냥</b><small>은자</small></div></div>` + inv.map(x => `<div class="it"><div class="ic">${INV_ICON[x.k] || '物'}</div><div><b>${esc(x.n)}</b><small>${esc(x.k)}${x.d ? ' · ' + esc(x.d) : ''}</small></div></div>`).join('')]; }
+function dBonds() { const P = P_(), ppl = bondList(P); return [`${ppl.filter(b => b.alive).length}명`, ppl.map(b => `<div class="pp ${b.alive ? '' : 'dead'}">${imgTag(npcFace(b, P))}<div><b>${esc(b.name)}</b><span class="r" style="color:${L.REL_COLOR[b.rels[b.rels.length - 1]] || '#888'}">${esc(b.rels.join('·'))}</span><small>${b.alive ? L.BOND_STAGE(b.bond) : '고인'} · ${b.realm ? R[b.realm] : '범인'}${b.title ? ' · ' + esc(b.title) : b.org ? ' · ' + esc(b.org) : ''}</small>${b.home ? `<small>${esc(L.atText({ place: b.home }))}</small>` : ''}${b.trouble ? `<small style="color:var(--red)">곤경 — ${esc(b.trouble.k)}</small>` : ''}</div></div>`).join('') || '<span class="mut">아직 깊은 인연이 없다.</span>']; }
+function dForce() {
+  const P = P_(), f = P.member && L.facDef(P.member.fid), F = P.force;
+  let h = f ? `<div class="kv"><span>세력</span><b>${esc(f.n)}</b><span>자리</span><b>${esc(L.rankName(P))}</b><span>공적</span><b>${Math.round(P.merit)}</b>${P.member.warn ? `<span>경고</span><b style="color:var(--red)">${P.member.warn}번</b>` : ''}</div>` : '<span class="mut">소속이 없다.</span>';
+  if (F) { const C = F.comp || { 무사: [], 식객: 0, 인부: 0 }; h += `<div class="h5">${esc(F.name)} · ${esc(L.forceTierName(F))}</div><div class="kv"><span>머릿수</span><b>${F.men}명</b><span>전투력</span><b>${(F.power || 0).toLocaleString()}</b><span>금고</span><b>${(F.treasury || 0).toLocaleString()}냥</b><span>한 해 수입</span><b>${(F.inc || 0).toLocaleString()}냥</b><span>무사</span><b>${C.무사.map((c, r) => c ? `${r ? R[r] : '졸개'} ${c}` : '').filter(Boolean).join(', ') || '없음'}</b><span>식객·인부</span><b>${C.식객} · ${C.인부}</b><span>맹약</span><b>${(F.allies || []).map(a => esc(a.n) + '(' + a.k + ')').join(', ') || '없음'}</b></div>`; }
+  const t = P.threads.filter(x => x.k.startsWith('소문:'));
+  h += `<div class="h5">진행 중인 일</div><div class="kv">${t.map(x => `<span>쫓는 일</span><b>「${esc(x.kind)}」 ${x.step ? x.step + '걸음째' : '막 시작'} · ${esc(L.atText({ place: x.place }))}</b>`).join('')}${P.project ? `<span>여러 해의 일</span><b>${PROJECT_NAME[P.project.k]} ${P.project.prog}해째</b>` : ''}${(P.leads || []).map(() => '<span>수소문</span><b>맡겨 둠</b>').join('')}</div>${!t.length && !P.project && !(P.leads || []).length ? '<span class="mut">없다.</span>' : ''}`;
+  return [f ? f.n : F ? F.name : '무소속', h];
+}
+function dLog() { const P = P_(); return [`${P.age}년의 기록`, P.log.slice().reverse().filter(c => c.lines.length).map(c => `<div class="yr"><h4>${c.age}세<small>${yr(c.year)} · ${esc(L.atText({ place: c.place }))}</small></h4>${byMonth(c.lines).map(l => `<div class="fl ${LC(l.cls)}"><span class="m">${l.m ? l.m + '월' : ''}</span><span>${l.t}</span></div>`).join('')}</div>`).join('')]; }
+function dAch() { const P = P_(); return [`이번 생 ${P.ach.size} · 모은 것 ${Object.keys(rec.achs).length}/${L.ACHS.length}`, `<div class="ach">${L.ACHS.map(a => P.ach.has(a) ? `<span><b>${esc(a)}</b></span>` : rec.achs[a] ? `<span>${esc(a)}</span>` : '<span class="off">?</span>').join('')}</div>`]; }
+
+document.addEventListener('keydown', e => {
+  if ($('life').classList.contains('hide') || /INPUT|SELECT/.test(document.activeElement.tagName)) return;
+  if (e.key === 'Escape') { if (drawer) closeDrawer(); else if (mapSel) { mapSel = null; map(); panel(); } return; }
+  if (e.key.toUpperCase() === 'M') { mapAll = !mapAll; ctl(); map(); return; }
+  const d = DRAWERS.find(x => x[2] === e.key.toUpperCase()); if (d) { drawer === d[0] ? closeDrawer() : openDrawer(d[0]); return; }
+  if (e.key === ' ') { e.preventDefault(); if (cur && cur.type === 'res') cur.go(); else { Game.paused = !Game.paused; ctl(); } }
+  if (cur && cur.type === 'ask' && /^[1-9]$/.test(e.key)) { const b = $('panel').querySelector(`[data-i="${+e.key - 1}"]`); if (b) b.click(); }
+});
+addEventListener('resize', () => { if (P_() && !$('life').classList.contains('hide')) map(); });
+
+function draw() { if (!P_()) return; map(); me(); ctl(); icons(); panel(); if (drawer) renderDrawer(); }
+let tick = 0, lastPlace = null;
+const hooks = {
+  onTick(k) { if (k === 'end') return; if (k === 'month' && ++tick % (Game.speed >= 3 ? 3 : 1)) return; if (!cur || cur.type !== 'ask') { me(); ctl(); if (P_().place !== lastPlace || tick % 6 === 0) { lastPlace = P_().place; map(); if (!cur) panel(); } } },
+  onAsk(q, face) { return new Promise(res => { cur = { type: 'ask', q, face }; pickResolve = v => { pickResolve = null; res(v); }; if (drawer) closeDrawer(); draw(); }); },
+  onResult(r) { return new Promise(res => { cur = { type: 'res', r, go: () => { cur = null; res(); draw(); } }; draw(); if (Game.speed >= 3) setTimeout(() => cur && cur.r === r && cur.go(), 2600 / (Game.speed / 3)); }); },
+  onDemo(D) { draw(); if (D.s) openDrawer(D.s); },
+  onEnd(e, info) {
+    const P = P_(); closeDrawer();
+    $('life').classList.add('hide'); $('end').classList.remove('hide');
+    const V = mapView(P, { all: true, aspect: (innerWidth - 520) / innerHeight, fs: 80, trail: trailOf(P) });
+    $('end').innerHTML = `<div class="l">${V.svg}</div><div class="r">${imgTag(portrait(P), '', true).replace('<img', '<img style="height:240px;float:right"')}<div class="g">${e.grade}</div><div class="n">${esc(e.name)}${info.firstEnd ? ' · 처음 본 엔딩' : ''}</div><div class="mut">${esc(nameText(P))} · ${R[P.peak]} · ${yr(P.start.y)}~${yr(P.start.y + P.age)}</div>
+      <p style="clear:both">${esc(info.summary)}</p><div class="ach">${[...P.ach].map(a => `<span>${esc(a)}${info.newA.includes(a) ? ' · 처음' : ''}</span>`).join('')}</div>
+      ${info.opened.length ? `<p>새로 열린 것: <b>${info.opened.map(u => u.n).join(', ')}</b></p>` : ''}<p><button class="go" id="again">다음 생으로</button></p></div>`;
+    $('again').onclick = () => { $('end').classList.add('hide'); $('intro').classList.remove('hide'); intro(); };
+  },
+};
+installTips($('tip'));
+if (Game.demoArgs()) startLife(); else intro();
+</script>
+</body></html>

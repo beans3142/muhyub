@@ -3,3 +3,4 @@ sources/namu/
 sources/extract/
 # humanize-korean scratch output
 _workspace/
+.shots/

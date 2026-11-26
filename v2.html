@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강호 천만 분의 일 · 화면 2 (대화창 고정)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#17130f;--ink2:#4d4337;--ink3:#8c7f69;--paper:#f6f0e2;--paper2:#ece3cf;--line:#d6c8a8;--red:#b0301f;--jade:#2e6b55;--gold:#d7a64a;--hud:#1b1713}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:"Noto Serif KR",serif;background:#2a241d;color:var(--ink);font-size:15px;line-height:1.6;overflow:hidden}
+button,select{font-family:inherit}.hide{display:none!important}.mut{color:var(--ink3)}
+kbd{font:11px/1 sans-serif;border:1px solid currentColor;border-radius:3px;padding:1px 4px;opacity:.6}
+/* 시작 */
+#intro{height:100vh;display:grid;grid-template-columns:1fr 520px;background:radial-gradient(ellipse at 30% 60%,#4a3d2e,#1b1713 70%);color:#f1e7d0}
+#intro .l{display:flex;flex-direction:column;justify-content:center;padding:0 80px}
+#intro h1{font-size:64px;font-weight:900;margin:0;letter-spacing:.05em}#intro p{color:#bfae8e;margin:6px 0 30px;font-size:17px}
+.go{background:var(--gold);color:var(--ink);border:0;padding:16px 46px;font-size:19px;font-weight:900;cursor:pointer;align-self:flex-start}.go:hover{background:#f0c56a}
+#intro .r{background:rgba(0,0,0,.35);padding:34px 30px;overflow:auto}
+#intro h3{margin:0 0 12px;font-size:14px;letter-spacing:.2em;color:#bfae8e}
+.unl{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.unl b{font-size:14.5px}.unl small{display:block;color:#9c8e74;font-size:12.5px}.unl.lock{opacity:.45}
+.tg{width:42px;height:22px;border-radius:11px;background:#5b5144;position:relative;cursor:pointer;flex:none}
+.tg::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.tg.on{background:var(--jade)}.tg.on::after{left:23px}
+.vers{margin-top:30px;font-size:13px;color:#9c8e74}.vers a{color:#d9c9a6;margin-right:10px}
+/* 생 */
+#life{height:100vh;display:grid;grid-template-rows:60px 1fr 250px}
+.hud{background:var(--hud);color:#efe4cb;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:2px solid #000}
+.hud .me{display:flex;align-items:center;gap:10px;width:250px;flex:none;white-space:nowrap}.hud .me>div{min-width:0}.hud .me small{display:block;overflow:hidden;text-overflow:ellipsis}
+.hud .me img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:50% 8%;background:#3c342a;border:2px solid var(--gold)}
+.hud .me b{font-size:17px;display:block;line-height:1.2}.hud .me small{font-size:12px;color:#ad9f84}
+.hud .rl{width:170px;flex:none;white-space:nowrap}.hud .rl b{font-size:16px;color:var(--gold)}.hud .rl small{font-size:12px;color:#ad9f84;margin-left:6px}
+.hud .rl .bar{height:4px;background:#3c342a;margin-top:3px}.hud .rl .bar i{display:block;height:100%;background:var(--gold)}
+.hud .st{display:flex;gap:14px;white-space:nowrap;font-size:13px;color:#ad9f84}.hud .st b{color:#efe4cb;font-size:14px;margin-left:3px}.hud .st .bad b{color:#ff8a76}
+.hud .sp{flex:1}
+.hud select{background:#2d261f;color:#efe4cb;border:1px solid #4e4436;padding:5px 6px;font-size:13.5px;max-width:150px}
+.seg{display:flex;border:1px solid #4e4436}.seg button{background:transparent;color:#cbbd9f;border:0;padding:5px 9px;cursor:pointer;font-size:13px}.seg button.on{background:var(--gold);color:var(--ink)}
+.auto{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#ad9f84;white-space:nowrap}
+.wbtn{display:flex;gap:2px}.wbtn button{background:#2d261f;color:#e6d9bc;border:0;width:36px;height:40px;cursor:pointer;font-size:16px;font-weight:900;position:relative}
+.wbtn button small{position:absolute;right:3px;bottom:1px;font:9px sans-serif;color:#8c7f69}
+.wbtn button:hover,.wbtn button.on{background:var(--gold);color:var(--ink)}
+.wbtn button .dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:#ff6a50}
+/* 무대 */
+.stage{position:relative;overflow:hidden;background:linear-gradient(180deg,#d9d2bf 0%,#eae1cb 55%,#cfc2a1 100%)}
+.stage .place{position:absolute;left:50%;top:16px;transform:translateX(-50%);font-size:15px;color:var(--ink2);letter-spacing:.3em;text-align:center}
+.stage .place b{display:block;font-size:34px;letter-spacing:.2em;color:rgba(23,19,15,.18);font-weight:900}
+.stage .me{position:absolute;left:3%;bottom:-6px;height:96%}
+.stage .other{position:absolute;right:3%;bottom:-6px;height:96%;transition:opacity .2s}
+.stage .feed{position:absolute;left:50%;transform:translateX(-50%);top:84px;bottom:14px;width:560px;background:rgba(251,247,238,.86);border:1px solid var(--line);padding:12px 18px;overflow:auto}
+.feed h4{margin:6px 0 2px;font-size:13.5px;color:var(--ink2)}.feed h4 small{font-weight:400;color:var(--ink3);margin-left:6px}
+.fl{display:grid;grid-template-columns:32px 1fr;font-size:14px;padding:1px 0}.fl .m{font-size:11.5px;color:var(--ink3);padding-top:2px}
+.fl.world,.fl.muted{color:var(--ink3)}.fl.big,.fl.realm{font-weight:700}.fl.ok{color:var(--jade)}.fl.ng{color:var(--red)}.fl.rumor,.fl.thread{color:#6a4c8c}.fl.bond{color:#8a4b2f}.fl.pick{color:var(--ink2)}
+.fl.new{background:#fff3cf}
+/* 대화창 */
+.dock{background:var(--paper);border-top:3px solid var(--ink);display:grid;grid-template-columns:200px 1fr;min-height:0}
+.dock .who{background:var(--paper2);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;overflow:hidden;position:relative}
+.dock .who img{width:180px;height:200px;object-fit:cover;object-position:50% 6%}
+.dock .who .nm{position:absolute;left:0;right:0;top:0;background:var(--ink);color:#f1e7d0;text-align:center;font-size:14px;padding:3px 0;font-weight:700}
+.dock .body{padding:16px 26px;overflow:auto;display:flex;flex-direction:column}
+.dock .k{font-size:12.5px;letter-spacing:.2em;color:var(--red);font-weight:700}
+.dock .tx{font-size:19px;line-height:1.7;margin:4px 0 12px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opts button{text-align:left;border:1px solid var(--ink);background:#fff;padding:9px 14px;font-size:15.5px;cursor:pointer;display:flex;gap:10px;align-items:baseline}
+.opts button em{font-style:normal;font-size:12.5px;color:var(--ink3);margin-left:auto}
+.opts button:hover{background:var(--ink);color:#fff}.opts button:hover em{color:#cbbd9f}
+.nameIn{display:flex;gap:8px;margin-bottom:8px}.nameIn input{flex:1;padding:8px;border:1px solid var(--ink);font-size:15px;font-family:inherit}.nameIn button{border:0;background:var(--ink);color:#fff;padding:0 16px;cursor:pointer}
+.res{display:grid;grid-template-columns:96px 1fr auto;gap:22px;align-items:start}
+.seal{width:92px;height:92px;border:4px solid var(--jade);color:var(--jade);display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:900;transform:rotate(-8deg);margin-top:4px}
+.seal.ng{border-color:var(--red);color:var(--red)}.seal.mid{border-color:var(--ink3);color:var(--ink3)}
+.res .pick{font-size:14.5px;color:var(--ink2)}.res .ln{font-size:17px;margin:2px 0}.res .ln.ok{color:var(--jade);font-weight:700}.res .ln.ng{color:var(--red);font-weight:700}.res .ln.big,.res .ln.realm{font-weight:900}
+.dl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.dl span{font-size:14px;font-weight:700;padding:3px 12px;border-radius:14px;color:#fff;background:var(--jade)}.dl span.b{background:var(--red)}
+.cont{border:0;background:var(--ink);color:#fff;padding:12px 28px;font-size:16px;cursor:pointer;align-self:end}
+.idle{display:flex;flex-direction:column;justify-content:center;height:100%}
+.idle .d{font-size:26px;font-weight:900}.idle .d small{font-size:15px;font-weight:400;color:var(--ink3);margin-left:10px}
+.idle .last{font-size:16.5px;color:var(--ink2);margin-top:6px}
+.mbar{display:flex;gap:3px;margin-top:14px}.mbar i{flex:1;height:6px;background:var(--line)}.mbar i.on{background:var(--ink)}
+/* 창 */
+.win{position:fixed;inset:60px 0 0 0;background:rgba(23,19,15,.55);display:flex;align-items:center;justify-content:center;z-index:20}
+.win .box{width:1000px;max-width:94vw;height:calc(100vh - 110px);background:var(--paper);border:2px solid var(--ink);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.win .hd{display:flex;align-items:center;gap:12px;padding:10px 18px;background:var(--ink);color:#f1e7d0}
+.win .hd b{font-size:18px}.win .hd small{color:#ad9f84}.win .hd button{margin-left:auto;background:transparent;border:1px solid #6b5f4d;color:#f1e7d0;padding:3px 10px;cursor:pointer}
+.win .bd{padding:18px 22px;overflow:auto;flex:1}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:#fff;border:1px solid var(--line);padding:12px 14px;margin-bottom:12px}
+.card h5{margin:0 0 8px;font-size:13px;letter-spacing:.15em;color:var(--ink2)}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:3px 10px;font-size:14.5px}.kv span{color:var(--ink3)}
+.br{display:grid;grid-template-columns:48px 1fr 40px;gap:8px;align-items:center;font-size:14px;margin:4px 0}.br .bar{height:6px;background:var(--paper2)}.br .bar i{display:block;height:100%;background:var(--jade)}
+.chips span{display:inline-block;border:1px solid var(--line);background:#fff;padding:1px 9px;margin:0 5px 5px 0;font-size:13.5px}.chips .g{border-color:#8fb39d;color:var(--jade)}.chips .b{border-color:#d4a39b;color:var(--red)}.chips .u{border-style:dashed;color:var(--ink3)}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.slot{background:#fff;border:1px solid var(--line);padding:12px;text-align:center;min-height:122px}.slot .ic{font-size:34px;font-weight:900;color:var(--ink2);line-height:1.2}.slot b{display:block;font-size:14.5px}.slot small{display:block;font-size:12px;color:var(--ink3);line-height:1.4}
+.slot.empty{border-style:dashed;background:transparent}
+.ppl{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.pp{background:#fff;border:1px solid var(--line);text-align:center;padding-bottom:8px}.pp img{width:100%;height:150px;object-fit:cover;object-position:50% 6%;background:var(--paper2);display:block}
+.pp b{display:block;font-size:15px;margin-top:4px}.pp .r{font-size:12.5px;font-weight:700}.pp small{display:block;font-size:12px;color:var(--ink3);line-height:1.4}.pp.dead{opacity:.5}
+.artrow{display:grid;grid-template-columns:1fr 120px 90px;padding:7px 0;border-bottom:1px dotted var(--line);font-size:14.5px}.artrow.main{font-weight:700}
+.mapw{display:grid;grid-template-columns:1fr 290px;gap:14px;height:100%}.mapw .mp{background:#f1e8d0;border:1px solid var(--line)}
+.mrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px dotted var(--line);cursor:pointer}.mrow small{display:block;font-size:12px;color:var(--ink3);line-height:1.4}
+.mini{border:0;background:var(--ink);color:#fff;padding:5px 11px;cursor:pointer;font-size:13px;white-space:nowrap}.mini.ghost{background:transparent;color:var(--ink2);border:1px solid var(--line)}
+.pend{background:#fff3d6;border:1px solid #e2c27a;padding:8px 10px;margin-bottom:10px;font-size:14px}
+.yr h4{margin:10px 0 2px;font-size:14.5px}.yr h4 small{font-weight:400;color:var(--ink3);margin-left:6px}
+.ach{display:flex;flex-wrap:wrap;gap:6px}.ach span{border:1px solid var(--line);background:#fff;padding:2px 10px;font-size:13.5px}.ach .off{color:#c9bc9c}
+/* 끝 */
+#end{position:fixed;inset:0;display:grid;grid-template-columns:480px 1fr;background:radial-gradient(ellipse at 30% 60%,#4a3d2e,#1b1713 70%);color:#f1e7d0}
+#end .pic{display:flex;align-items:flex-end;justify-content:center}#end .pic img{height:92vh}
+#end .txt{padding:70px 70px 40px 0;overflow:auto}
+#end .g{font-size:80px;font-weight:900;color:var(--gold);line-height:1}#end .n{font-size:30px;font-weight:900}
+#end p{font-size:16.5px;line-height:1.9;color:#ded2b8}
+#end .ach span{background:transparent;border-color:#5b5144;color:#ded2b8}
+#tip{position:fixed;z-index:99;display:none;background:var(--ink);color:#fbf7ee;font-size:13px;padding:6px 10px;max-width:320px;pointer-events:none}
+</style></head><body>
+<section id="intro"><div class="l"><h1>강호 천만 분의 일</h1><p>단 한 번의 무림 일생 · 화면 2 (대화창 고정)</p>
+  <button class="go" id="goBtn">태어나기</button>
+  <label style="margin-top:14px;color:#bfae8e;font-size:14px"><input type="checkbox" id="autoStart"> 갈림길도 운명에 맡기기</label>
+  <p id="past" style="margin-top:26px;font-size:14px"></p>
+  <div class="vers">다른 화면: <a href="v1.html">1 메뉴형</a><a href="v2.html">2 대화창 고정</a><a href="v3.html">3 이야기·정보 두 쪽</a><a href="v4.html">4 지도 중심</a><a href="index.html">지금 화면</a></div></div>
+  <div class="r"><h3>타고날 것</h3><div id="unls"></div></div></section>
+<section id="life" class="hide">
+  <header class="hud" id="hud"></header>
+  <main class="stage" id="stage"></main>
+  <footer class="dock" id="dock"></footer>
+</section>
+<div class="win hide" id="win"><div class="box"><div class="hd"><b id="wT"></b><small id="wS"></small><button id="wX">닫기 Esc</button></div><div class="bd" id="wB"></div></div></div>
+<section id="end" class="hide"></section>
+<div id="tip"></div>
+
+<script src="data/factions.js"></script><script src="data/places.js"></script><script src="data/regions.js"></script><script src="data/names.js"></script><script src="data/anchors.js"></script><script src="data/traits.js"></script><script src="data/traits_life.js"></script><script src="data/arts.js"></script><script src="data/careers.js"></script><script src="data/origins.js"></script><script src="data/items.js"></script><script src="data/eventbook.js"></script><script src="data/lifebook.js"></script><script src="data/murimbook.js"></script><script src="data/murimbook2.js"></script><script src="data/factionbook.js"></script><script src="data/murimbook3.js"></script><script src="data/murimbook4.js"></script><script src="data/events.js"></script><script src="data/starts.js"></script><script src="data/canon.js"></script><script src="data/named.js"></script><script src="art/fac_art.js"></script>
+<script src="engine/world.js"></script><script src="engine/life.js"></script><script src="ui/core.js"></script>
+<script>
+// 화면 2(9-57): 위 띠(HUD)에 수치·방침·속도·창 단추를 모으고, 아래 대화창은 화면 바닥에 고정된 칸이라 아무것도 덮지 않는다.
+// 가운데 무대에는 나와 상대가 서고 올해 일어난 일이 흐른다. 인물·무공·소지품·인연·세력·지도·기록은 단축키로 여는 창이다(창이 열리면 시간이 멈춘다).
+const WINS = [['인물', '人', 'C'], ['무공', '武', 'K'], ['소지품', '囊', 'I'], ['인연', '緣', 'R'], ['세력', '勢', 'F'], ['지도', '圖', 'M'], ['기록', '史', 'L'], ['업적', '功', 'A']];
+const P_ = () => Game.P;
+let cur = null, pickResolve = null, win = null, wasPaused = false, mapSel = null, mapAll = false, seen = 0;
+
+function intro() {
+  $('unls').innerHTML = UNLOCKS.map(u => u.open()
+    ? `<div class="unl"><div><b>${u.n}</b><small>${u.d}</small></div><span class="tg ${rec.on[u.id] ? 'on' : ''}" data-u="${u.id}"></span></div>`
+    : `<div class="unl lock"><div><b>${u.n}</b><small>${u.why}</small></div></div>`).join('');
+  $('unls').querySelectorAll('[data-u]').forEach(e => e.onclick = () => { rec.on[e.dataset.u] = !rec.on[e.dataset.u]; save(); intro(); });
+  $('past').textContent = `지난 생 ${rec.lives}번 · 엔딩 ${Object.keys(rec.endings).length}종 · 업적 ${Object.keys(rec.achs).length}/${L.ACHS.length}`;
+}
+function startLife() { $('intro').classList.add('hide'); $('end').classList.add('hide'); $('life').classList.remove('hide'); Game.auto = $('autoStart').checked; cur = null; seen = 0; closeWin(); Game.start(hooks); }
+$('goBtn').onclick = startLife;
+
+// ---------- 위 띠 ----------
+function hud() {
+  const P = P_(), fam = L.fameName(P), nx = nextText(P);
+  const dot = { 인연: P.bonds.some(b => b.alive && b.trouble), 지도: !!P.pendingTravel };
+  $('hud').innerHTML = `<div class="me">${imgTag(portrait(P))}<div><b>${esc(nameText(P))}${P.epithet ? ` <span style="color:var(--gold);font-size:13px">「${esc(P.epithet)}」</span>` : ''}</b><small>${P.age}세 · ${P.month || 1}월 · ${esc(roleText(P))}</small></div></div>
+    <div class="rl"><b>${realmText(P)}</b><small>무위 ${wwText(P)}</small>${nx ? `<div class="bar" data-tip="다음 ${nx.to} · ${nx.need}"><i style="width:${Math.round(nx.fill * 100)}%"></i></div>` : ''}</div>
+    <div class="st"><span>명성<b>${fam.fame}</b></span><span>재산<b>${Math.round(P.wealth).toLocaleString()}냥</b></span>${P.infamy >= 1000 ? `<span class="bad">악명<b>${fam.infamy}</b></span>` : ''}<span class="${P.hurt || P.poison ? 'bad' : ''}">몸<b>${bodyText(P)}</b></span></div>
+    <div class="sp"></div>
+    <select id="plan" ${P.age < 15 ? 'disabled' : ''} data-tip=""></select>
+    <div class="seg">${['Ⅱ', '1×', '3×', '10×'].map((t, i) => `<button data-v="${i}" class="${(i === 0 && Game.paused) || (i > 0 && !Game.paused && Game.speed === [0, 1, 3, 10][i]) ? 'on' : ''}">${t}</button>`).join('')}</div>
+    <div class="auto" data-tip="켜면 갈림길에서 멈추지 않고 운명에 맡긴다">자동 <span class="tg ${Game.auto ? 'on' : ''}" id="autoT"></span></div>
+    <div class="wbtn">${WINS.map(([n, ic, k]) => `<button data-w="${n}" class="${win === n ? 'on' : ''}" data-tip="${n} (${k})">${ic}<small>${k}</small>${dot[n] ? '<i class="dot"></i>' : ''}</button>`).join('')}</div>`;
+  const pl = L.plansFor(P), pd = pl.find(d => d.n === P.plan);
+  $('plan').innerHTML = pl.map(d => `<option ${d.n === P.plan ? 'selected' : ''}>${esc(d.n)}</option>`).join('') || '<option>어린 날</option>';
+  $('plan').dataset.tip = pd ? pd.desc : '열다섯 살부터 방침을 정한다';
+  $('plan').onchange = e => { P.plan = e.target.value; hud(); };
+  $('hud').querySelectorAll('.seg button').forEach(b => b.onclick = () => { const v = +b.dataset.v; if (v === 0) Game.paused = !Game.paused; else { Game.paused = false; Game.speed = [0, 1, 3, 10][v]; } hud(); });
+  $('autoT').onclick = () => { Game.auto = !Game.auto; P.auto = Game.auto; if (Game.auto && pickResolve) pickResolve(Math.floor(Math.random() * cur.q.options.length)); hud(); };
+  $('hud').querySelectorAll('[data-w]').forEach(b => b.onclick = () => win === b.dataset.w ? closeWin() : openWin(b.dataset.w));
+}
+
+// ---------- 무대 ----------
+const LC = c => ({ thread: 'rumor', path: 'big', act: '' }[c] ?? c ?? '');
+function stage() {
+  const P = P_(), other = cur && (cur.face || (cur.r && cur.r.face));
+  const cards = P.log.slice(-3).reverse().filter(c => c.lines.length), all = allLines(P).length;
+  let k = all;
+  const html = cards.map(c => { const ls = byMonth(c.lines); return `<h4>${c.age}세<small>${yr(c.year)} · ${esc(L.atText({ place: c.place }))}</small></h4>${ls.map(l => `<div class="fl ${LC(l.cls)}"><span class="m">${l.m ? l.m + '월' : ''}</span><span>${l.t}</span></div>`).join('')}`; }).join('');
+  $('stage').innerHTML = `<div class="place">${esc(L.atText(P))}<b>${esc((L.atText(P).split(' ').pop()) || '')}</b></div>
+    ${imgTag(portrait(P), 'me', true)}${other ? imgTag(other, 'other', true) : ''}
+    <div class="feed" id="feed">${html || '<span class="mut">세상이 흘러간다.</span>'}</div>`;
+  seen = all;
+}
+
+// ---------- 대화창 ----------
+function dock() {
+  const P = P_();
+  if (cur && cur.type === 'ask') {
+    const q = cur.q, nm = q.who ? q.who.name : q.npc ? q.npc.name : '';
+    $('dock').innerHTML = `<div class="who">${nm ? `<div class="nm">${esc(nm)}</div>` : ''}${imgTag(cur.face || portrait(P))}</div><div class="body"><div class="k">${esc(q.ask)}${q.month ? ' · ' + q.month + '월' : ''}</div><div class="tx">${q.text}</div>
+      ${q.input ? '<div class="nameIn"><input id="nameIn" maxlength="12" placeholder="이름을 직접 쓴다"><button id="nameGo">이 이름으로</button></div>' : ''}
+      <div class="opts">${q.options.map((o, i) => `<button data-i="${i}"><kbd>${i + 1}</kbd><span>${esc(o[0])}</span>${o[1] ? `<em>${esc(o[1])}</em>` : ''}</button>`).join('')}</div></div>`;
+    $('dock').querySelectorAll('[data-i]').forEach(b => b.onclick = () => pickResolve && pickResolve(+b.dataset.i));
+    const ng = $('nameGo'); if (ng) { const go = () => { const v = $('nameIn').value.trim(); if (v && pickResolve) pickResolve(v); }; ng.onclick = go; $('nameIn').onkeydown = e => { if (e.key === 'Enter') go(); }; }
+    return;
+  }
+  if (cur && cur.type === 'res') {
+    const r = cur.r, good = r.lines.some(l => l.cls === 'ok') || r.deltas.some(d => d.good), bad = r.lines.some(l => l.cls === 'ng') || r.deltas.some(d => !d.good);
+    const seal = good && !bad ? ['成', ''] : bad && !good ? ['敗', 'ng'] : ['半', 'mid'];
+    $('dock').innerHTML = `<div class="who">${imgTag(r.face || portrait(P))}</div><div class="body"><div class="res"><div class="seal ${seal[1]}">${seal[0]}</div><div><div class="k">${esc(r.title)} · 결과</div><div class="pick">▸ ${esc(r.pick)}</div>
+      ${r.lines.slice(0, 5).map(l => `<div class="ln ${LC(l.cls)}">${l.t}</div>`).join('')}
+      ${r.deltas.length ? `<div class="dl">${r.deltas.map(d => `<span class="${d.good ? '' : 'b'}">${esc(d.k)} ${esc(d.v)}</span>`).join('')}</div>` : ''}</div>
+      <button class="cont" id="contBtn">계속 <kbd>Space</kbd></button></div></div>`;
+    $('contBtn').onclick = () => cur && cur.go();
+    return;
+  }
+  const last = allLines(P).filter(l => l.cls !== 'world').slice(-1)[0];
+  $('dock').innerHTML = `<div class="who">${imgTag(portrait(P))}</div><div class="body"><div class="idle"><div class="d">${P.age}세 ${P.month || 1}월<small>${esc(L.atText(P))}${P.era ? ' · ' + esc(P.era.label) : ''} · ${Game.paused ? '멈춤 (Space로 다시)' : '흐르는 중'}</small></div>
+    <div class="last">${last ? plain(last.t) : '세상이 흘러간다.'}</div><div class="mbar">${Array.from({ length: 12 }, (_, i) => `<i class="${i < (P.month || 1) ? 'on' : ''}"></i>`).join('')}</div></div></div>`;
+}
+
+// ---------- 창 ----------
+function openWin(n) { if (!win) wasPaused = Game.paused; win = n; Game.paused = true; $('win').classList.remove('hide'); renderWin(); hud(); }
+function closeWin() { if (!win) return; win = null; $('win').classList.add('hide'); Game.paused = wasPaused; mapSel = null; if (P_()) hud(); }
+$('wX').onclick = closeWin; $('win').onclick = e => { if (e.target === $('win')) closeWin(); };
+function renderWin() {
+  const P = P_(), W = { 인물: wPerson, 무공: wArts, 소지품: wInv, 인연: wBonds, 세력: wForce, 지도: wMap, 기록: wLog, 업적: wAch }[win]();
+  $('wT').textContent = win; $('wS').textContent = W[0]; $('wB').innerHTML = W[1];
+  $('wB').querySelectorAll('.pl, .mrow').forEach(g => g.onclick = () => { mapSel = g.dataset.p; renderWin(); });
+  $('wB').querySelectorAll('[data-go]').forEach(b => b.onclick = e => { e.stopPropagation(); L.travelTo(P, b.dataset.go); mapSel = null; renderWin(); hud(); });
+  $('wB').querySelectorAll('[data-all]').forEach(b => b.onclick = () => { mapAll = b.dataset.all === '1'; renderWin(); });
+  const cg = $('cancelGo'); if (cg) cg.onclick = () => { P.pendingTravel = null; renderWin(); hud(); };
+}
+function wPerson() {
+  const P = P_(), bi = L.birthInfo(P);
+  return [`${P.age}세 · ${roleText(P)}`, `<div class="g2"><div class="card"><h5>태생</h5><div class="kv"><span>고향</span><b>${esc(bi.home)}</b><span>집안</span><b>${esc(bi.origin)}</b><span>신분</span><b>${esc(bi.status)}</b><span>형편</span><b>${esc(bi.wealth)}</b><span>가업</span><b>${esc(bi.trade || '없음')}</b></div></div>
+    <div class="card"><h5>몸과 마음</h5>${Object.keys(L.BRANCH).map(b => { const v = L.branchBase(P, b); return `<div class="br"><span>${b}</span><div class="bar"><i style="width:${Math.min(100, v / 1.8)}%"></i></div><b>${v.toFixed(0)}</b></div>`; }).join('')}</div></div>
+    <div class="card"><h5>특성</h5><div class="chips">${P.traits.map(t => L.isHidden(P, t) ? '<span class="u">???</span>' : `<span class="${t.good === 0 ? 'b' : t.c === '후천' ? 'g' : ''}" data-tip="${esc(traitTip(t))}">${esc(t.n)}</span>`).join('')}</div></div>
+    ${P.ledger ? `<div class="card"><h5>지난해 살림</h5><div class="kv"><span>들어온 돈</span><b>${P.ledger.in.map(x => `${esc(x[0])} ${x[1]}냥`).join(', ') || '없음'}</b><span>나간 돈</span><b>${P.ledger.out.map(x => `${esc(x[0])} ${x[1]}냥`).join(', ') || '없음'}</b></div></div>` : ''}`];
+}
+function wArts() {
+  const P = P_(), m = L.mainArt(P);
+  return [`${realmText(P)} · 깨달음 ${L.ENL[P.enl]}`, `<div class="card"><div class="kv"><span>내공</span><b>${Math.floor(L.effQi(P))}년 / 단전 ${Math.round(P.capa)}년</b><span>실전</span><b>${Math.round(P.real)}</b><span>운용·정순</span><b>${Math.floor(P.flow)} · ${Math.round(P.pur)}%</b></div></div>
+    <div class="card"><h5>익힌 무공</h5>${P.arts.slice().sort((a, b) => (b === m) - (a === m) || L.GRADES.indexOf(b.def.g) - L.GRADES.indexOf(a.def.g)).map(a => { const s = L.s12(a); return `<div class="artrow ${a === m ? 'main' : ''}"><span>${esc(a.def.n)}${a === m ? ' · 주무공' : ''}</span><span class="mut">${a.def.g} ${esc(a.def.k)}</span><span>${artLevel(s)}${s < 12 ? ' ' + Math.floor(s) + '성' : ''}</span></div>`; }).join('') || '<span class="mut">아직 없다.</span>'}</div>`];
+}
+function wInv() {
+  const P = P_(), inv = L.inventory(P), n = Math.max(12, Math.ceil((inv.length + 1) / 6) * 6);
+  const slots = [{ k: '은자', n: `${Math.round(P.wealth).toLocaleString()}냥`, d: '', ic: '銀' }, ...inv];
+  return [`${inv.length}가지`, `<div class="slots">${Array.from({ length: n }, (_, i) => { const x = slots[i]; return x ? `<div class="slot"><div class="ic">${x.ic || INV_ICON[x.k] || '物'}</div><b>${esc(x.n)}</b><small>${esc(x.k)}${x.d ? ' · ' + esc(x.d) : ''}</small></div>` : '<div class="slot empty"></div>'; }).join('')}</div>`];
+}
+function wBonds() {
+  const P = P_(), ppl = bondList(P);
+  return [`${ppl.filter(b => b.alive).length}명`, `<div class="ppl">${ppl.map(b => `<div class="pp ${b.alive ? '' : 'dead'}">${imgTag(npcFace(b, P))}<b>${esc(b.name)}</b><span class="r" style="color:${L.REL_COLOR[b.rels[b.rels.length - 1]] || '#888'}">${esc(b.rels.join('·'))}</span><small>${b.alive ? L.BOND_STAGE(b.bond) : '고인'} · ${b.realm ? R[b.realm] : '범인'}</small>${b.org || b.title ? `<small>${esc(b.title || b.org)}</small>` : ''}${b.trouble ? `<small style="color:var(--red)">곤경 — ${esc(b.trouble.k)}</small>` : ''}</div>`).join('') || '<span class="mut">아직 깊은 인연이 없다.</span>'}</div>`];
+}
+function wForce() {
+  const P = P_(), f = P.member && L.facDef(P.member.fid), F = P.force;
+  let h = `<div class="card"><h5>소속</h5>${f ? `<div class="kv"><span>세력</span><b>${esc(f.n)}</b><span>자리</span><b>${esc(L.rankName(P))}</b><span>공적</span><b>${Math.round(P.merit)}</b>${P.member.warn ? `<span>경고</span><b style="color:var(--red)">${P.member.warn}번</b>` : ''}</div>` : '<span class="mut">소속이 없다.</span>'}</div>`;
+  if (F) { const C = F.comp || { 무사: [], 식객: 0, 인부: 0 }; h += `<div class="card"><h5>${esc(F.name)} · ${esc(L.forceTierName(F))}</h5><div class="kv"><span>머릿수</span><b>${F.men}명</b><span>전투력</span><b>${(F.power || 0).toLocaleString()}</b><span>금고</span><b>${(F.treasury || 0).toLocaleString()}냥</b><span>한 해 수입</span><b>${(F.inc || 0).toLocaleString()}냥</b><span>무사</span><b>${C.무사.map((c, r) => c ? `${r ? R[r] : '졸개'} ${c}` : '').filter(Boolean).join(', ') || '없음'}</b><span>식객·인부</span><b>${C.식객} · ${C.인부}</b><span>맹약</span><b>${(F.allies || []).map(a => esc(a.n) + '(' + a.k + ')').join(', ') || '없음'}</b></div></div>`; }
+  const t = P.threads.filter(x => x.k.startsWith('소문:'));
+  h += `<div class="card"><h5>진행 중인 일</h5><div class="kv">${t.map(x => `<span>쫓는 일</span><b>「${esc(x.kind)}」 ${x.step ? x.step + '걸음째' : '막 시작'} · ${esc(L.atText({ place: x.place }))}</b>`).join('')}${P.project ? `<span>여러 해의 일</span><b>${PROJECT_NAME[P.project.k]} ${P.project.prog}해째</b>` : ''}${(P.leads || []).map(() => '<span>수소문</span><b>맡겨 둠</b>').join('')}</div>${!t.length && !P.project && !(P.leads || []).length ? '<span class="mut">없다.</span>' : ''}</div>`;
+  return [f ? f.n : F ? F.name : '무소속', h];
+}
+function wMap() {
+  const P = P_(), V = mapView(P, { all: mapAll, sel: mapSel, aspect: 1.35 }), M = V.M, sel = V.sel;
+  const goBtn = p => p.reach ? `<button class="mini" data-go="${p.id}">떠난다 · ${L.travelCost(P, p.id)}냥</button>` : '<span class="mut" style="font-size:12px">범위 밖</span>';
+  return [`활동 범위 ${M.range} · 떠나면 다음 달에 닿는다`, `<div class="mapw"><div class="mp">${V.svg}</div><div>
+    <div style="display:flex;gap:6px;margin-bottom:10px"><button class="mini ${mapAll ? 'ghost' : ''}" data-all="0">활동 범위</button><button class="mini ${mapAll ? '' : 'ghost'}" data-all="1">천하</button></div>
+    ${M.pending ? `<div class="pend">다음 달 <b>${esc(L.atText({ place: M.pending }))}</b>으로 <button class="mini ghost" id="cancelGo">취소</button></div>` : ''}
+    ${sel ? `<div class="card"><b style="font-size:17px">${esc(sel.n)}</b> <span class="mut">${esc(sel.r)} · ${PLACE_T[sel.t] || ''}</span>${(sel.mark || []).map(m => `<div style="font-size:14px">· ${esc(m.k)} — ${esc(m.t)}</div>`).join('')}<div style="margin-top:8px">${sel.id === M.here ? '<span class="mut">지금 여기 있다.</span>' : goBtn(sel)}</div></div>` : `<div class="card"><b>지금 ${esc(L.atText(P))}</b><div class="mut" style="font-size:13.5px">점을 누르면 그곳을 본다.</div></div>`}
+    <h5 style="margin:12px 0 2px;font-size:13px;letter-spacing:.15em;color:var(--ink2)">볼일 있는 곳</h5>${V.marked.map(p => `<div class="mrow" data-p="${p.id}"><div><b>${esc(p.n)}</b> <span class="mut">${esc(p.r)}</span><small>${p.mark.map(m => `${esc(m.k)}: ${esc(m.t)}`).join(' · ')}</small></div>${goBtn(p)}</div>`).join('') || '<div class="mut">없다.</div>'}</div></div>`];
+}
+function wLog() { const P = P_(); return [`${P.age}년의 기록`, P.log.slice().reverse().filter(c => c.lines.length).map(c => `<div class="yr"><h4>${c.age}세<small>${yr(c.year)} · ${esc(L.atText({ place: c.place }))}</small></h4>${byMonth(c.lines).map(l => `<div class="fl ${LC(l.cls)}"><span class="m">${l.m ? l.m + '월' : ''}</span><span>${l.t}</span></div>`).join('')}</div>`).join('')]; }
+function wAch() { const P = P_(); return [`이번 생 ${P.ach.size} · 모은 것 ${Object.keys(rec.achs).length}/${L.ACHS.length}`, `<div class="ach">${L.ACHS.map(a => P.ach.has(a) ? `<span><b>${esc(a)}</b></span>` : rec.achs[a] ? `<span>${esc(a)}</span>` : '<span class="off">?</span>').join('')}</div>`]; }
+
+// ---------- 키 ----------
+document.addEventListener('keydown', e => {
+  if ($('life').classList.contains('hide') || /INPUT|SELECT/.test(document.activeElement.tagName)) return;
+  if (e.key === 'Escape') { closeWin(); return; }
+  const w = WINS.find(x => x[2] === e.key.toUpperCase()); if (w) { win === w[0] ? closeWin() : openWin(w[0]); return; }
+  if (win) return;
+  if (e.key === ' ') { e.preventDefault(); if (cur && cur.type === 'res') cur.go(); else { Game.paused = !Game.paused; hud(); dock(); } }
+  if (cur && cur.type === 'ask' && /^[1-9]$/.test(e.key)) { const b = $('dock').querySelector(`[data-i="${+e.key - 1}"]`); if (b) b.click(); }
+});
+
+function draw() { if (!P_()) return; hud(); stage(); dock(); if (win) renderWin(); }
+let tick = 0;
+const hooks = {
+  onTick(k) { if (k === 'end') return; if (k === 'month' && ++tick % (Game.speed >= 3 ? 3 : 1)) return; if (!cur || cur.type !== 'ask') draw(); },
+  onAsk(q, face) { return new Promise(res => { cur = { type: 'ask', q, face }; pickResolve = v => { pickResolve = null; res(v); }; draw(); }); },
+  onResult(r) { return new Promise(res => { cur = { type: 'res', r, go: () => { cur = null; res(); draw(); } }; draw(); if (Game.speed >= 3) setTimeout(() => cur && cur.r === r && cur.go(), 2600 / (Game.speed / 3)); }); },
+  onDemo(D) { draw(); if (D.s) openWin(D.s); },
+  onEnd(e, info) {
+    const P = P_(); closeWin();
+    $('life').classList.add('hide'); $('end').classList.remove('hide');
+    $('end').innerHTML = `<div class="pic">${imgTag(portrait(P), '', true)}</div><div class="txt"><div class="g">${e.grade}</div><div class="n">${esc(e.name)}${info.firstEnd ? ' · 처음 본 엔딩' : ''}</div><div style="color:#ad9f84">${esc(nameText(P))} · ${R[P.peak]} · ${yr(P.start.y)}~${yr(P.start.y + P.age)}</div>
+      <p>${esc(info.summary)}</p><div class="ach">${[...P.ach].map(a => `<span>${esc(a)}${info.newA.includes(a) ? ' · 처음' : ''}</span>`).join('')}</div>
+      ${info.opened.length ? `<p>새로 열린 것: <b>${info.opened.map(u => u.n).join(', ')}</b></p>` : ''}<p><button class="go" id="again">다음 생으로</button></p></div>`;
+    $('again').onclick = () => { $('end').classList.add('hide'); $('intro').classList.remove('hide'); intro(); };
+  },
+};
+installTips($('tip'));
+if (Game.demoArgs()) startLife(); else intro();
+</script>
+</body></html>

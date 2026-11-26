@@ -372,6 +372,8 @@ function* fight(P, n, opts = {}) {
   const u = P.R();
   let stage = u < 0.3 * p ? '대승' : u < 0.85 * p ? '승' : u < p ? '신승' : u < p + 0.7 * (1 - p) ? '패' : '대패';
   if (stage === '대패' && P.real > 500 && P.R() < Math.min(0.25, (P.real - 500) / 2000)) stage = '패';
+  // 승패를 한 줄로 남긴다(9-57): 결과 카드가 이 줄을 보여 준다
+  say(P, `${J(n.name, '과와')} ${opts.spar ? '겨뤄' : '싸워'} ${{ 대승: '크게 이겼다', 승: '이겼다', 신승: '간신히 이겼다', 패: '졌다', 대패: '크게 졌다' }[stage]}.`, stage === '패' || stage === '대패' ? 'ng' : 'ok');
   if (!opts.spar && (n.fid || n.org)) repAdd(P, n.fid || facIdByName(P, n.org), -8);
   P.fights++; P.real = Math.min(1000, P.real + (opts.spar ? 10 : 60 + Math.floor(P.R() * 60)) * mulOf(P, 'real'));
   const win = stage === '대승' || stage === '승' || stage === '신승';
@@ -1930,7 +1932,7 @@ function* leadStep(P) {
     if (L.k === 'master') { say(P, '수소문 끝에 은거한 고수가 머무는 곳을 알아냈다.', 'path', P.month); P.flags.masterLuck = Math.max(P.flags.masterLuck || 0, 1); yield* seekMaster(P); }
     else if (L.k === 'foe') { const f = relPeople(P, ['원수'])[0]; if (!f) continue; say(P, `${J(f.name, '이가')} 어디 머무는지 알아냈다. 먼저 칠 수 있다.`, 'path', P.month); f.intel = true; know(P, f, 3); const r = yield* fightAsk(P, f, '원수를 먼저 친다', { lethal: true, pMul: 1.15 }); if (r.win) { f.rels = f.rels.filter(x => x !== '원수'); addAch(P, '원한을 끊다'); } }
     else if (L.k === 'kin') { const b = P.bonds.filter(b => b.alive && b.bond >= 30 && b.home && b.home !== P.place).sort((a, c) => c.bond - a.bond)[0]; if (!b) continue; b.bond += 10; know(P, b); say(P, `${J(b.name, '이가')} ${atText({ place: b.home })}에 있다는 소식을 들었다.${b.title ? ` 이제 ${b.title}라고 한다.` : ''}${b.trouble ? ` 곤경에 빠졌다고 한다 — ${b.trouble.k}.` : ''}`, 'bond', P.month); }
-    else if (L.k === 'manual') { say(P, '진짜 비급을 파는 사람을 찾았다.', 'path', P.month); const g = Math.min(3, (mainArt(P) ? gIdx(mainArt(P).def.g) : 0) + (L.crit ? 1 : 0)); const c = MPRICE[g]; const ch = yield { ask: '수소문의 끝', text: `${GRADES[g]} 비급이다. 진본이라는 보증이 붙었다. ${c}냥.`, month: P.month, options: [['산다', `${c}냥`], ['그만둔다', '']] }; if (ch === 0 && P.wealth >= c) { P.wealth -= c; giveArt(P, GRADES[g], null, '수소문 끝에 구한 진본으로 익히기 시작했다'); } }
+    else if (L.k === 'manual') { say(P, '진짜 비급을 파는 사람을 찾았다.', 'path', P.month); const g = Math.min(3, (mainArt(P) ? gIdx(mainArt(P).def.g) : 0) + (L.crit ? 1 : 0)); const c = MPRICE[g]; const ch = yield { ask: '수소문의 끝', text: `${GRADES[g]} 비급이다. 진본이라는 보증이 붙었다. ${c}냥.`, month: P.month, options: [['산다', `${c}냥`], ['그만둔다', '']] }; if (ch === 0 && P.wealth >= c) { P.wealth -= c; giveArt(P, GRADES[g], null, '수소문 끝에 구한 진본으로 익히기 시작했다'); } else if (ch === 0) say(P, '값을 치를 돈이 모자랐다.', 'muted', P.month); }
     else if (L.k === 'elixir') { const k = pk(P, ['영물', '천년 영초', '신병이기', '비급 출세']); yield* applyFx(P, ['rumor:' + k]); say(P, `「${k}」에 관한 믿을 만한 소식을 얻었다.`, 'rumor', P.month); }
     else if (L.k === 'job') { const w = 40 + Math.floor(P.R() * 80) + P.realm * 30; const ch = yield { ask: '수소문의 끝', text: pk(P, [`부잣집 호위 자리가 났다. 석 달에 ${w}냥.`, `표국에서 한 철 표사를 구한다. ${w}냥.`, `관아에서 도적 잡는 일에 현상금을 걸었다. ${w}냥.`]), month: P.month, options: [['맡는다', ''], ['그만둔다', '']] }; if (ch === 0) { const n = makeNpc(P, pk(P, ['산적 두목', '흉적', '도둑 떼 우두머리']), [-1, 1]); const r = yield* fight(P, n); if (r.win) { P.wealth += w; say(P, `일을 끝내고 ${w}냥을 받았다.`, 'ok', P.month); } } }
     else if (L.k === 'backer') { const bk = G.FACTIONS.filter(f => factionAlive(P, f.id) && (f.t === '사' || f.lad === 'info' || f.lad === 'bandit') && (f.prestige || 0) >= 1); if (!bk.length) continue; const b = pk(P, bk); P.knownBackers = (P.knownBackers || []).concat(b.id); say(P, `이 고을 흑도 뒤에 ${J(b.n, '이가')} 있다는 것을 알아냈다. 흑점에도 줄이 닿았다.`, 'path', P.month); }
@@ -2859,6 +2861,70 @@ function* projectYear(P) {
   if (pj.prog >= x.yrs) { P.project = null; P.projectEndY = P.year; P.projDone = (P.projDone || []).concat(pj.k); say(P, `여러 해에 걸친 「${x.n}」을 마쳤다.`, 'big'); P.events.push(`${P.age}세에 「${x.n}」을 마쳤다`); const r = x.done(P); if (r && r.next) yield* r; }
 }
 
+
+// ---------- 화면용 함수(9-56): 지도·이동·소지품·변화량 ----------
+// 지도: 모든 지명과 내 위치, 갈 수 있는 곳, 소문·쫓는 일·인연·소속이 있는 곳
+LIFE.mapData = function (P) {
+  const reach = new Set(placesInRange(P, null, 0).map(([id]) => id));
+  const mark = {};
+  const add = (id, k, t) => { if (!id || !G.PLACES2[id]) return; (mark[id] = mark[id] || []).push({ k, t }); };
+  for (const r of P.rumorQueue || []) add(r.place, '소문', r.kind);
+  for (const t of P.threads || []) if (t.place) add(t.place, '쫓는 일', t.kind || t.k);
+  for (const b of P.bonds || []) if (b.alive && b.home && b.rels.length) add(b.home, '인연', `${b.name}(${b.rels[0]})`);
+  if (P.member) { const f = facDef(P.member.fid); if (f && f.at) add(f.at, '사문', f.n); }
+  if (P.force) add(P.force.home, '내 세력', P.force.name);
+  add(P.home, '고향', '태어난 곳');
+  return { here: P.place, home: P.home, pending: P.pendingTravel || null, range: RANGE_NAME[rangeLevel(P)], places: Object.entries(G.PLACES2).map(([id, p]) => ({ id, n: p.n, x: p.x, y: p.y, t: p.t, r: p.r, reach: reach.has(id), mark: mark[id] || null })) };
+};
+// 이동: 다음 달에 떠난다. 거리만큼 노잣돈이 든다
+LIFE.travelCost = function (P, pid) { const a = G.PLACES2[P.place], b = G.PLACES2[pid]; if (!a || !b) return 0; return Math.round(Math.hypot(a.x - b.x, a.y - b.y) / 6); };
+LIFE.travelTo = function (P, pid) { if (!G.PLACES2[pid] || pid === P.place) return false; P.pendingTravel = pid; return true; };
+function* travelStep(P) {
+  const pid = P.pendingTravel; P.pendingTravel = null; if (!pid || !G.PLACES2[pid]) return;
+  const cost = LIFE.travelCost(P, pid);
+  if (P.wealth < cost) { say(P, `노잣돈 ${cost}냥이 없어 떠나지 못했다.`, 'muted', P.month); return; }
+  P.wealth -= cost; moveTo(P, pid); P.era = eraOf(P);
+  say(P, `${J(atText(P), '으로')} 길을 떠났다${cost ? ` (노잣돈 ${cost}냥)` : ''}.`, 'act', P.month);
+  for (const x of P.era.local) say(P, x + '.', 'world', P.month);
+  addAch(P, '길 떠나기');
+}
+// 소지품
+LIFE.inventory = function (P) {
+  const out = [];
+  if (P.weapon) out.push({ k: '병기', n: ['', '명병', '보검', '신병이기'][P.weapon], d: '싸움에서 무위를 더한다' });
+  for (const t of P.treasures || []) out.push({ k: '보물', n: t, d: '' });
+  if (P.pqi > 1) out.push({ k: '약기', n: `몸에 든 약기 ${Math.round(P.pqi)}년`, d: '해마다 내공으로 녹는다' });
+  for (const a of P.arts.filter(a => /비급|책|필사본|서고|무덤/.test(a.from || ''))) out.push({ k: '비급', n: a.def.n, d: a.from });
+  if (P.biz) out.push({ k: '가게', n: `가게 ${P.biz}곳`, d: '해마다 수입' });
+  if (P.flags.manor) out.push({ k: '장원', n: '내 장원', d: '' });
+  for (const v of P.invests || []) out.push({ k: '투자', n: v.n, d: `${v.amt}냥 · ${v.due}년에 결판` });
+  for (const x of P.dishes || []) out.push({ k: '요리', n: x, d: '이름난 요리' });
+  for (const x of P.forged || []) out.push({ k: '벼린 칼', n: x, d: '' });
+  return out;
+};
+// 선택 전후의 변화량
+LIFE.snapshot = function (P) { const m = P.member; return { fame: P.fame, infamy: P.infamy, wealth: P.wealth, realm: P.realm, ww: wuwei(P), hurt: P.hurt, poison: P.poison, arts: P.arts.map(a => a.def.n), bonds: P.bonds.map(b => b.id + ':' + b.rels.join(',')), traits: P.traits.map(t => t.n), rank: m ? m.fid + ':' + m.rank : '', men: myMen(P), place: P.place, alive: P.alive, st: Object.fromEntries(Object.keys(P.st).map(k => [k, baseOf(P, k)])), real: P.real, qi: effQi(P) }; };
+LIFE.diff = function (P, a) {
+  const b = LIFE.snapshot(P), d = [];
+  const num = (k, v, unit = '', good = true) => { const x = Math.round(v); if (x) d.push({ k, v: (x > 0 ? '+' : '') + x.toLocaleString() + unit, good: good ? x > 0 : x < 0 }); };
+  num('명성', b.fame - a.fame); num('악명', b.infamy - a.infamy, '', false); num('재산', b.wealth - a.wealth, '냥');
+  if (b.realm > a.realm) d.push({ k: '경지', v: REALMS[b.realm], good: true });
+  if (b.hurt > a.hurt) d.push({ k: '부상', v: ['', '경상', '중상', '위중'][b.hurt], good: false }); else if (b.hurt < a.hurt) d.push({ k: '부상', v: '나음', good: true });
+  if (b.poison && !a.poison) d.push({ k: '중독', v: '독', good: false });
+  for (const n of b.arts.filter(x => !a.arts.includes(x))) d.push({ k: '무공', v: n, good: true });
+  for (const n of b.traits.filter(x => !a.traits.includes(x))) d.push({ k: '특성', v: n, good: true });
+  for (const n of a.traits.filter(x => !b.traits.includes(x))) d.push({ k: '특성 사라짐', v: n, good: false });
+  const nb = b.bonds.filter(x => !a.bonds.includes(x));
+  for (const x of nb) { const [id, rels] = x.split(':'); const bd = P.bonds.find(y => String(y.id) === id); if (bd && rels) d.push({ k: '인연', v: `${bd.name} · ${rels.split(',').pop()}`, good: !/원수|맞수/.test(rels) }); }
+  if (b.rank !== a.rank && P.member) d.push({ k: '직위', v: rankName(P), good: true });
+  num('수하', b.men - a.men, '명');
+  num('내공', b.qi - a.qi, '년'); num('실전', b.real - a.real);
+  for (const k of Object.keys(b.st)) if (a.st && b.realm === a.realm && Math.abs(b.st[k] - a.st[k]) >= 0.5) num(k, b.st[k] - a.st[k]);
+  if (b.place !== a.place) d.push({ k: '이동', v: atText(P), good: true });
+  if (!b.alive) d.push({ k: '죽음', v: P.cause || '', good: false });
+  return d;
+};
+
 // ---------- 한 해(달 단위, 10단계 9-1) ----------
 function* year(P) {
   P.flags.tierUp = false; P.flags.bigWin = false; P.flags.timeUsed = 0;
@@ -2910,6 +2976,7 @@ function* year(P) {
       else if (f === 'match') yield* matchmaking(P);
       if (!P.alive) return;
     }
+    if (P.pendingTravel) { yield* travelStep(P); if (!P.alive) return; }
     if (!closed) { yield* leadStep(P); if (!P.alive) return; }
     // 소문
     for (const r of P.rumorQueue.filter(x => x.month === mo)) { P.rumorQueue.splice(P.rumorQueue.indexOf(r), 1); yield* rumorHear(P, r); if (!P.alive) return; }
