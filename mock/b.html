@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 B · 연표 띠</title>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:"Gowun Batang",serif;background:#111;color:#eee6d4;display:grid;grid-template-rows:auto 1fr auto;height:100vh}
+header{display:flex;justify-content:space-between;align-items:baseline;padding:22px 40px 0}
+header h1{margin:0;font-size:30px;letter-spacing:.06em}header h1 span{font-size:15px;opacity:.5;margin-left:10px;letter-spacing:0}
+.stat{display:flex;gap:24px;font-size:14px;opacity:.85}.stat b{color:#e8c37a;font-size:17px;margin-left:4px}
+main{display:grid;grid-template-columns:1fr 1.1fr;align-items:center;padding:0 60px;gap:40px}
+.year{font-size:120px;line-height:.9;font-weight:700;color:#2a2620;user-select:none}
+.year small{display:block;font-size:22px;color:#8a8170;margin-top:12px}
+.scene{position:relative;background:#f3ecdb;color:#1c1712;padding:30px 34px 26px;border-radius:2px}
+.scene .ttl{font-size:13px;letter-spacing:.3em;color:#9b2a1e;margin-bottom:10px}
+.scene p{font-size:21px;line-height:1.7;margin:0 0 20px}
+.scene img{position:absolute;right:-40px;bottom:0;height:420px;pointer-events:none}
+.ch{display:flex;flex-direction:column;gap:10px;max-width:58%}
+.ch button{background:transparent;border:1px solid #1c1712;padding:12px 16px;font:inherit;font-size:17px;text-align:left;cursor:pointer}
+.ch button:hover{background:#1c1712;color:#f3ecdb}
+.seal{position:absolute;left:-58px;top:-58px;width:96px;height:96px;border-radius:50%;border:5px solid #b8321f;color:#b8321f;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;transform:rotate(-12deg);background:rgba(243,236,219,.9)}
+.after{margin-top:6px;padding-top:12px;border-top:1px dashed #b9ab8a;font-size:16px;display:flex;gap:16px;flex-wrap:wrap}
+.after b{color:#2f6b57}.after .n{color:#b8321f}
+footer{padding:0 40px 26px}
+.line{position:relative;height:66px}
+.line::before{content:"";position:absolute;left:0;right:0;top:32px;height:2px;background:#3a352d}
+.dot{position:absolute;top:22px;width:22px;height:22px;border-radius:50%;background:#111;border:2px solid #6d6556;display:flex;align-items:center;justify-content:center;font-size:11px}
+.dot.k{border-color:#e8c37a;color:#e8c37a}.dot.now{background:#e8c37a;border-color:#e8c37a;color:#111;width:30px;height:30px;top:18px}
+.dot em{position:absolute;top:30px;left:50%;transform:translateX(-50%);font-style:normal;font-size:11px;white-space:nowrap;color:#8a8170}
+.dot.now em{top:36px;color:#e8c37a}
+.tag{position:fixed;right:10px;top:10px;font-size:12px;background:#e8c37a;color:#111;padding:3px 10px}
+</style></head><body>
+<header><h1>곽소홍<span>화산파 · 이류</span></h1><div class="stat"><span>무위<b>14</b></span><span>명성<b>소유명성</b></span><span>재산<b>1,240냥</b></span></div></header>
+<main>
+  <div class="year">1268<small>스물셋, 서안의 봄</small></div>
+  <div class="scene">
+    <div class="seal">勝</div>
+    <div class="ttl">산적의 습격</div>
+    <p>관도를 막아선 흑풍채.<br>세 합 만에 두목의 칼이 떨어졌다.</p>
+    <div class="after"><span>명성 <b>+30</b></span><span>은자 <b>+30</b></span><span>실전 <b>+60</b></span><span class="n">가볍게 다침</span></div>
+    <img src="../art/chars/C14.png" alt="" style="opacity:.25">
+  </div>
+</main>
+<footer><div class="line">
+  <div class="dot k" style="left:0%"><em>0 · 화음</em></div>
+  <div class="dot" style="left:8%"></div>
+  <div class="dot k" style="left:22%">門<em>9 · 화산 입문</em></div>
+  <div class="dot" style="left:32%"></div>
+  <div class="dot k" style="left:44%">師<em>14 · 운청자</em></div>
+  <div class="dot" style="left:52%"></div>
+  <div class="dot k" style="left:63%">二<em>19 · 이류</em></div>
+  <div class="dot" style="left:70%"></div>
+  <div class="dot now" style="left:78%">今<em>23 · 지금</em></div>
+</div></footer>
+<div class="tag">시안 B · 연표 띠 · 예시 수치</div>
+</body></html>

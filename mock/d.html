@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 D · 천하 지도</title>
+<link href="https://fonts.googleapis.com/css2?family=Song+Myung&family=IBM+Plex+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:"IBM Plex Sans KR",sans-serif;background:#d8ccb0;color:#2b2418}
+svg{position:fixed;inset:0;width:100vw;height:100vh}
+.land{fill:#efe4c8;stroke:#a8946a;stroke-width:1.2}
+.river{fill:none;stroke:#7fa3b3;stroke-width:2.5;opacity:.7}
+.city text{font-family:"Song Myung",serif;font-size:13px;fill:#5a4c33}
+.city circle{fill:#5a4c33}
+.route{fill:none;stroke:#a3261b;stroke-width:2;stroke-dasharray:6 6}
+.ripple{fill:none;stroke:#2f6b57;stroke-width:3;opacity:.6}
+.chip{position:fixed;left:24px;top:22px;display:flex;gap:12px;align-items:center;background:rgba(255,250,238,.92);padding:10px 16px 10px 10px;border-radius:40px;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.chip img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:50% 8%;background:#e4d6b4}
+.chip b{font-family:"Song Myung";font-size:20px;font-weight:400}.chip span{font-size:12px;opacity:.65;display:block}
+.chip .v{border-left:1px solid #d8ccb0;padding-left:12px;font-size:13px}.chip .v b{font-family:inherit;font-size:15px;font-weight:600}
+.pin{position:fixed;width:300px;background:#fffaf0;border-radius:10px;box-shadow:0 10px 26px rgba(0,0,0,.25);overflow:hidden}
+.pin::after{content:"";position:absolute;left:24px;bottom:-12px;border:12px solid transparent;border-top-color:#fffaf0;border-bottom:0}
+.pin .h{display:flex;gap:10px;align-items:center;padding:12px 14px 6px}
+.pin .h img{width:52px;height:52px;object-fit:cover;object-position:50% 6%;border-radius:8px;background:#e4d6b4}
+.pin .h b{font-family:"Song Myung";font-size:18px;font-weight:400}.pin .h span{display:block;font-size:12px;opacity:.6}
+.pin p{margin:4px 14px 10px;font-size:14.5px;line-height:1.55}
+.pin .ops{display:flex;border-top:1px solid #eadfc4}
+.pin .ops button{flex:1;border:0;background:transparent;padding:11px;font:inherit;font-weight:600;cursor:pointer}
+.pin .ops button+button{border-left:1px solid #eadfc4}
+.pin .ops button:hover{background:#2b2418;color:#fffaf0}
+.float{position:fixed;font-weight:600;font-size:15px;padding:4px 12px;border-radius:14px;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+.ok{background:#2f6b57}.bad{background:#a3261b}
+.dock{position:fixed;right:24px;bottom:24px;display:flex;gap:8px}
+.dock button{background:#2b2418;color:#fffaf0;border:0;border-radius:22px;padding:9px 16px;font:inherit;font-size:13px}
+.year{position:fixed;right:28px;top:20px;font-family:"Song Myung";font-size:40px;color:#2b2418;opacity:.8;text-align:right}.year small{display:block;font-family:inherit;font-size:14px;opacity:.7}
+.tag{position:fixed;left:10px;bottom:10px;font-size:12px;background:#2b2418;color:#fffaf0;padding:3px 10px}
+</style></head><body>
+<svg viewBox="0 0 680 520" preserveAspectRatio="xMidYMid meet">
+  <path class="land" d="M120 140 Q200 70 320 90 Q420 60 520 80 Q590 90 600 150 Q560 200 545 250 Q560 320 520 380 Q470 450 400 470 Q300 480 230 450 Q160 420 140 360 Q100 300 110 230 Z"/>
+  <path class="river" d="M150 200 Q250 190 330 230 Q400 245 470 210 Q510 195 540 200"/>
+  <path class="river" d="M200 320 Q290 300 360 320 Q430 330 500 320"/>
+  <g class="city"><circle cx="330" cy="238" r="3"/><text x="320" y="230">장안</text><circle cx="352" cy="230" r="3"/><text x="356" y="222">화산</text><circle cx="375" cy="228" r="3"/><text x="380" y="240">낙양</text><circle cx="418" cy="232" r="3"/><text x="422" y="226">개봉</text><circle cx="452" cy="140" r="3"/><text x="456" y="136">북경</text><circle cx="262" cy="312" r="3"/><text x="244" y="328">성도</text><circle cx="405" cy="315" r="3"/><text x="410" y="312">무창</text><circle cx="505" cy="322" r="3"/><text x="510" y="318">항주</text><circle cx="485" cy="290" r="3"/><text x="490" y="286">금릉</text><circle cx="420" cy="440" r="3"/><text x="425" y="436">광주</text><circle cx="255" cy="200" r="3"/><text x="240" y="194">난주</text></g>
+  <path class="route" d="M352 230 Q342 238 330 238"/>
+  <circle class="ripple" cx="330" cy="238" r="16"/><circle class="ripple" cx="330" cy="238" r="28" opacity=".3"/>
+  <circle cx="330" cy="238" r="7" fill="#a3261b"/>
+  <circle cx="300" cy="262" r="6" fill="#d8b45a" stroke="#5a4c33"/><circle cx="410" cy="306" r="6" fill="#d8b45a" stroke="#5a4c33"/>
+</svg>
+<div class="chip"><img src="../art/chars/C01.png" alt=""><div><b>곽소홍</b><span>화산파 · 이류</span></div><div class="v">무위 <b>14</b><br>재산 <b>1,240</b></div></div>
+<div class="year">1268<small>23세 · 사월</small></div>
+<div class="pin" style="left:calc(50% - 60px);top:calc(50% - 190px)"><div class="h"><img src="../art/chars/C14.png" alt=""><div><b>산적의 습격</b><span>장안 관도</span></div></div><p>흑풍채 두목이 길을 막는다.</p><div class="ops"><button>맞선다</button><button>돌아간다</button></div></div>
+<div class="float ok" style="left:calc(50% + 260px);top:calc(50% - 120px)">명성 +30</div>
+<div class="float ok" style="left:calc(50% + 270px);top:calc(50% - 82px)">은자 +30</div>
+<div class="float bad" style="left:calc(50% + 250px);top:calc(50% - 44px)">가볍게 다침</div>
+<div class="dock"><button>기록</button><button>인물</button><button>인연</button><button>방침</button></div>
+<div class="tag">시안 D · 천하 지도 · 예시 수치 (노란 점: 들려온 소문)</div>
+</body></html>

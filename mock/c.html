@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 C · 명령창</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:"Noto Sans KR",sans-serif;color:#fff;background:radial-gradient(ellipse at 50% 30%,#3c4a52 0%,#1a2126 70%)}
+.floor{position:fixed;left:0;right:0;bottom:0;height:38vh;background:linear-gradient(180deg,#2a2f2c,#121514)}
+.hudL{position:fixed;left:24px;top:22px;display:flex;gap:12px}
+.face{width:84px;height:84px;border:3px solid #d8b45a;background:#2a2a2a;overflow:hidden}
+.face img{width:100%;height:180%;object-fit:cover;object-position:50% 0}
+.bars{display:flex;flex-direction:column;gap:6px;min-width:260px}
+.bars .nm{font-family:"Nanum Myeongjo",serif;font-size:22px;font-weight:800}
+.bars .nm small{font-family:"Noto Sans KR";font-size:12px;color:#d8b45a;margin-left:8px;font-weight:700}
+.b{display:grid;grid-template-columns:34px 1fr 54px;gap:8px;align-items:center;font-size:12px;font-weight:700}
+.b .t{height:10px;background:#0d1012;border:1px solid #556}
+.b .t i{display:block;height:100%}
+.hp i{background:linear-gradient(90deg,#c0392b,#e74c3c)}.qi i{background:linear-gradient(90deg,#2471a3,#5dade2)}.ex i{background:linear-gradient(90deg,#b7950b,#f4d03f)}
+.hudR{position:fixed;right:24px;top:22px;text-align:right;font-weight:900}
+.hudR .g{font-size:22px;color:#f4d03f}.hudR .d{font-size:13px;opacity:.75;font-weight:500}
+.me{position:fixed;left:14vw;bottom:14vh;height:56vh}
+.foe{position:fixed;right:14vw;bottom:16vh;height:64vh}
+.bubble{position:fixed;right:calc(14vw + 230px);top:22vh;background:#fff;color:#111;padding:12px 18px;border-radius:14px;font-family:"Nanum Myeongjo",serif;font-weight:800;font-size:19px}
+.bubble::after{content:"";position:absolute;right:-14px;top:22px;border:8px solid transparent;border-left-color:#fff}
+.pop{position:fixed;font-weight:900;text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.6);animation:up 1.4s infinite}
+@keyframes up{0%{transform:translateY(8px);opacity:0}20%{opacity:1}100%{transform:translateY(-26px);opacity:0}}
+.cmd{position:fixed;left:50%;transform:translateX(-50%);bottom:26px;width:min(860px,92vw);display:grid;grid-template-columns:1fr 280px;background:rgba(8,12,24,.92);border:2px solid #d8b45a;border-radius:6px}
+.cmd .msg{padding:16px 20px;font-size:17px;line-height:1.6;border-right:1px solid #3a3f55}
+.cmd .msg b{color:#f4d03f}
+.cmd ul{list-style:none;margin:0;padding:10px 0}
+.cmd li{padding:9px 20px;font-weight:700;font-size:16px;cursor:pointer}
+.cmd li.on{background:rgba(216,180,90,.18)}.cmd li.on::before{content:"▶ ";color:#f4d03f}
+.cmd li small{float:right;font-size:12px;color:#9aa;font-weight:500}
+.toast{position:fixed;left:50%;top:20px;transform:translateX(-50%);background:#1e8449;padding:8px 22px;border-radius:20px;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.tag{position:fixed;left:10px;bottom:6px;font-size:11px;opacity:.6}
+</style></head><body>
+<div class="floor"></div>
+<div class="hudL"><div class="face"><img src="../art/chars/C01.png" alt=""></div><div class="bars"><div class="nm">곽소홍<small>이류 · 화산파</small></div>
+  <div class="b hp"><span>체력</span><div class="t"><i style="width:82%"></i></div><span>82/100</span></div>
+  <div class="b qi"><span>내공</span><div class="t"><i style="width:30%"></i></div><span>12년</span></div>
+  <div class="b ex"><span>명성</span><div class="t"><i style="width:44%"></i></div><span>1,850</span></div></div></div>
+<div class="hudR"><div class="g">1,270 냥</div><div class="d">23세 · 1268년 4월 · 서안</div></div>
+<div class="toast">승리 — 흑풍채 두목을 꺾었다</div>
+<img class="me" src="../art/chars/C01.png" alt="">
+<img class="foe" src="../art/chars/C14.png" alt="" style="filter:grayscale(.4) brightness(.8)">
+<div class="bubble">이, 이럴 수가…!</div>
+<div class="pop" style="left:22vw;top:24vh;color:#f4d03f;font-size:30px">명성 +30</div>
+<div class="pop" style="left:30vw;top:32vh;color:#f4d03f;font-size:24px;animation-delay:.3s">은자 +30</div>
+<div class="pop" style="left:18vw;top:34vh;color:#e74c3c;font-size:22px;animation-delay:.6s">체력 −18</div>
+<div class="cmd"><div class="msg">흑풍채 두목이 무릎을 꿇었다. 졸개 열둘이 눈치를 본다.<br><b>어떻게 할까?</b></div>
+  <ul><li class="on">수하로 삼는다<small>악명 조금</small></li><li>풀어 준다<small>협명</small></li><li>관아에 넘긴다<small>현상금</small></li></ul></div>
+<div class="tag">시안 C · 명령창 · 예시 수치</div>
+</body></html>

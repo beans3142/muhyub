@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 A · 카드 넘기기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%}
+body{font-family:"Noto Serif KR",serif;background:#ece3cf;color:#221b13;display:flex;flex-direction:column;align-items:center}
+.top{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px 26px;box-sizing:border-box}
+.who{display:flex;gap:10px;align-items:center}
+.who img{width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:50% 8%;background:#d9cbab;border:2px solid #221b13}
+.who b{font-size:19px}.who span{font-size:13px;opacity:.6;display:block}
+.age{font-size:44px;font-weight:900;line-height:1}.age small{font-size:14px;font-weight:500;opacity:.55;margin-left:4px}
+.gauges{display:flex;gap:26px;margin:4px 0 18px}
+.g{display:flex;flex-direction:column;align-items:center;gap:4px;width:64px;position:relative}
+.g .ic{width:48px;height:48px;border-radius:50%;border:2px solid #221b13;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;background:conic-gradient(#221b13 var(--p),#d9cbab 0)}
+.g .ic i{width:36px;height:36px;border-radius:50%;background:#ece3cf;display:flex;align-items:center;justify-content:center;font-style:normal}
+.g small{font-size:12px;opacity:.65}
+.g .d{position:absolute;top:-14px;right:-6px;font-size:13px;font-weight:900;padding:0 6px;border-radius:9px;color:#fff}
+.up{background:#2f6b57}.dn{background:#a3261b}
+.stage{display:flex;gap:40px;align-items:flex-start}
+.card{width:380px;background:#fbf6ea;border-radius:18px;box-shadow:0 14px 30px rgba(34,27,19,.18);overflow:hidden;position:relative}
+.card .art{height:300px;background:linear-gradient(180deg,#cfd6cf,#e8dcbf);display:flex;justify-content:center;align-items:flex-end}
+.card .art img{height:290px}
+.card .t{padding:18px 22px 6px;font-size:18px;line-height:1.6;text-align:center}
+.card .k{font-size:12px;letter-spacing:.2em;color:#a3261b;text-align:center;padding-top:14px;font-weight:700}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid #e4d7b8;margin-top:14px}
+.btns button{border:0;background:transparent;padding:16px 8px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.btns button+button{border-left:1px solid #e4d7b8}
+.btns button:hover{background:#221b13;color:#fbf6ea}
+.res .art{background:linear-gradient(180deg,#d9e6dc,#e8dcbf)}
+.stamp{position:absolute;top:22px;left:22px;border:4px solid #2f6b57;color:#2f6b57;font-size:28px;font-weight:900;padding:2px 14px;transform:rotate(-10deg);background:rgba(251,246,234,.85)}
+.res .t{font-size:17px}
+.deltas{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:6px 18px 20px}
+.deltas span{font-size:15px;font-weight:900;padding:4px 12px;border-radius:14px;color:#fff}
+.next{display:block;width:100%;border:0;background:#221b13;color:#fbf6ea;padding:15px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.cap{text-align:center;font-size:12px;opacity:.5;margin-top:8px}
+.side{position:fixed;right:22px;bottom:22px;display:flex;gap:8px}
+.side button{width:48px;height:48px;border-radius:50%;border:2px solid #221b13;background:#fbf6ea;font:inherit;font-weight:900;cursor:pointer}
+.tag{position:fixed;left:10px;bottom:10px;font-size:12px;background:#221b13;color:#ece3cf;padding:3px 10px}
+</style></head><body>
+<div class="top"><div class="who"><img src="../art/chars/C01.png" alt=""><div><b>곽소홍</b><span>화산파 내문제자</span></div></div><div class="age">23<small>세 · 4월</small></div></div>
+<div class="gauges">
+  <div class="g"><div class="ic" style="--p:42%"><i>武</i></div><small>이류</small></div>
+  <div class="g"><div class="ic" style="--p:85%"><i>體</i></div><small>건강</small><span class="d dn">−1</span></div>
+  <div class="g"><div class="ic" style="--p:30%"><i>名</i></div><small>소유명성</small><span class="d up">+30</span></div>
+  <div class="g"><div class="ic" style="--p:55%"><i>錢</i></div><small>1,270냥</small><span class="d up">+30</span></div>
+</div>
+<div class="stage">
+  <div><div class="card"><div class="art"><img src="../art/chars/C14.png" alt=""></div><div class="k">산적의 습격</div><div class="t">관도를 막아선 흑풍채 두목.<br>「길값은 내고 가야지.」</div>
+    <div class="btns"><button>맞선다</button><button>재물을 내준다</button></div></div><div class="cap">사건 카드</div></div>
+  <div><div class="card res"><div class="art"><img src="../art/chars/C01.png" alt=""></div><div class="stamp">승</div><div class="k">산적의 습격 · 결과</div><div class="t">세 합 만에 두목의 칼을 떨어뜨렸다.</div>
+    <div class="deltas"><span class="up">명성 +30</span><span class="up">은자 +30</span><span class="up">실전 +60</span><span class="dn">가볍게 다침</span></div><button class="next">계속</button></div><div class="cap">결과 카드</div></div>
+</div>
+<div class="side"><button title="기록">史</button><button title="인물">人</button><button title="방침">策</button></div>
+<div class="tag">시안 A · 카드 넘기기 · 예시 수치</div>
+</body></html>
